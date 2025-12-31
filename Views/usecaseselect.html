@@ -1,0 +1,183 @@
+<!-- Use Case Selection View (Module 2) - Blueprint ワークショップ -->
+<div class="flex flex-col gap-6 pb-24">
+
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">ユースケース選択</h1>
+      <p class="text-slate-500 text-sm mt-1">優先度の高いユースケースを選択し、実現可能性と価値を評価します</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <span class="text-sm text-slate-500">選択済: <strong id="selected-count" class="text-primary">0</strong> 件</span>
+    </div>
+  </div>
+
+  <!-- Info Banner -->
+  <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 flex gap-4 items-start">
+    <div class="bg-white p-2 rounded-lg shadow-sm text-amber-600 mt-1">
+      <span class="material-symbols-outlined text-[20px] block">tips_and_updates</span>
+    </div>
+    <div>
+      <h4 class="text-sm font-bold text-amber-900 mb-1">ヒント</h4>
+      <p class="text-sm text-amber-800 leading-relaxed opacity-90">
+        ユースケースは3〜5件程度に絞り込むことをお勧めします。各ユースケースの実現可能性と期待される価値を考慮して選択してください。
+      </p>
+    </div>
+  </div>
+
+  <!-- Use Case Categories -->
+  <div class="space-y-6">
+
+    <!-- Category: Operational Efficiency -->
+    <div class="bg-white rounded-xl border border-border-color shadow-card overflow-hidden">
+      <div class="px-6 py-4 bg-slate-50 border-b border-border-color flex items-center gap-3">
+        <div class="size-8 rounded-lg bg-blue-100 text-primary flex items-center justify-center">
+          <span class="material-symbols-outlined text-[20px]">speed</span>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-slate-900">業務効率化</h3>
+          <p class="text-xs text-slate-500">Operational Efficiency</p>
+        </div>
+      </div>
+      <div class="p-4 space-y-3">
+        <label class="usecase-item flex items-start gap-4 p-4 rounded-lg border border-slate-200 hover:border-primary/50 hover:bg-blue-50/30 transition-all cursor-pointer">
+          <input type="checkbox" data-field="usecase_op_1" class="mt-1 h-4 w-4 text-primary border-slate-300 rounded focus:ring-primary"/>
+          <div class="flex-1">
+            <h4 class="text-sm font-bold text-slate-800">ワークフロー自動化</h4>
+            <p class="text-xs text-slate-500 mt-1">手動プロセスを自動化し、処理時間を50%削減</p>
+          </div>
+          <div class="flex flex-col items-end gap-1">
+            <span class="badge badge-confirmed">高価値</span>
+            <span class="text-xs text-slate-400">実現可能性: 高</span>
+          </div>
+        </label>
+        <label class="usecase-item flex items-start gap-4 p-4 rounded-lg border border-slate-200 hover:border-primary/50 hover:bg-blue-50/30 transition-all cursor-pointer">
+          <input type="checkbox" data-field="usecase_op_2" class="mt-1 h-4 w-4 text-primary border-slate-300 rounded focus:ring-primary"/>
+          <div class="flex-1">
+            <h4 class="text-sm font-bold text-slate-800">データ統合</h4>
+            <p class="text-xs text-slate-500 mt-1">複数システムのデータを一元管理</p>
+          </div>
+          <div class="flex flex-col items-end gap-1">
+            <span class="badge badge-pending">中価値</span>
+            <span class="text-xs text-slate-400">実現可能性: 中</span>
+          </div>
+        </label>
+        <label class="usecase-item flex items-start gap-4 p-4 rounded-lg border border-slate-200 hover:border-primary/50 hover:bg-blue-50/30 transition-all cursor-pointer">
+          <input type="checkbox" data-field="usecase_op_3" class="mt-1 h-4 w-4 text-primary border-slate-300 rounded focus:ring-primary"/>
+          <div class="flex-1">
+            <h4 class="text-sm font-bold text-slate-800">レポート自動生成</h4>
+            <p class="text-xs text-slate-500 mt-1">定期レポートの自動生成と配信</p>
+          </div>
+          <div class="flex flex-col items-end gap-1">
+            <span class="badge badge-confirmed">高価値</span>
+            <span class="text-xs text-slate-400">実現可能性: 高</span>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Category: Customer Experience -->
+    <div class="bg-white rounded-xl border border-border-color shadow-card overflow-hidden">
+      <div class="px-6 py-4 bg-slate-50 border-b border-border-color flex items-center gap-3">
+        <div class="size-8 rounded-lg bg-green-100 text-green-600 flex items-center justify-center">
+          <span class="material-symbols-outlined text-[20px]">sentiment_satisfied</span>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-slate-900">顧客体験向上</h3>
+          <p class="text-xs text-slate-500">Customer Experience</p>
+        </div>
+      </div>
+      <div class="p-4 space-y-3">
+        <label class="usecase-item flex items-start gap-4 p-4 rounded-lg border border-slate-200 hover:border-primary/50 hover:bg-blue-50/30 transition-all cursor-pointer">
+          <input type="checkbox" data-field="usecase_cx_1" class="mt-1 h-4 w-4 text-primary border-slate-300 rounded focus:ring-primary"/>
+          <div class="flex-1">
+            <h4 class="text-sm font-bold text-slate-800">パーソナライズ推奨</h4>
+            <p class="text-xs text-slate-500 mt-1">顧客の行動に基づいたパーソナライズされた提案</p>
+          </div>
+          <div class="flex flex-col items-end gap-1">
+            <span class="badge badge-confirmed">高価値</span>
+            <span class="text-xs text-slate-400">実現可能性: 中</span>
+          </div>
+        </label>
+        <label class="usecase-item flex items-start gap-4 p-4 rounded-lg border border-slate-200 hover:border-primary/50 hover:bg-blue-50/30 transition-all cursor-pointer">
+          <input type="checkbox" data-field="usecase_cx_2" class="mt-1 h-4 w-4 text-primary border-slate-300 rounded focus:ring-primary"/>
+          <div class="flex-1">
+            <h4 class="text-sm font-bold text-slate-800">セルフサービスポータル</h4>
+            <p class="text-xs text-slate-500 mt-1">顧客自身で問い合わせや設定変更が可能なポータル</p>
+          </div>
+          <div class="flex flex-col items-end gap-1">
+            <span class="badge badge-pending">中価値</span>
+            <span class="text-xs text-slate-400">実現可能性: 高</span>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Category: Analytics -->
+    <div class="bg-white rounded-xl border border-border-color shadow-card overflow-hidden">
+      <div class="px-6 py-4 bg-slate-50 border-b border-border-color flex items-center gap-3">
+        <div class="size-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
+          <span class="material-symbols-outlined text-[20px]">analytics</span>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-slate-900">データ分析・予測</h3>
+          <p class="text-xs text-slate-500">Analytics & Prediction</p>
+        </div>
+      </div>
+      <div class="p-4 space-y-3">
+        <label class="usecase-item flex items-start gap-4 p-4 rounded-lg border border-slate-200 hover:border-primary/50 hover:bg-blue-50/30 transition-all cursor-pointer">
+          <input type="checkbox" data-field="usecase_an_1" class="mt-1 h-4 w-4 text-primary border-slate-300 rounded focus:ring-primary"/>
+          <div class="flex-1">
+            <h4 class="text-sm font-bold text-slate-800">需要予測</h4>
+            <p class="text-xs text-slate-500 mt-1">AIによる需要予測と在庫最適化</p>
+          </div>
+          <div class="flex flex-col items-end gap-1">
+            <span class="badge badge-confirmed">高価値</span>
+            <span class="text-xs text-slate-400">実現可能性: 低</span>
+          </div>
+        </label>
+        <label class="usecase-item flex items-start gap-4 p-4 rounded-lg border border-slate-200 hover:border-primary/50 hover:bg-blue-50/30 transition-all cursor-pointer">
+          <input type="checkbox" data-field="usecase_an_2" class="mt-1 h-4 w-4 text-primary border-slate-300 rounded focus:ring-primary"/>
+          <div class="flex-1">
+            <h4 class="text-sm font-bold text-slate-800">リアルタイムダッシュボード</h4>
+            <p class="text-xs text-slate-500 mt-1">KPIのリアルタイム可視化</p>
+          </div>
+          <div class="flex flex-col items-end gap-1">
+            <span class="badge badge-pending">中価値</span>
+            <span class="text-xs text-slate-400">実現可能性: 高</span>
+          </div>
+        </label>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Custom Use Case -->
+  <div class="bg-white rounded-xl border border-border-color shadow-card p-6">
+    <h3 class="text-sm font-bold text-slate-800 mb-4">カスタムユースケースを追加</h3>
+    <div class="flex gap-3">
+      <input id="custom-usecase" data-field="customUsecase" type="text" class="flex-1 rounded-md border-slate-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary" placeholder="ユースケース名を入力..."/>
+      <button class="px-4 py-2 bg-slate-100 text-slate-700 rounded-md text-sm font-medium hover:bg-slate-200 transition-colors">
+        追加
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Footer Actions -->
+<div class="fixed bottom-0 left-0 right-0 md:left-64 border-t border-border-color bg-white p-4 px-8 flex justify-between items-center z-30 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.05)]">
+  <div class="hidden sm:flex items-center gap-2">
+    <span class="material-symbols-outlined text-slate-400 text-[20px]">checklist</span>
+    <span class="text-sm text-slate-500 font-medium"><span id="footer-selected">0</span> 件選択中</span>
+  </div>
+  <div class="flex gap-3 w-full sm:w-auto">
+    <button class="flex-1 sm:flex-none px-5 py-2.5 rounded-md border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors" data-action="save-module">
+      保存
+    </button>
+    <button class="flex-1 sm:flex-none px-6 py-2.5 rounded-md bg-primary text-white font-semibold text-sm hover:bg-primary-hover transition-colors shadow-sm flex items-center justify-center gap-2" data-action="complete-module">
+      <span class="material-symbols-outlined text-[18px]">check</span>
+      このモジュールを完了
+    </button>
+  </div>
+</div>

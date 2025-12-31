@@ -1,0 +1,1043 @@
+<script>
+/**
+ * Blueprint ワークショップ - Client-side JavaScript
+ * SPA routing, event handling, and google.script.run integration
+ */
+
+(function() {
+  'use strict';
+
+  // ============================================
+  // Global State
+  // ============================================
+  const AppState = {
+    currentView: 'home',
+    currentProjectId: null,
+    currentModuleId: null,
+    user: null,
+    projects: [],
+    moduleData: {},
+    isLoading: false
+  };
+
+  // View templates cache
+  const ViewCache = {};
+
+  // ============================================
+  // Utility Functions
+  // ============================================
+
+  /**
+   * Wrapper for google.script.run with Promise support
+   */
+  function serverCall(functionName, ...args) {
+    return new Promise((resolve, reject) => {
+      const runner = google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler(reject);
+
+      if (typeof runner[functionName] === 'function') {
+        runner[functionName](...args);
+      } else {
+        reject(new Error(`Server function "${functionName}" not found`));
+      }
+    });
+  }
+
+  /**
+   * Show loading overlay
+   */
+  function showLoading() {
+    AppState.isLoading = true;
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) overlay.classList.remove('hidden');
+  }
+
+  /**
+   * Hide loading overlay
+   */
+  function hideLoading() {
+    AppState.isLoading = false;
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) overlay.classList.add('hidden');
+  }
+
+  /**
+   * Show toast notification
+   * @param {string} message - Message to display
+   * @param {string} type - 'success' | 'error' | 'info' | 'warning'
+   * @param {number} duration - Duration in ms (default: 4000)
+   */
+  function showToast(message, type = 'info', duration = 4000) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+
+    const iconMap = {
+      success: 'check_circle',
+      error: 'error',
+      warning: 'warning',
+      info: 'info'
+    };
+
+    toast.innerHTML = `
+      <span class="material-symbols-outlined filled-icon">${iconMap[type] || 'info'}</span>
+      <span class="flex-1 text-sm font-medium">${escapeHtml(message)}</span>
+      <button class="ml-2 opacity-60 hover:opacity-100" onclick="this.parentElement.remove()">
+        <span class="material-symbols-outlined text-lg">close</span>
+      </button>
+    `;
+
+    container.appendChild(toast);
+
+    // Auto remove
+    setTimeout(() => {
+      toast.classList.add('removing');
+      setTimeout(() => toast.remove(), 300);
+    }, duration);
+  }
+
+  /**
+   * Escape HTML to prevent XSS
+   */
+  function escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  /**
+   * Format date for display
+   */
+  function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('ja-JP', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  }
+
+  /**
+   * Format relative time
+   */
+  function formatRelativeTime(dateStr) {
+    if (!dateStr) return '-';
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return '今';
+    if (diffMins < 60) return `${diffMins}分前`;
+    if (diffHours < 24) return `${diffHours}時間前`;
+    if (diffDays < 7) return `${diffDays}日前`;
+    return formatDate(dateStr);
+  }
+
+  // ============================================
+  // Navigation & Routing
+  // ============================================
+
+  /**
+   * Navigate to a view
+   * @param {string} viewName - Name of the view
+   * @param {Object} params - Optional parameters (projectId, moduleId, etc.)
+   */
+  async function navigateTo(viewName, params = {}) {
+    try {
+      showLoading();
+
+      // Update state
+      AppState.currentView = viewName;
+      AppState.currentProjectId = params.projectId || null;
+      AppState.currentModuleId = params.moduleId || null;
+
+      // Update URL hash
+      let hash = viewName;
+      if (params.projectId) hash += `/${params.projectId}`;
+      if (params.moduleId) hash += `/${params.moduleId}`;
+      window.location.hash = hash;
+
+      // Update navigation active state
+      updateNavActiveState(viewName);
+
+      // Update breadcrumb
+      updateBreadcrumb(viewName, params);
+
+      // Load view content
+      await loadView(viewName, params);
+
+    } catch (error) {
+      console.error('Navigation error:', error);
+      showToast('ページの読み込みに失敗しました', 'error');
+    } finally {
+      hideLoading();
+    }
+  }
+
+  /**
+   * Update navigation active state
+   */
+  function updateNavActiveState(viewName) {
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.classList.remove('active');
+      if (link.dataset.view === viewName) {
+        link.classList.add('active');
+      }
+    });
+  }
+
+  /**
+   * Update breadcrumb
+   */
+  function updateBreadcrumb(viewName, params = {}) {
+    const breadcrumb = document.getElementById('breadcrumb');
+    if (!breadcrumb) return;
+
+    const viewNames = {
+      home: 'ホーム',
+      projectlist: 'プロジェクト一覧',
+      projectdetail: 'プロジェクト詳細',
+      vision: '北極星ビジョン',
+      usecaseselect: 'ユースケース選択',
+      '90daysplan': '90日計画',
+      raci: '体制・RACI',
+      valuetracker: '価値トラッカー'
+    };
+
+    let html = '<ol class="flex items-center space-x-2">';
+
+    if (viewName === 'home') {
+      html += `<li><span class="text-sm font-bold text-slate-800">${viewNames[viewName]}</span></li>`;
+    } else if (viewName === 'projectlist') {
+      html += `<li><a class="text-sm text-primary hover:underline font-medium cursor-pointer" onclick="App.navigateTo('home')">ホーム</a></li>`;
+      html += '<li class="text-slate-400 text-xs">▶</li>';
+      html += `<li><span class="text-sm font-bold text-slate-800">${viewNames[viewName]}</span></li>`;
+    } else if (params.projectId) {
+      html += `<li><a class="text-sm text-primary hover:underline font-medium cursor-pointer" onclick="App.navigateTo('projectlist')">プロジェクト一覧</a></li>`;
+      html += '<li class="text-slate-400 text-xs">▶</li>';
+      html += `<li><span class="text-sm font-bold text-slate-800">${viewNames[viewName] || viewName}</span></li>`;
+    } else {
+      html += `<li><a class="text-sm text-primary hover:underline font-medium cursor-pointer" onclick="App.navigateTo('home')">ホーム</a></li>`;
+      html += '<li class="text-slate-400 text-xs">▶</li>';
+      html += `<li><span class="text-sm font-bold text-slate-800">${viewNames[viewName] || viewName}</span></li>`;
+    }
+
+    html += '</ol>';
+    breadcrumb.innerHTML = html;
+  }
+
+  /**
+   * Load view content
+   */
+  async function loadView(viewName, params = {}) {
+    const container = document.getElementById('view-content');
+    if (!container) return;
+
+    // Map view name to view handler
+    const viewHandlers = {
+      home: loadHomeView,
+      projectlist: loadProjectListView,
+      projectdetail: loadProjectDetailView,
+      vision: loadModuleView,
+      usecaseselect: loadModuleView,
+      '90daysplan': loadModuleView,
+      raci: loadModuleView,
+      valuetracker: loadValueTrackerView
+    };
+
+    const handler = viewHandlers[viewName];
+    if (handler) {
+      await handler(container, params);
+    } else {
+      container.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-16 text-slate-500">
+          <span class="material-symbols-outlined text-5xl mb-3">error_outline</span>
+          <p class="text-sm">ビュー "${escapeHtml(viewName)}" が見つかりません</p>
+        </div>
+      `;
+    }
+
+    // Bind events after loading
+    bindViewEvents(container);
+  }
+
+  // ============================================
+  // View Loaders
+  // ============================================
+
+  /**
+   * Load Home view
+   */
+  async function loadHomeView(container, params) {
+    try {
+      // Load recent projects
+      const projects = await serverCall('listProjects', 'all', '');
+      AppState.projects = projects || [];
+
+      const recentProjects = AppState.projects.slice(0, 5);
+
+      container.innerHTML = `
+        <div class="mb-10">
+          <div class="flex items-end justify-between mb-6">
+            <div>
+              <h2 class="text-xl font-bold text-text-main">ワークショップを開始</h2>
+              <p class="text-sm text-text-muted mt-1">目的に合わせてフェーズを選択してください</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            ${renderWorkshopCards()}
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-4">
+          <div class="flex items-center justify-between px-1">
+            <h2 class="text-lg font-bold text-text-main">最近のプロジェクト</h2>
+            <a class="text-sm font-medium text-primary hover:text-primary-dark hover:underline cursor-pointer" data-action="navigate" data-view="projectlist">すべて見る</a>
+          </div>
+          <div class="bg-surface rounded-lg border border-border-subtle shadow-card overflow-hidden">
+            ${renderProjectTable(recentProjects)}
+          </div>
+        </div>
+      `;
+    } catch (error) {
+      console.error('Error loading home view:', error);
+      container.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-16 text-red-500">
+          <span class="material-symbols-outlined text-5xl mb-3">error</span>
+          <p class="text-sm">データの読み込みに失敗しました</p>
+          <button class="mt-4 btn-primary" onclick="App.navigateTo('home')">再試行</button>
+        </div>
+      `;
+    }
+  }
+
+  /**
+   * Render workshop cards
+   */
+  function renderWorkshopCards() {
+    const cards = [
+      { step: 1, icon: 'flag', title: '北極星を決める', desc: 'プロジェクトの方向性と、全員が目指すべき長期的なゴールを設定・合意します。', action: 'vision', buttonText: 'セッションを開始' },
+      { step: 2, icon: 'checklist', title: 'ユースケースを選択', desc: '具体的なユースケースを選定し、優先順位を決定します。', action: 'usecaseselect', buttonText: '選択を開始' },
+      { step: 3, icon: 'calendar_month', title: '90日計画を作る', desc: '直近の四半期における具体的なアクションプランとマイルストーンを策定します。', action: '90daysplan', buttonText: '計画を作成' },
+      { step: 4, icon: 'diversity_3', title: '体制と責任を確定', desc: '推進チーム体制と、各メンバーの責任範囲（RACI）を明確化します。', action: 'raci', buttonText: '体制図を編集' }
+    ];
+
+    return cards.map(card => `
+      <div class="group bg-surface rounded-lg border border-border-subtle p-5 shadow-card hover:shadow-card-hover hover:border-primary/50 transition-all duration-200 flex flex-col h-full relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity pointer-events-none">
+          <span class="text-8xl font-black text-primary">${card.step}</span>
+        </div>
+        <div class="flex items-center justify-between mb-4 relative z-10">
+          <div class="flex items-center justify-center size-10 rounded-md bg-blue-50 text-primary border border-blue-100">
+            <span class="material-symbols-outlined filled-icon">${card.icon}</span>
+          </div>
+          <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-gray-100 text-gray-600 border border-gray-200 uppercase tracking-wide">Step ${card.step}</span>
+        </div>
+        <h3 class="text-base font-bold text-text-main mb-2 relative z-10">${card.title}</h3>
+        <p class="text-sm text-text-muted mb-6 leading-relaxed flex-1 relative z-10">${card.desc}</p>
+        <button class="w-full h-9 flex items-center justify-center rounded-md ${card.step === 1 ? 'bg-primary hover:bg-primary-dark text-white' : 'bg-white border border-gray-300 hover:border-primary hover:text-primary text-gray-700'} text-sm font-semibold shadow-sm transition-colors relative z-10" data-action="navigate" data-view="${card.action}">
+          ${card.buttonText}
+        </button>
+      </div>
+    `).join('');
+  }
+
+  /**
+   * Render project table
+   */
+  function renderProjectTable(projects) {
+    if (!projects || projects.length === 0) {
+      return `
+        <div class="p-8 text-center text-slate-500">
+          <span class="material-symbols-outlined text-4xl mb-2">folder_off</span>
+          <p class="text-sm">プロジェクトがありません</p>
+          <button class="mt-4 btn-primary" data-action="open-new-project-modal">新規プロジェクトを作成</button>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50 border-b border-border-subtle text-xs font-bold text-gray-500 uppercase tracking-wider">
+        <div class="col-span-5">プロジェクト名</div>
+        <div class="col-span-3">最終更新</div>
+        <div class="col-span-2">ステータス</div>
+        <div class="col-span-2 text-right">アクション</div>
+      </div>
+      <div class="divide-y divide-gray-100">
+        ${projects.map(p => `
+          <div class="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors cursor-pointer group" data-action="open-project" data-project-id="${escapeHtml(p.projectId)}">
+            <div class="col-span-5 flex items-center gap-3">
+              <div class="size-8 rounded bg-blue-100 text-primary flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-lg">folder</span>
+              </div>
+              <div class="font-bold text-text-main truncate text-sm">${escapeHtml(p.customerName)}</div>
+            </div>
+            <div class="col-span-3 text-sm text-text-muted">${formatRelativeTime(p.lastUpdated)}</div>
+            <div class="col-span-2">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${p.status === '確定' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-gray-100 text-gray-600 border border-gray-200'}">
+                <span class="size-1.5 rounded-full ${p.status === '確定' ? 'bg-green-500' : 'bg-gray-400'}"></span>
+                ${escapeHtml(p.status || '下書き')}
+              </span>
+            </div>
+            <div class="col-span-2 text-right opacity-0 group-hover:opacity-100 transition-opacity">
+              <button class="text-gray-400 hover:text-primary transition-colors p-1 rounded hover:bg-blue-50" data-action="open-project" data-project-id="${escapeHtml(p.projectId)}">
+                <span class="material-symbols-outlined text-lg">edit</span>
+              </button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  /**
+   * Load Project List view
+   */
+  async function loadProjectListView(container, params) {
+    try {
+      const projects = await serverCall('listProjects', 'all', '');
+      AppState.projects = projects || [];
+
+      container.innerHTML = `
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-900">プロジェクト一覧</h1>
+            <p class="text-sm text-slate-500 mt-1">全 ${AppState.projects.length} 件のプロジェクト</p>
+          </div>
+          <div class="flex gap-3">
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                <span class="material-symbols-outlined text-[20px]">search</span>
+              </span>
+              <input id="project-search" class="pl-10 pr-4 py-2 text-sm bg-white border border-slate-300 rounded-md focus:ring-1 focus:ring-primary focus:border-primary w-64" placeholder="プロジェクトを検索..." type="text"/>
+            </div>
+            <select id="project-filter" class="px-3 py-2 text-sm bg-white border border-slate-300 rounded-md focus:ring-1 focus:ring-primary focus:border-primary">
+              <option value="all">すべて</option>
+              <option value="mine">自分のみ</option>
+              <option value="shared">共有されたもの</option>
+            </select>
+            <button class="btn-primary flex items-center gap-2" data-action="open-new-project-modal">
+              <span class="material-symbols-outlined text-[18px]">add</span>
+              新規作成
+            </button>
+          </div>
+        </div>
+
+        <div id="project-list-container" class="bg-surface rounded-lg border border-border-subtle shadow-card overflow-hidden">
+          ${renderProjectTable(AppState.projects)}
+        </div>
+      `;
+
+      // Bind search and filter
+      const searchInput = document.getElementById('project-search');
+      const filterSelect = document.getElementById('project-filter');
+
+      if (searchInput) {
+        searchInput.addEventListener('input', debounce(async (e) => {
+          await filterProjects(e.target.value, filterSelect?.value || 'all');
+        }, 300));
+      }
+
+      if (filterSelect) {
+        filterSelect.addEventListener('change', async (e) => {
+          await filterProjects(searchInput?.value || '', e.target.value);
+        });
+      }
+
+    } catch (error) {
+      console.error('Error loading project list:', error);
+      showToast('プロジェクト一覧の読み込みに失敗しました', 'error');
+    }
+  }
+
+  /**
+   * Filter projects
+   */
+  async function filterProjects(search, filter) {
+    try {
+      showLoading();
+      const projects = await serverCall('listProjects', filter, search);
+      AppState.projects = projects || [];
+
+      const container = document.getElementById('project-list-container');
+      if (container) {
+        container.innerHTML = renderProjectTable(AppState.projects);
+        bindViewEvents(container);
+      }
+    } catch (error) {
+      console.error('Error filtering projects:', error);
+      showToast('検索に失敗しました', 'error');
+    } finally {
+      hideLoading();
+    }
+  }
+
+  /**
+   * Load Project Detail view
+   */
+  async function loadProjectDetailView(container, params) {
+    if (!params.projectId) {
+      showToast('プロジェクトIDが指定されていません', 'error');
+      navigateTo('projectlist');
+      return;
+    }
+
+    try {
+      const project = await serverCall('getProject', params.projectId);
+      if (!project) {
+        showToast('プロジェクトが見つかりません', 'error');
+        navigateTo('projectlist');
+        return;
+      }
+
+      AppState.currentProjectId = params.projectId;
+
+      // Load module completion status
+      const modules = [
+        { id: 1, name: 'ビジネス目標', view: 'vision', desc: '北極星ビジョンの定義と共有' },
+        { id: 2, name: 'ユースケース選択', view: 'usecaseselect', desc: '優先ユースケースの特定' },
+        { id: 3, name: '90日計画', view: '90daysplan', desc: 'アクションプランとマイルストーン' },
+        { id: 4, name: '体制・RACI', view: 'raci', desc: '推進チーム体制と責任範囲' },
+        { id: 5, name: 'リスク分析', view: 'risk', desc: 'リスク評価と対策' },
+        { id: 6, name: '投資計画', view: 'investment', desc: '予算とROI分析' },
+        { id: 7, name: '価値トラッカー', view: 'valuetracker', desc: '成果の可視化と追跡' }
+      ];
+
+      const completedModules = project.completedModules || [];
+      const completedCount = completedModules.length;
+      const progress = Math.round((completedCount / modules.length) * 100);
+
+      container.innerHTML = `
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <div class="size-10 bg-white border border-slate-200 rounded-lg flex items-center justify-center shadow-sm">
+                <span class="material-symbols-outlined text-primary text-2xl">domain</span>
+              </div>
+              <h1 class="text-2xl font-bold text-slate-900">${escapeHtml(project.customerName)}</h1>
+            </div>
+            <div class="flex items-center gap-4 text-sm text-slate-500 ml-1">
+              <span class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                作成日: ${formatDate(project.createdAt)}
+              </span>
+              <span class="text-slate-300">|</span>
+              <span class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px]">person</span>
+                ${escapeHtml(project.creatorEmail)}
+              </span>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <button class="btn-secondary flex items-center gap-2">
+              <span class="material-symbols-outlined text-[18px]">share</span>
+              共有
+            </button>
+            <button class="btn-primary flex items-center gap-2" data-action="export-doc" data-project-id="${escapeHtml(project.projectId)}">
+              <span class="material-symbols-outlined text-[18px] filled-icon">assignment_turned_in</span>
+              稟議書作成
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-surface rounded-lg shadow-card border border-border-color p-5 mb-8">
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="text-sm font-bold text-slate-700">プロジェクト進捗</h2>
+            <span class="text-2xl font-bold text-primary tracking-tight">${progress}% <span class="text-xs font-medium text-slate-500 ml-1">完了</span></span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-bar-fill" style="width: ${progress}%"></div>
+          </div>
+          <div class="mt-2 flex justify-between text-xs text-slate-500 font-medium">
+            <span>完了済: ${completedCount}項目</span>
+            <span>全: ${modules.length}項目</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 pb-12">
+          ${modules.map((m, index) => {
+            const isCompleted = completedModules.includes(m.id);
+            const isLocked = index > 0 && !completedModules.includes(modules[index - 1].id) && !isCompleted;
+            return renderModuleCard(m, isCompleted, isLocked, project.projectId);
+          }).join('')}
+        </div>
+      `;
+    } catch (error) {
+      console.error('Error loading project detail:', error);
+      showToast('プロジェクト詳細の読み込みに失敗しました', 'error');
+    }
+  }
+
+  /**
+   * Render module card
+   */
+  function renderModuleCard(module, isCompleted, isLocked, projectId) {
+    if (isLocked) {
+      return `
+        <div class="bg-slate-50 rounded-lg p-5 border border-slate-200 flex flex-col opacity-70 h-full">
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex flex-col">
+              <span class="text-[10px] font-bold text-slate-400 mb-0.5 tracking-wider">STEP ${String(module.id).padStart(2, '0')}</span>
+              <h3 class="text-base font-bold text-slate-400 flex items-center gap-2">
+                ${escapeHtml(module.name)}
+                <span class="material-symbols-outlined text-base">lock</span>
+              </h3>
+            </div>
+          </div>
+          <p class="text-sm text-slate-400 mb-5 leading-relaxed">${escapeHtml(module.desc)}</p>
+          <div class="mt-auto">
+            <div class="text-xs text-slate-400 font-medium flex items-center gap-1.5 bg-slate-100 p-2 rounded border border-slate-200">
+              <span class="material-symbols-outlined text-sm filled-icon">info</span>
+              先のステップを完了してください
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="step-card ${isCompleted ? 'completed' : ''} bg-surface rounded-lg p-5 border ${isCompleted ? 'border-border-color' : 'border-primary'} shadow-card hover:shadow-card-hover transition-all group flex flex-col h-full">
+        <div class="flex justify-between items-start mb-3">
+          <div class="flex flex-col">
+            <span class="text-[10px] font-bold ${isCompleted ? 'text-slate-400' : 'text-primary'} mb-0.5 tracking-wider">STEP ${String(module.id).padStart(2, '0')}</span>
+            <h3 class="text-base font-bold ${isCompleted ? 'text-slate-900 group-hover:text-primary' : 'text-primary'} transition-colors">${escapeHtml(module.name)}</h3>
+          </div>
+          <span class="badge ${isCompleted ? 'badge-confirmed' : 'badge-pending'}">
+            ${isCompleted ? '確定' : '下書き'}
+          </span>
+        </div>
+        <p class="text-sm text-slate-500 mb-5 leading-relaxed">${escapeHtml(module.desc)}</p>
+        <div class="mt-auto pt-4 border-t border-slate-50">
+          <button class="${isCompleted ? 'text-sm font-bold text-primary hover:text-primary-dark flex items-center gap-1' : 'w-full py-2 bg-primary text-white rounded-md text-sm font-bold hover:bg-primary-dark'}" data-action="open-module" data-view="${module.view}" data-project-id="${escapeHtml(projectId)}" data-module-id="${module.id}">
+            ${isCompleted ? '詳細を表示 <span class="material-symbols-outlined text-sm">arrow_forward</span>' : '編集を開始'}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * Load Module view (generic)
+   */
+  async function loadModuleView(container, params) {
+    if (!params.projectId) {
+      container.innerHTML = `
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+          <span class="material-symbols-outlined text-4xl text-yellow-500 mb-2">warning</span>
+          <p class="text-sm text-yellow-800">プロジェクトを選択してください</p>
+          <button class="mt-4 btn-primary" data-action="navigate" data-view="projectlist">プロジェクト一覧へ</button>
+        </div>
+      `;
+      return;
+    }
+
+    try {
+      const moduleId = params.moduleId || AppState.currentModuleId;
+      const moduleData = await serverCall('loadModule', params.projectId, moduleId);
+
+      AppState.moduleData[moduleId] = moduleData ? JSON.parse(moduleData.dataJson || '{}') : {};
+
+      // Render module-specific content
+      container.innerHTML = `
+        <div class="mb-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h1 class="text-2xl font-bold text-slate-900">${getModuleTitle(AppState.currentView)}</h1>
+              <p class="text-sm text-slate-500 mt-1">モジュール ${moduleId}</p>
+            </div>
+            <div class="flex gap-3">
+              <button class="btn-secondary" data-action="navigate" data-view="projectdetail" data-project-id="${escapeHtml(params.projectId)}">
+                戻る
+              </button>
+              <button class="btn-primary" data-action="save-module" data-project-id="${escapeHtml(params.projectId)}" data-module-id="${moduleId}">
+                保存
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="module-content" class="bg-surface rounded-lg border border-border-color p-6 shadow-card">
+          <p class="text-slate-500 text-sm">モジュールコンテンツは Views/${AppState.currentView}.html から読み込まれます。</p>
+          <div class="mt-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+            <pre class="text-xs text-slate-600">${escapeHtml(JSON.stringify(AppState.moduleData[moduleId], null, 2))}</pre>
+          </div>
+        </div>
+      `;
+    } catch (error) {
+      console.error('Error loading module:', error);
+      showToast('モジュールの読み込みに失敗しました', 'error');
+    }
+  }
+
+  /**
+   * Load Value Tracker view
+   */
+  async function loadValueTrackerView(container, params) {
+    if (!params.projectId) {
+      container.innerHTML = `
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+          <span class="material-symbols-outlined text-4xl text-yellow-500 mb-2">warning</span>
+          <p class="text-sm text-yellow-800">プロジェクトを選択してください</p>
+          <button class="mt-4 btn-primary" data-action="navigate" data-view="projectlist">プロジェクト一覧へ</button>
+        </div>
+      `;
+      return;
+    }
+
+    try {
+      const values = await serverCall('listValues', params.projectId);
+
+      container.innerHTML = `
+        <div class="mb-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h1 class="text-2xl font-bold text-slate-900">価値トラッカー</h1>
+              <p class="text-sm text-slate-500 mt-1">ユースケースごとの価値と成果を追跡</p>
+            </div>
+            <div class="flex gap-3">
+              <button class="btn-secondary" data-action="navigate" data-view="projectdetail" data-project-id="${escapeHtml(params.projectId)}">
+                戻る
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-surface rounded-lg border border-border-color shadow-card overflow-hidden">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ユースケース</th>
+                <th>定量効果</th>
+                <th>定性効果</th>
+                <th>証跡</th>
+                <th>アクション</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${(values || []).map(v => `
+                <tr>
+                  <td class="font-medium">${escapeHtml(v.useCaseId)}</td>
+                  <td>${escapeHtml(v.quantitativeEffect || '-')}</td>
+                  <td>${escapeHtml(v.qualitativeEffect || '-')}</td>
+                  <td>${v.evidenceLink ? `<a href="${escapeHtml(v.evidenceLink)}" target="_blank" class="text-primary hover:underline">リンク</a>` : '-'}</td>
+                  <td>
+                    <button class="text-primary hover:text-primary-dark text-sm font-medium">編集</button>
+                  </td>
+                </tr>
+              `).join('')}
+              ${(!values || values.length === 0) ? '<tr><td colspan="5" class="text-center text-slate-500 py-8">データがありません</td></tr>' : ''}
+            </tbody>
+          </table>
+        </div>
+      `;
+    } catch (error) {
+      console.error('Error loading value tracker:', error);
+      showToast('価値トラッカーの読み込みに失敗しました', 'error');
+    }
+  }
+
+  /**
+   * Get module title by view name
+   */
+  function getModuleTitle(viewName) {
+    const titles = {
+      vision: '北極星ビジョン',
+      usecaseselect: 'ユースケース選択',
+      '90daysplan': '90日計画',
+      raci: '体制・RACI',
+      valuetracker: '価値トラッカー'
+    };
+    return titles[viewName] || viewName;
+  }
+
+  // ============================================
+  // Event Handlers
+  // ============================================
+
+  /**
+   * Bind view events using data-action attributes
+   */
+  function bindViewEvents(container) {
+    // Navigation actions
+    container.querySelectorAll('[data-action="navigate"]').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        const view = el.dataset.view;
+        const projectId = el.dataset.projectId;
+        const moduleId = el.dataset.moduleId;
+        navigateTo(view, { projectId, moduleId });
+      });
+    });
+
+    // Open project
+    container.querySelectorAll('[data-action="open-project"]').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        const projectId = el.dataset.projectId;
+        navigateTo('projectdetail', { projectId });
+      });
+    });
+
+    // Open module
+    container.querySelectorAll('[data-action="open-module"]').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        const view = el.dataset.view;
+        const projectId = el.dataset.projectId;
+        const moduleId = el.dataset.moduleId;
+        navigateTo(view, { projectId, moduleId });
+      });
+    });
+
+    // Open new project modal
+    container.querySelectorAll('[data-action="open-new-project-modal"]').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        openNewProjectModal();
+      });
+    });
+
+    // Save module
+    container.querySelectorAll('[data-action="save-module"]').forEach(el => {
+      el.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const projectId = el.dataset.projectId;
+        const moduleId = el.dataset.moduleId;
+        await saveModule(projectId, moduleId);
+      });
+    });
+
+    // Export to Google Doc
+    container.querySelectorAll('[data-action="export-doc"]').forEach(el => {
+      el.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const projectId = el.dataset.projectId;
+        await exportToDoc(projectId);
+      });
+    });
+  }
+
+  /**
+   * Open new project modal
+   */
+  function openNewProjectModal() {
+    const modal = document.getElementById('modal-new-project');
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+  }
+
+  /**
+   * Close new project modal
+   */
+  function closeNewProjectModal() {
+    const modal = document.getElementById('modal-new-project');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+    // Reset form
+    const form = document.getElementById('form-new-project');
+    if (form) form.reset();
+  }
+
+  /**
+   * Handle new project form submission
+   */
+  async function handleNewProjectSubmit(e) {
+    e.preventDefault();
+
+    const customerName = document.getElementById('input-customer-name')?.value?.trim();
+    const editors = document.getElementById('input-editors')?.value?.trim() || '';
+
+    if (!customerName) {
+      showToast('顧客名を入力してください', 'warning');
+      return;
+    }
+
+    try {
+      showLoading();
+      const result = await serverCall('createProject', customerName, editors);
+
+      if (result && result.projectId) {
+        showToast('プロジェクトを作成しました', 'success');
+        closeNewProjectModal();
+        navigateTo('projectdetail', { projectId: result.projectId });
+      } else {
+        throw new Error('Project creation failed');
+      }
+    } catch (error) {
+      console.error('Error creating project:', error);
+      showToast('プロジェクトの作成に失敗しました', 'error');
+    } finally {
+      hideLoading();
+    }
+  }
+
+  /**
+   * Save module data
+   */
+  async function saveModule(projectId, moduleId) {
+    try {
+      showLoading();
+
+      // Collect data from data-field elements
+      const data = {};
+      document.querySelectorAll('[data-field]').forEach(el => {
+        const field = el.dataset.field;
+        if (el.type === 'checkbox') {
+          data[field] = el.checked;
+        } else if (el.type === 'radio') {
+          if (el.checked) data[field] = el.value;
+        } else {
+          data[field] = el.value;
+        }
+      });
+
+      await serverCall('saveModule', projectId, moduleId, JSON.stringify(data));
+      showToast('保存しました', 'success');
+    } catch (error) {
+      console.error('Error saving module:', error);
+      showToast('保存に失敗しました', 'error');
+    } finally {
+      hideLoading();
+    }
+  }
+
+  /**
+   * Export project to Google Doc
+   */
+  async function exportToDoc(projectId) {
+    try {
+      showLoading();
+      const result = await serverCall('exportProjectDoc', projectId);
+
+      if (result && result.docUrl) {
+        showToast('稟議書を作成しました', 'success');
+        window.open(result.docUrl, '_blank');
+      } else {
+        throw new Error('Export failed');
+      }
+    } catch (error) {
+      console.error('Error exporting to doc:', error);
+      showToast('稟議書の作成に失敗しました', 'error');
+    } finally {
+      hideLoading();
+    }
+  }
+
+  /**
+   * Debounce utility
+   */
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+
+  // ============================================
+  // Initialization
+  // ============================================
+
+  /**
+   * Initialize the app
+   */
+  async function init() {
+    try {
+      showLoading();
+
+      // Load user info
+      const userInfo = await serverCall('getCurrentUserInfo');
+      if (userInfo) {
+        AppState.user = userInfo;
+        document.getElementById('user-name').textContent = userInfo.email.split('@')[0];
+        document.getElementById('user-email').textContent = userInfo.email;
+        document.getElementById('user-initial').textContent = userInfo.email.charAt(0).toUpperCase();
+      }
+
+      // Setup navigation event listeners
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const view = link.dataset.view;
+          const moduleId = link.dataset.module;
+          navigateTo(view, { moduleId });
+        });
+      });
+
+      // Setup new project button
+      document.getElementById('btn-new-project')?.addEventListener('click', openNewProjectModal);
+
+      // Setup modal close handlers
+      document.getElementById('modal-close')?.addEventListener('click', closeNewProjectModal);
+      document.getElementById('btn-cancel-project')?.addEventListener('click', closeNewProjectModal);
+
+      // Close modal on backdrop click
+      document.getElementById('modal-new-project')?.addEventListener('click', (e) => {
+        if (e.target.id === 'modal-new-project') {
+          closeNewProjectModal();
+        }
+      });
+
+      // Setup form submission
+      document.getElementById('form-new-project')?.addEventListener('submit', handleNewProjectSubmit);
+
+      // Handle hash navigation
+      const handleHashChange = () => {
+        const hash = window.location.hash.slice(1) || 'home';
+        const parts = hash.split('/');
+        const view = parts[0];
+        const projectId = parts[1];
+        const moduleId = parts[2];
+        navigateTo(view, { projectId, moduleId });
+      };
+
+      window.addEventListener('hashchange', handleHashChange);
+
+      // Initial navigation
+      handleHashChange();
+
+    } catch (error) {
+      console.error('Initialization error:', error);
+      showToast('初期化に失敗しました', 'error');
+    } finally {
+      hideLoading();
+    }
+  }
+
+  // ============================================
+  // Public API
+  // ============================================
+  window.App = {
+    navigateTo,
+    showToast,
+    showLoading,
+    hideLoading,
+    serverCall,
+    state: AppState
+  };
+
+  // Initialize on DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+})();
+</script>

@@ -1,0 +1,233 @@
+<!-- Value Tracker View (Module 7) - Blueprint ワークショップ -->
+<div class="flex flex-col gap-6 pb-24">
+
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">価値トラッカー</h1>
+      <p class="text-slate-500 text-sm mt-1">ユースケースごとの価値と成果を追跡・可視化します</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <button class="btn-secondary flex items-center gap-2">
+        <span class="material-symbols-outlined text-[18px]">download</span>
+        エクスポート
+      </button>
+      <button class="btn-primary flex items-center gap-2" data-action="add-value-row">
+        <span class="material-symbols-outlined text-[18px]">add</span>
+        価値を追加
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="bg-white rounded-xl border border-border-color shadow-card p-5">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="size-10 rounded-lg bg-green-100 text-green-600 flex items-center justify-center">
+          <span class="material-symbols-outlined text-[22px]">trending_up</span>
+        </div>
+        <div>
+          <p class="text-xs text-slate-500 font-medium">総定量効果</p>
+          <p id="total-quantitative" class="text-2xl font-bold text-slate-900">¥0</p>
+        </div>
+      </div>
+      <div class="h-1 bg-slate-100 rounded-full overflow-hidden">
+        <div class="h-1 bg-green-500 rounded-full" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl border border-border-color shadow-card p-5">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="size-10 rounded-lg bg-blue-100 text-primary flex items-center justify-center">
+          <span class="material-symbols-outlined text-[22px]">verified</span>
+        </div>
+        <div>
+          <p class="text-xs text-slate-500 font-medium">確認済み効果</p>
+          <p id="verified-count" class="text-2xl font-bold text-slate-900">0 件</p>
+        </div>
+      </div>
+      <div class="h-1 bg-slate-100 rounded-full overflow-hidden">
+        <div class="h-1 bg-primary rounded-full" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl border border-border-color shadow-card p-5">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="size-10 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center">
+          <span class="material-symbols-outlined text-[22px]">pending_actions</span>
+        </div>
+        <div>
+          <p class="text-xs text-slate-500 font-medium">検証待ち</p>
+          <p id="pending-count" class="text-2xl font-bold text-slate-900">0 件</p>
+        </div>
+      </div>
+      <div class="h-1 bg-slate-100 rounded-full overflow-hidden">
+        <div class="h-1 bg-amber-500 rounded-full" style="width: 0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Value Table -->
+  <div class="bg-white rounded-xl border border-border-color shadow-card overflow-hidden">
+    <div class="px-6 py-4 bg-slate-50 border-b border-border-color flex items-center justify-between">
+      <h3 class="text-sm font-bold text-slate-900">価値一覧</h3>
+      <div class="flex items-center gap-2">
+        <input type="text" id="value-search" class="px-3 py-1.5 text-sm border border-slate-200 rounded-md focus:border-primary focus:ring-1 focus:ring-primary w-48" placeholder="検索..."/>
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table id="value-table" class="w-full min-w-[900px]">
+        <thead>
+          <tr class="bg-slate-50 border-b border-slate-200">
+            <th class="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase w-[180px]">ユースケース</th>
+            <th class="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase w-[150px]">定量効果</th>
+            <th class="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase">定性効果</th>
+            <th class="text-center px-4 py-3 text-xs font-bold text-slate-500 uppercase w-[100px]">証跡</th>
+            <th class="text-center px-4 py-3 text-xs font-bold text-slate-500 uppercase w-[120px]">ステータス</th>
+            <th class="text-center px-4 py-3 text-xs font-bold text-slate-500 uppercase w-[80px]">操作</th>
+          </tr>
+        </thead>
+        <tbody id="value-table-body">
+          <!-- Row 1 -->
+          <tr class="border-b border-slate-100 hover:bg-slate-50">
+            <td class="px-4 py-4">
+              <input type="text" data-field="value_1_usecase" class="w-full bg-transparent border-none p-0 text-sm font-medium text-slate-800 focus:ring-0" value="ワークフロー自動化"/>
+            </td>
+            <td class="px-4 py-4">
+              <div class="flex items-center gap-1">
+                <span class="text-slate-400 text-sm">¥</span>
+                <input type="text" data-field="value_1_quantitative" class="w-full bg-transparent border-none p-0 text-sm text-slate-700 focus:ring-0" value="5,000,000"/>
+                <span class="text-slate-400 text-xs">/年</span>
+              </div>
+            </td>
+            <td class="px-4 py-4">
+              <input type="text" data-field="value_1_qualitative" class="w-full bg-transparent border-none p-0 text-sm text-slate-600 focus:ring-0" value="処理時間50%削減、ヒューマンエラー排除"/>
+            </td>
+            <td class="text-center px-4 py-4">
+              <a href="#" class="text-primary hover:underline text-sm flex items-center justify-center gap-1">
+                <span class="material-symbols-outlined text-[16px]">link</span>
+                証跡
+              </a>
+            </td>
+            <td class="text-center px-4 py-4">
+              <select data-field="value_1_status" class="text-xs font-medium px-2 py-1 rounded border-none bg-green-50 text-green-700 focus:ring-2 focus:ring-primary">
+                <option value="verified" selected>確認済み</option>
+                <option value="pending">検証待ち</option>
+                <option value="rejected">却下</option>
+              </select>
+            </td>
+            <td class="text-center px-4 py-4">
+              <button class="text-slate-400 hover:text-red-500 transition-colors">
+                <span class="material-symbols-outlined text-[18px]">delete</span>
+              </button>
+            </td>
+          </tr>
+
+          <!-- Row 2 -->
+          <tr class="border-b border-slate-100 hover:bg-slate-50">
+            <td class="px-4 py-4">
+              <input type="text" data-field="value_2_usecase" class="w-full bg-transparent border-none p-0 text-sm font-medium text-slate-800 focus:ring-0" value="レポート自動生成"/>
+            </td>
+            <td class="px-4 py-4">
+              <div class="flex items-center gap-1">
+                <span class="text-slate-400 text-sm">¥</span>
+                <input type="text" data-field="value_2_quantitative" class="w-full bg-transparent border-none p-0 text-sm text-slate-700 focus:ring-0" value="1,200,000"/>
+                <span class="text-slate-400 text-xs">/年</span>
+              </div>
+            </td>
+            <td class="px-4 py-4">
+              <input type="text" data-field="value_2_qualitative" class="w-full bg-transparent border-none p-0 text-sm text-slate-600 focus:ring-0" value="レポート作成工数80%削減"/>
+            </td>
+            <td class="text-center px-4 py-4">
+              <button class="text-slate-400 hover:text-primary text-sm flex items-center justify-center gap-1 mx-auto">
+                <span class="material-symbols-outlined text-[16px]">add_link</span>
+                追加
+              </button>
+            </td>
+            <td class="text-center px-4 py-4">
+              <select data-field="value_2_status" class="text-xs font-medium px-2 py-1 rounded border-none bg-amber-50 text-amber-700 focus:ring-2 focus:ring-primary">
+                <option value="verified">確認済み</option>
+                <option value="pending" selected>検証待ち</option>
+                <option value="rejected">却下</option>
+              </select>
+            </td>
+            <td class="text-center px-4 py-4">
+              <button class="text-slate-400 hover:text-red-500 transition-colors">
+                <span class="material-symbols-outlined text-[18px]">delete</span>
+              </button>
+            </td>
+          </tr>
+
+          <!-- Row 3 -->
+          <tr class="border-b border-slate-100 hover:bg-slate-50">
+            <td class="px-4 py-4">
+              <input type="text" data-field="value_3_usecase" class="w-full bg-transparent border-none p-0 text-sm font-medium text-slate-800 focus:ring-0" value="パーソナライズ推奨"/>
+            </td>
+            <td class="px-4 py-4">
+              <div class="flex items-center gap-1">
+                <span class="text-slate-400 text-sm">¥</span>
+                <input type="text" data-field="value_3_quantitative" class="w-full bg-transparent border-none p-0 text-sm text-slate-700 focus:ring-0" value="8,000,000"/>
+                <span class="text-slate-400 text-xs">/年</span>
+              </div>
+            </td>
+            <td class="px-4 py-4">
+              <input type="text" data-field="value_3_qualitative" class="w-full bg-transparent border-none p-0 text-sm text-slate-600 focus:ring-0" value="コンバージョン率15%向上"/>
+            </td>
+            <td class="text-center px-4 py-4">
+              <a href="#" class="text-primary hover:underline text-sm flex items-center justify-center gap-1">
+                <span class="material-symbols-outlined text-[16px]">link</span>
+                証跡
+              </a>
+            </td>
+            <td class="text-center px-4 py-4">
+              <select data-field="value_3_status" class="text-xs font-medium px-2 py-1 rounded border-none bg-green-50 text-green-700 focus:ring-2 focus:ring-primary">
+                <option value="verified" selected>確認済み</option>
+                <option value="pending">検証待ち</option>
+                <option value="rejected">却下</option>
+              </select>
+            </td>
+            <td class="text-center px-4 py-4">
+              <button class="text-slate-400 hover:text-red-500 transition-colors">
+                <span class="material-symbols-outlined text-[18px]">delete</span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Add Row Button -->
+    <div class="p-4 border-t border-slate-100">
+      <button class="w-full py-3 border-2 border-dashed border-slate-200 rounded-lg text-slate-400 text-sm font-medium hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2" data-action="add-value-row">
+        <span class="material-symbols-outlined text-[18px]">add</span>
+        新しい価値を追加
+      </button>
+    </div>
+  </div>
+
+  <!-- Next Investment Decision -->
+  <div class="bg-white rounded-xl border border-border-color shadow-card p-6">
+    <h3 class="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
+      <span class="material-symbols-outlined text-primary text-[18px]">rocket_launch</span>
+      次の投資判断
+    </h3>
+    <textarea id="next-investment" data-field="nextInvestment" class="w-full rounded-lg border-slate-300 bg-slate-50/50 p-4 text-sm text-slate-800 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary min-h-[100px] resize-y placeholder:text-slate-400" placeholder="次の投資フェーズに向けた判断材料や推奨事項を記載してください..."></textarea>
+  </div>
+
+</div>
+
+<!-- Footer Actions -->
+<div class="fixed bottom-0 left-0 right-0 md:left-64 border-t border-border-color bg-white p-4 px-8 flex justify-between items-center z-30 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.05)]">
+  <div class="hidden sm:flex items-center gap-4">
+    <span class="text-sm text-slate-500">合計価値: <strong id="footer-total" class="text-primary">¥14,200,000</strong>/年</span>
+  </div>
+  <div class="flex gap-3 w-full sm:w-auto">
+    <button class="flex-1 sm:flex-none px-5 py-2.5 rounded-md border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors" data-action="save-module">
+      保存
+    </button>
+    <button class="flex-1 sm:flex-none px-6 py-2.5 rounded-md bg-primary text-white font-semibold text-sm hover:bg-primary-hover transition-colors shadow-sm flex items-center justify-center gap-2" data-action="complete-module">
+      <span class="material-symbols-outlined text-[18px]">check</span>
+      このモジュールを完了
+    </button>
+  </div>
+</div>

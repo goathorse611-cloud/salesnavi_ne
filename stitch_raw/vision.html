@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Blueprint Workshop - Vision Maker</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "primary": "#0176D3","primary-hover": "#005FB2",
+        "surface": "#F3F4F6","surface-dark": "#181B1F",
+        "border-light": "#E5E7EB",
+      },
+      fontFamily: {
+        "display": ["Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif"]
+      },
+      boxShadow: {
+        "card": "0 2px 4px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.04)",
+        "floating": "0 10px 30px -10px rgba(0, 0, 0, 0.1)",
+      },
+      borderRadius: {
+        "xl": "0.75rem",
+        "2xl": "1rem",
+      }
+    },
+  },
+}
+</script>
+<style>
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+.aspect-a4 { aspect-ratio: 210 / 297; }
+</style>
+</head>
+<body class="bg-surface text-slate-900 font-display antialiased overflow-hidden h-screen flex">
+
+<aside class="w-64 border-r border-border-light bg-white flex-shrink-0 flex flex-col z-20 hidden md:flex shadow-[2px_0_5px_-2px_rgba(0,0,0,0.03)]">
+  <div class="h-16 flex items-center px-6 border-b border-border-light">
+    <div class="flex items-center gap-3">
+      <div class="h-8 w-8 rounded bg-primary flex items-center justify-center text-white shadow-sm">
+        <span class="material-symbols-outlined text-[20px]">architecture</span>
+      </div>
+      <h1 class="text-base font-bold text-slate-800 tracking-tight">Blueprint<span class="text-primary">.io</span></h1>
+    </div>
+  </div>
+  <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+    <p class="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 mt-2">Workshops</p>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md bg-primary/5 text-primary border border-primary/10 transition-all" href="#">
+      <span class="material-symbols-outlined text-[20px] fill-1">visibility</span>
+      <span class="text-sm font-semibold">Vision Maker</span>
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors group" href="#">
+      <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-slate-600">groups</span>
+      <span class="text-sm font-medium">Stakeholders</span>
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors group" href="#">
+      <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-slate-600">map</span>
+      <span class="text-sm font-medium">Project Scope</span>
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors group" href="#">
+      <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-slate-600">warning</span>
+      <span class="text-sm font-medium">Risk Analysis</span>
+    </a>
+    <div class="my-4 border-t border-slate-100 mx-2"></div>
+    <p class="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">System</p>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors group" href="#">
+      <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-slate-600">settings</span>
+      <span class="text-sm font-medium">Settings</span>
+    </a>
+  </div>
+  <div class="p-4 border-t border-border-light bg-slate-50">
+    <div class="flex items-center gap-3">
+      <div class="h-9 w-9 rounded-full bg-slate-300 bg-cover bg-center border-2 border-white shadow-sm" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBGcUHTa6whYgrkQxmfbLI2dW8feTapTD5O6wnZzxTXMQtlK423TSRZ-ibcGgeRAgZY0wkKtEzEgNkAR2_udaEQbPv1wTpctGHveK6HrtBhDYihwIFu3uGcXmNk0Rh16Ttd_JSln3kywLzPreulnqJ7Wd7qiBPwWDcxgG30wHNxeeRPQa4kpi98QKYeI-5cRSBtUP1JLOvBSYdNQ5Wv4hF2b3dCk5s3G5Nqv5bGiOsIX2ez-SNQc2PmciT7ZYI5K45OnH56-GjOI1k');"></div>
+      <div class="flex flex-col">
+        <span class="text-sm font-bold text-slate-800">Kazuki Tanaka</span>
+        <span class="text-[11px] text-slate-500 font-medium">Sales Lead</span>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<main class="flex-1 flex flex-col min-w-0 relative bg-surface">
+  <header class="bg-white border-b border-border-light h-16 px-6 flex justify-between items-center z-10 sticky top-0 shadow-sm">
+    <div class="flex items-center gap-4">
+      <div class="flex flex-col">
+        <div class="flex items-center gap-2 text-slate-500 text-xs font-medium mb-0.5">
+          <span>Project Alpha</span>
+          <span class="material-symbols-outlined text-[14px] text-slate-400">chevron_right</span>
+          <span>Design Phase</span>
+        </div>
+        <h2 class="text-lg font-bold text-slate-800 tracking-tight flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-[22px]">edit_document</span>
+          北極星ビジョン (Vision Maker)
+        </h2>
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <div class="hidden sm:flex items-center gap-2 text-[11px] font-semibold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200">
+        <span class="block w-2 h-2 rounded-full bg-emerald-500"></span>
+        Auto-saved 14:02
+      </div>
+      <div class="h-8 w-px bg-slate-200 mx-1"></div>
+      <button class="text-slate-400 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined">help</span>
+      </button>
+      <button class="text-slate-400 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined">notifications</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="flex-1 overflow-y-auto">
+    <div class="max-w-[1600px] mx-auto p-6 lg:p-8 h-full">
+      <div class="flex flex-col lg:flex-row gap-6 h-full">
+
+        <div class="flex-1 flex flex-col gap-5 max-w-3xl pb-24">
+          <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 flex gap-4 items-start shadow-sm">
+            <div class="bg-white p-2 rounded-lg shadow-sm text-primary mt-1">
+              <span class="material-symbols-outlined text-[20px] block">lightbulb</span>
+            </div>
+            <div>
+              <h4 class="text-sm font-bold text-blue-900 mb-1">Workshop Objective</h4>
+              <p class="text-sm text-blue-800 leading-relaxed opacity-90">
+                Define the core vision, decision rules, and success metrics for your project. This will serve as the "North Star" for all stakeholders.
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl border border-border-light shadow-card p-6 lg:p-8 space-y-8">
+            <div class="group relative">
+              <div class="flex justify-between items-center mb-3">
+                <label class="text-[13px] font-bold text-slate-700 uppercase tracking-wide flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  ビジョン本文 (Vision Statement)
+                </label>
+                <span class="text-[11px] font-semibold text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100">0/200</span>
+              </div>
+              <div class="relative">
+                <textarea class="w-full rounded-lg border-slate-300 bg-slate-50/30 p-4 text-base text-slate-800 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary min-h-[140px] resize-y transition-all placeholder:text-slate-400" placeholder="e.g. To empower every remote team in Asia with seamless collaboration tools by 2026."></textarea>
+              </div>
+              <p class="mt-2 text-xs text-slate-500 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px]">info</span>
+                Describe the ultimate goal clearly and concisely. Avoid jargon.
+              </p>
+            </div>
+
+            <hr class="border-slate-100"/>
+
+            <div class="group">
+              <div class="flex justify-between items-center mb-3">
+                <label class="text-[13px] font-bold text-slate-700 uppercase tracking-wide flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+                  意思決定ルール (Decision Rules)
+                </label>
+                <span class="text-[11px] font-semibold text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100">0/300</span>
+              </div>
+              <textarea class="w-full rounded-lg border-slate-300 bg-slate-50/30 p-4 text-sm text-slate-800 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary min-h-[120px] resize-y transition-all placeholder:text-slate-400" placeholder="1. Customer satisfaction over short-term profit. 2. Mobile-first design approach."></textarea>
+            </div>
+
+            <hr class="border-slate-100"/>
+
+            <div class="group">
+              <div class="flex justify-between items-center mb-3">
+                <label class="text-[13px] font-bold text-slate-700 uppercase tracking-wide flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+                  成功指標 (Success Metrics)
+                </label>
+                <span class="text-[11px] font-semibold text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100">0/150</span>
+              </div>
+              <textarea class="w-full rounded-lg border-slate-300 bg-slate-50/30 p-4 text-sm text-slate-800 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary min-h-[120px] resize-y transition-all placeholder:text-slate-400" placeholder="- Achieve $10M ARR - Maintain NPS &gt; 50"></textarea>
+            </div>
+
+            <div class="bg-slate-50 rounded-lg p-4 border border-slate-100">
+              <label class="text-xs font-bold text-slate-500 mb-2 block uppercase">備考 (Notes)</label>
+              <input class="w-full rounded-md border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-slate-400" placeholder="Any additional context or constraints..." type="text"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="hidden lg:block lg:w-[45%] relative">
+          <div class="sticky top-0 pb-10">
+            <div class="flex items-center justify-between mb-4 px-1">
+              <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                <span class="material-symbols-outlined text-[16px]">preview</span>
+                1枚プレビュー (Live Preview)
+              </h3>
+              <div class="flex gap-2">
+                <button class="p-1.5 rounded hover:bg-white hover:shadow-sm text-slate-500 transition-all" title="Refresh">
+                  <span class="material-symbols-outlined text-[18px]">refresh</span>
+                </button>
+                <button class="p-1.5 rounded hover:bg-white hover:shadow-sm text-slate-500 transition-all" title="Full Screen">
+                  <span class="material-symbols-outlined text-[18px]">open_in_full</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="bg-white text-slate-900 rounded-sm shadow-floating border border-slate-200 overflow-hidden relative aspect-a4 transform transition-transform duration-300 origin-top">
+              <div class="h-3 w-full bg-gradient-to-r from-primary to-blue-500"></div>
+              <div class="p-10 h-full flex flex-col">
+                <div class="flex justify-between items-start mb-8 border-b border-slate-100 pb-6">
+                  <div>
+                    <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-1">Confidential</p>
+                    <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 mb-1">PROJECT NORTH STAR</h1>
+                    <p class="text-sm text-slate-500 font-medium">Strategic Vision Document v1.0</p>
+                  </div>
+                  <div class="h-12 w-12 bg-blue-50 rounded-lg flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-3xl">token</span>
+                  </div>
+                </div>
+
+                <div class="mb-10">
+                  <div class="flex items-center gap-2 mb-4">
+                    <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                      <span class="material-symbols-outlined text-[18px]">flag</span>
+                    </div>
+                    <h4 class="text-xs font-bold uppercase tracking-widest text-slate-500">Vision Statement</h4>
+                  </div>
+                  <div class="p-6 bg-slate-50 rounded-r-lg border-l-4 border-primary">
+                    <p class="text-lg font-serif font-medium leading-relaxed italic text-slate-800">
+                      "To revolutionize the manufacturing supply chain in Southeast Asia by integrating AI-driven logistics, reducing carbon footprint by 30% by 2028."
+                    </p>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-8 mb-8">
+                  <div>
+                    <div class="flex items-center gap-2 mb-4">
+                      <span class="material-symbols-outlined text-slate-400 text-[20px]">gavel</span>
+                      <h4 class="text-xs font-bold uppercase tracking-widest text-slate-500">Decision Rules</h4>
+                    </div>
+                    <ul class="list-none space-y-3 text-sm text-slate-700">
+                      <li class="flex gap-2 items-start">
+                        <span class="material-symbols-outlined text-primary text-[16px] mt-0.5">check_circle</span>
+                        <span>Prioritize sustainability over speed.</span>
+                      </li>
+                      <li class="flex gap-2 items-start">
+                        <span class="material-symbols-outlined text-primary text-[16px] mt-0.5">check_circle</span>
+                        <span>Data privacy is non-negotiable.</span>
+                      </li>
+                      <li class="flex gap-2 items-start">
+                        <span class="material-symbols-outlined text-primary text-[16px] mt-0.5">check_circle</span>
+                        <span>Local partnerships first.</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2 mb-4">
+                      <span class="material-symbols-outlined text-slate-400 text-[20px]">monitoring</span>
+                      <h4 class="text-xs font-bold uppercase tracking-widest text-slate-500">Success Metrics</h4>
+                    </div>
+                    <div class="space-y-3">
+                      <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <span class="text-sm text-slate-600">Revenue</span>
+                        <span class="text-sm font-bold text-primary">$5M ARR</span>
+                      </div>
+                      <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <span class="text-sm text-slate-600">Adoption</span>
+                        <span class="text-sm font-bold text-primary">200 Clients</span>
+                      </div>
+                      <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <span class="text-sm text-slate-600">CO2 Reduction</span>
+                        <span class="text-sm font-bold text-primary">15% YoY</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-auto rounded-lg overflow-hidden h-32 relative group">
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent z-10 flex items-end p-4">
+                    <div class="flex justify-between w-full items-center">
+                      <p class="text-white text-[10px] font-medium opacity-90">Generated via Blueprint.io</p>
+                      <p class="text-white text-[10px] font-mono opacity-70">REF-88291</p>
+                    </div>
+                  </div>
+                  <div class="w-full h-full bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAlV_LDkfBWrxRTBDUMz3W8vHLR6lKn1uLK-jIqYcsl7lWIqGD1SQzSzbDD-mOC_eyEM-5dRHWi5WnumvjwODxYVBdtKTeT3YPw_MAZUgaiqqSdcHaS8ceIaStTle9pGkn5R96CSAY2JDSWnulbkAQLRUHQuTrlA-i4QJUsmqRxPgTodV2dIDk7UJyPIBpsoh89g4gZJ9GseFFrbSI7tDtxwJ1KRJ-CVasVKP6D98uKy34hR0sfbN-wndP3j8T-qzEkZcnyEX3XOIA');"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="border-t border-border-light bg-white p-4 px-8 flex justify-between items-center z-30 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.05)]">
+    <div class="hidden sm:flex items-center gap-2">
+      <span class="material-symbols-outlined text-green-500 text-[20px]">cloud_done</span>
+      <span class="text-sm text-slate-500 font-medium">All changes saved</span>
+    </div>
+    <div class="flex gap-3 w-full sm:w-auto">
+      <button class="flex-1 sm:flex-none px-5 py-2.5 rounded-md border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50 hover:border-slate-400 transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-slate-300">
+        保存 (Save)
+      </button>
+      <button class="flex-1 sm:flex-none px-6 py-2.5 rounded-md bg-primary text-white font-semibold text-sm hover:bg-primary-hover transition-colors shadow-sm flex items-center justify-center gap-2 focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+        <span class="material-symbols-outlined text-[18px]">check</span>
+        このモジュールを完了
+      </button>
+    </div>
+  </div>
+</main>
+
+</body></html>

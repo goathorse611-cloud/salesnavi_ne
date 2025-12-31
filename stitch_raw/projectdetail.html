@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html class="light" lang="ja"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>案件詳細 - ブループリント</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "primary": "#0176D3",
+        "primary-hover": "#005FB2",
+        "background-light": "#F3F4F6",
+        "surface": "#FFFFFF",
+        "text-main": "#181818",
+        "text-sub": "#444444",
+        "border-color": "#E5E7EB",
+      },
+      fontFamily: {
+        "display": ["Inter", "sans-serif"]
+      },
+      borderRadius: {
+        "DEFAULT": "0.25rem",
+        "md": "0.375rem",
+        "lg": "0.5rem",
+        "xl": "0.75rem"
+      },
+      boxShadow: {
+        'card': '0 2px 4px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1)',
+        'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+      }
+    },
+  },
+}
+</script>
+</head>
+<body class="bg-background-light font-display text-text-main antialiased overflow-hidden h-screen flex">
+
+<aside class="w-64 bg-surface border-r border-border-color hidden md:flex flex-col h-full shadow-[2px_0_5px_rgba(0,0,0,0.02)] z-10 flex-shrink-0">
+  <div class="h-16 flex items-center px-4 border-b border-border-color bg-white gap-3">
+    <div class="bg-center bg-no-repeat bg-cover rounded-md size-8 shadow-sm border border-slate-200" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBljCySjTm8CY1GUX4YQ9qurXcggqbJiAxKO9PxuOAzJ008Fqkz6bvQTrVIAZYtnasWNhDJxxd8NJR17xC74BRnv6dQNsemNOUq0pU2i987mc_p8OJOgnvhxP1ot31c9p8K1Vp5s0A187AM3x409HwUTR0YPdzK_1iqmugz5PVKLGUegcBM5JJnTCQth7Fs0oZGUFcvNZLb4LwN07QeF8zs0HbEw6WJ1EseQYIiDHqgsmFWBAhoY40qQ05TBag_I4ojGi5W1ODYEjs");'></div>
+    <div class="flex flex-col">
+      <span class="text-sm font-bold text-slate-800 leading-tight">ブループリント</span>
+      <span class="text-[10px] text-slate-500 font-medium">ワークスペース</span>
+    </div>
+  </div>
+  <nav class="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-1">
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md text-text-sub hover:bg-slate-50 hover:text-primary transition-colors group" href="#">
+      <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary">home</span>
+      <span class="text-sm font-medium">ホーム</span>
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md bg-primary/5 text-primary" href="#">
+      <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">folder_open</span>
+      <span class="text-sm font-bold">案件管理</span>
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md text-text-sub hover:bg-slate-50 hover:text-primary transition-colors group" href="#">
+      <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary">library_books</span>
+      <span class="text-sm font-medium">テンプレート</span>
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md text-text-sub hover:bg-slate-50 hover:text-primary transition-colors group" href="#">
+      <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary">monitoring</span>
+      <span class="text-sm font-medium">レポート</span>
+    </a>
+    <div class="my-2 border-t border-border-color mx-2"></div>
+    <p class="px-3 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider">システム</p>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md text-text-sub hover:bg-slate-50 hover:text-primary transition-colors group" href="#">
+      <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary">settings</span>
+      <span class="text-sm font-medium">設定</span>
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md text-text-sub hover:bg-slate-50 hover:text-primary transition-colors group" href="#">
+      <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary">people</span>
+      <span class="text-sm font-medium">ユーザー管理</span>
+    </a>
+  </nav>
+  <div class="p-4 border-t border-border-color bg-slate-50">
+    <div class="flex items-center gap-3">
+      <div class="size-9 rounded-full bg-slate-200 bg-center bg-cover border border-slate-300" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCNw-xWYtIyMN1-Nro9xbowS_ph3n_WlGoxH4lE40qrMlrVOmoT9ei6urwmKyOfwujAerULD0pN-YEPP_TRqYR18k847Y7c2q-LpEjClYeBdNU6qpvcXsgNqf_htJxzkKx5j0FFuQLs3yCy6Y2VejopkMIl7XQUh0eBTu0x8NVusUojcwYl5NgovR9buINQix7mbHtF1jC6cJtBFnpQVuLgijBziS4cFPSChHM-9sIS9yICQ7KKmKbaZGuCEeyscYOZnEFzkU9qNAo");'></div>
+      <div class="flex flex-col min-w-0">
+        <p class="text-sm font-semibold text-slate-800 truncate">山田 太郎</p>
+        <p class="text-xs text-slate-500 truncate">営業本部</p>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<main class="flex-1 flex flex-col min-w-0 bg-background-light">
+  <header class="h-16 bg-surface border-b border-border-color px-6 flex items-center justify-between shadow-sm z-20 sticky top-0">
+    <nav aria-label="Breadcrumb">
+      <ol class="flex items-center space-x-2">
+        <li><a class="text-sm text-primary hover:underline font-medium" href="#">案件一覧</a></li>
+        <li class="text-slate-400 text-xs">▶</li>
+        <li><span class="text-sm font-bold text-slate-800">Acme社 クラウド移行PJ</span></li>
+      </ol>
+    </nav>
+    <div class="flex items-center gap-3">
+      <div class="relative hidden sm:block group">
+        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 group-focus-within:text-primary">
+          <span class="material-symbols-outlined text-[20px]">search</span>
+        </span>
+        <input class="pl-10 pr-4 py-1.5 text-sm bg-white border border-slate-300 rounded-md focus:ring-1 focus:ring-primary focus:border-primary w-64 transition-all placeholder:text-slate-400 text-slate-700" placeholder="項目を検索..." type="text"/>
+      </div>
+      <div class="h-6 w-px bg-slate-200 mx-1"></div>
+      <button class="text-slate-500 hover:text-primary relative p-1.5 hover:bg-slate-50 rounded-md transition-colors">
+        <span class="material-symbols-outlined text-[22px]">notifications</span>
+        <span class="absolute top-1.5 right-1.5 size-2 bg-red-500 rounded-full border border-white"></span>
+      </button>
+      <button class="text-slate-500 hover:text-primary p-1.5 hover:bg-slate-50 rounded-md transition-colors">
+        <span class="material-symbols-outlined text-[22px]">help</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="flex-1 overflow-y-auto">
+    <div class="max-w-[1400px] mx-auto px-6 py-8">
+
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+        <div>
+          <div class="flex items-center gap-3 mb-2">
+            <div class="size-10 bg-white border border-slate-200 rounded-lg flex items-center justify-center shadow-sm">
+              <span class="material-symbols-outlined text-primary text-2xl">domain</span>
+            </div>
+            <h1 class="text-2xl font-bold text-slate-900">Acme社 クラウド移行PJ</h1>
+          </div>
+          <div class="flex items-center gap-4 text-sm text-slate-500 ml-1">
+            <span class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[18px]">calendar_today</span>
+              更新日: 2024/05/22
+            </span>
+            <span class="text-slate-300">|</span>
+            <span class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[18px]">person</span>
+              所有者: 山田 太郎
+            </span>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <button class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-md text-text-sub text-sm font-bold hover:bg-slate-50 hover:text-primary hover:border-primary transition-all shadow-sm">
+            <span class="material-symbols-outlined text-[18px]">share</span>
+            共有
+          </button>
+          <button class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-md text-sm font-bold hover:bg-primary-hover transition-colors shadow-sm shadow-blue-200">
+            <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">assignment_turned_in</span>
+            稟議書作成
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-surface rounded-lg shadow-card border border-border-color p-5 mb-8">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-sm font-bold text-slate-700">プロジェクト進捗</h2>
+          <span class="text-2xl font-bold text-primary tracking-tight">57% <span class="text-xs font-medium text-slate-500 ml-1 align-middle">完了</span></span>
+        </div>
+        <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+          <div class="bg-primary h-2.5 rounded-full" style="width: 57%"></div>
+        </div>
+        <div class="mt-2 flex justify-between text-xs text-slate-500 font-medium">
+          <span>完了済: 4項目</span>
+          <span>全: 7項目</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 pb-12">
+
+        <div class="bg-surface rounded-lg p-5 border border-border-color shadow-card hover:shadow-card-hover hover:border-primary/50 transition-all group flex flex-col relative overflow-hidden h-full">
+          <div class="absolute top-0 left-0 w-1 h-full bg-green-500"></div>
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex flex-col">
+              <span class="text-[10px] font-bold text-slate-400 mb-0.5 tracking-wider">STEP 01</span>
+              <h3 class="text-base font-bold text-slate-900 group-hover:text-primary transition-colors">ビジネス目標</h3>
+            </div>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-green-50 text-green-700 border border-green-200">
+              確定
+            </span>
+          </div>
+          <p class="text-sm text-slate-500 mb-5 leading-relaxed">移行におけるKPI設定と成功要件の定義。</p>
+          <div class="mt-auto pt-4 border-t border-slate-50">
+            <button class="text-sm font-bold text-primary hover:text-primary-hover flex items-center gap-1 group/btn">
+              詳細を表示
+              <span class="material-symbols-outlined text-sm transition-transform group-hover/btn:translate-x-1">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-surface rounded-lg p-5 border border-border-color shadow-card hover:shadow-card-hover hover:border-primary/50 transition-all group flex flex-col relative overflow-hidden h-full">
+          <div class="absolute top-0 left-0 w-1 h-full bg-green-500"></div>
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex flex-col">
+              <span class="text-[10px] font-bold text-slate-400 mb-0.5 tracking-wider">STEP 02</span>
+              <h3 class="text-base font-bold text-slate-900 group-hover:text-primary transition-colors">現状インフラ</h3>
+            </div>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-green-50 text-green-700 border border-green-200">
+              確定
+            </span>
+          </div>
+          <p class="text-sm text-slate-500 mb-5 leading-relaxed">既存オンプレ環境の構成図作成とNW要件。</p>
+          <div class="mt-auto pt-4 border-t border-slate-50">
+            <button class="text-sm font-bold text-primary hover:text-primary-hover flex items-center gap-1 group/btn">
+              詳細を表示
+              <span class="material-symbols-outlined text-sm transition-transform group-hover/btn:translate-x-1">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-surface rounded-lg p-5 border border-primary shadow-md hover:shadow-lg transition-all group flex flex-col relative ring-1 ring-primary/10 h-full">
+          <div class="absolute top-0 left-0 w-1.5 h-full bg-primary"></div>
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex flex-col">
+              <span class="text-[10px] font-bold text-primary mb-0.5 tracking-wider">STEP 03</span>
+              <h3 class="text-base font-bold text-primary">セキュリティ監査</h3>
+            </div>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-blue-50 text-primary border border-blue-200">
+              下書き
+            </span>
+          </div>
+          <p class="text-sm text-slate-600 mb-4 leading-relaxed">SOC2/ISO27001適合チェックとリスク評価。</p>
+          <div class="mb-4 bg-slate-50 p-3 rounded border border-slate-100">
+            <div class="flex justify-between text-xs mb-1.5">
+              <span class="font-bold text-slate-500">入力完了率</span>
+              <span class="font-bold text-primary">45%</span>
+            </div>
+            <div class="w-full bg-slate-200 rounded-full h-1.5">
+              <div class="bg-primary h-1.5 rounded-full transition-all duration-500" style="width: 45%"></div>
+            </div>
+          </div>
+          <div class="mt-auto pt-2">
+            <button class="w-full py-2 bg-primary text-white rounded-md text-sm font-bold hover:bg-primary-hover shadow-sm transition-colors">
+              編集を再開
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-surface rounded-lg p-5 border border-border-color shadow-card hover:shadow-card-hover hover:border-slate-300 transition-all group flex flex-col h-full">
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex flex-col">
+              <span class="text-[10px] font-bold text-slate-400 mb-0.5 tracking-wider">STEP 04</span>
+              <h3 class="text-base font-bold text-slate-900 group-hover:text-primary transition-colors">ソリューション設計</h3>
+            </div>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-200">
+              未着手
+            </span>
+          </div>
+          <p class="text-sm text-slate-500 mb-5 leading-relaxed">次期アーキテクチャ案とリソース設計。</p>
+          <div class="mt-auto pt-4 border-t border-slate-50">
+            <button class="w-full py-2 bg-white border border-slate-300 text-slate-700 rounded-md text-sm font-bold hover:border-primary hover:text-primary transition-colors">
+              開始する
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-slate-50 rounded-lg p-5 border border-slate-200 flex flex-col opacity-70 select-none h-full hover:opacity-100 transition-opacity">
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex flex-col">
+              <span class="text-[10px] font-bold text-slate-400 mb-0.5 tracking-wider">STEP 05</span>
+              <h3 class="text-base font-bold text-slate-400 flex items-center gap-2">
+                概算費用
+                <span class="material-symbols-outlined text-base">lock</span>
+              </h3>
+            </div>
+          </div>
+          <p class="text-sm text-slate-400 mb-5 leading-relaxed">月額運用コストと移行費用の試算。</p>
+          <div class="mt-auto">
+            <div class="text-xs text-slate-400 font-medium flex items-center gap-1.5 bg-slate-100 p-2 rounded border border-slate-200">
+              <span class="material-symbols-outlined text-sm filled">info</span>
+              先にSTEP 04を完了してください
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-50 rounded-lg p-5 border border-slate-200 flex flex-col opacity-70 select-none h-full hover:opacity-100 transition-opacity">
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex flex-col">
+              <span class="text-[10px] font-bold text-slate-400 mb-0.5 tracking-wider">STEP 06</span>
+              <h3 class="text-base font-bold text-slate-400 flex items-center gap-2">
+                導入計画
+                <span class="material-symbols-outlined text-base">lock</span>
+              </h3>
+            </div>
+          </div>
+          <p class="text-sm text-slate-400 mb-5 leading-relaxed">タイムライン、マイルストーン設定。</p>
+        </div>
+
+        <div class="bg-slate-50 rounded-lg p-5 border border-slate-200 flex flex-col opacity-70 select-none h-full hover:opacity-100 transition-opacity">
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex flex-col">
+              <span class="text-[10px] font-bold text-slate-400 mb-0.5 tracking-wider">STEP 07</span>
+              <h3 class="text-base font-bold text-slate-400 flex items-center gap-2">
+                最終合意
+                <span class="material-symbols-outlined text-base">lock</span>
+              </h3>
+            </div>
+          </div>
+          <p class="text-sm text-slate-400 mb-5 leading-relaxed">エグゼクティブサマリーと承認。</p>
+        </div>
+
+        <div class="rounded-lg p-5 border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-400 hover:border-primary hover:text-primary hover:bg-white transition-all cursor-pointer min-h-[220px] h-full group">
+          <div class="size-12 rounded-full bg-slate-100 flex items-center justify-center mb-3 group-hover:bg-blue-50 transition-colors">
+            <span class="material-symbols-outlined text-3xl">add</span>
+          </div>
+          <span class="text-sm font-bold">項目を追加</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+</body></html>
