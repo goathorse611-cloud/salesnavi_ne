@@ -737,3 +737,22 @@ function escapeHtml(text) {
 function getCurrentUserInfo() {
   return getCurrentUser_();
 }
+
+/**
+ * ViewのHTMLコンテンツを取得
+ */
+function getViewContent(viewName) {
+  const validViews = ['home', 'vision', 'usecaseselect', '90daysplan', 'raci', 'valuetracker', 'projectlist', 'projectdetail'];
+
+  if (!validViews.includes(viewName)) {
+    return { success: false, error: 'Invalid view name' };
+  }
+
+  try {
+    const html = HtmlService.createHtmlOutputFromFile('Views/' + viewName).getContent();
+    return { success: true, html: html };
+  } catch (e) {
+    Logger.log('Error loading view ' + viewName + ': ' + e.message);
+    return { success: false, error: e.message };
+  }
+}

@@ -246,21 +246,20 @@
     const container = document.getElementById('view-content');
     if (!container) return;
 
-    // Map view name to view handler
+    // Direct HTML views that load from server
+    const directViews = ['home', 'vision', 'usecaseselect', '90daysplan', 'raci', 'valuetracker'];
+
+    // Map view name to view handler for special views
     const viewHandlers = {
-      home: loadHomeView,
       projectlist: loadProjectListView,
-      projectdetail: loadProjectDetailView,
-      vision: loadModuleView,
-      usecaseselect: loadModuleView,
-      '90daysplan': loadModuleView,
-      raci: loadModuleView,
-      valuetracker: loadValueTrackerView
+      projectdetail: loadProjectDetailView
     };
 
-    const handler = viewHandlers[viewName];
-    if (handler) {
-      await handler(container, params);
+    if (directViews.includes(viewName)) {
+      // Load HTML content from server
+      await loadDirectView(container, viewName, params);
+    } else if (viewHandlers[viewName]) {
+      await viewHandlers[viewName](container, params);
     } else {
       container.innerHTML = `
         <div class="flex flex-col items-center justify-center py-16 text-slate-500">
@@ -268,7 +267,6 @@
           <p class="text-sm">ビュー "${escapeHtml(viewName)}" が見つかりません</p>
         </div>
       `;
-      if (window.lucide) lucide.createIcons({ nameAttr: 'data-lucide' });
     }
 
     // Bind events after loading
@@ -278,6 +276,57 @@
     if (window.lucide) {
       lucide.createIcons({ nameAttr: 'data-lucide' });
     }
+  }
+
+  /**
+   * Load a direct HTML view from server
+   */
+  async function loadDirectView(container, viewName, params) {
+    try {
+      // Check cache first
+      if (ViewCache[viewName]) {
+        container.innerHTML = ViewCache[viewName];
+        executeViewScripts(container);
+        return;
+      }
+
+      // Fetch from server
+      const result = await serverCall('getViewContent', viewName);
+
+      if (result && result.success && result.html) {
+        ViewCache[viewName] = result.html;
+        container.innerHTML = result.html;
+        executeViewScripts(container);
+      } else {
+        throw new Error(result?.error || 'Failed to load view');
+      }
+    } catch (error) {
+      console.error('Error loading direct view:', error);
+      container.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-16 text-red-500">
+          <i data-lucide="alert-circle" class="w-12 h-12 mb-3"></i>
+          <p class="text-sm">ビュー "${escapeHtml(viewName)}" の読み込みに失敗しました</p>
+          <button class="mt-4 btn-primary" onclick="App.navigateTo('home')">ホームに戻る</button>
+        </div>
+      `;
+      if (window.lucide) lucide.createIcons({ nameAttr: 'data-lucide' });
+    }
+  }
+
+  /**
+   * Execute scripts in dynamically loaded content
+   */
+  function executeViewScripts(container) {
+    const scripts = container.querySelectorAll('script');
+    scripts.forEach(oldScript => {
+      const newScript = document.createElement('script');
+      if (oldScript.src) {
+        newScript.src = oldScript.src;
+      } else {
+        newScript.textContent = oldScript.textContent;
+      }
+      oldScript.parentNode.replaceChild(newScript, oldScript);
+    });
   }
 
   // ============================================
@@ -1044,11 +1093,14 @@
   // ============================================
   window.App = {
     navigateTo,
+    navigate: navigateTo, // Alias for compatibility
     showToast,
     showLoading,
     hideLoading,
     serverCall,
-    state: AppState
+    state: AppState,
+    setTempData: (key, value) => { AppState.moduleData[key] = value; },
+    getTempData: (key) => AppState.moduleData[key]
   };
 
   // Initialize on DOM ready
