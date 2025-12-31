@@ -2,215 +2,314 @@
 <div class="flex flex-col gap-6 pb-24">
 
   <!-- Header -->
-  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-    <div>
-      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">価値トラッカー</h1>
-      <p class="text-slate-500 text-sm mt-1">ユースケースごとの価値と成果を追跡・可視化します</p>
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-lg border border-border-color shadow-card">
+    <div class="flex items-start gap-4">
+      <div class="h-12 w-12 rounded bg-green-600 flex items-center justify-center shrink-0">
+        <i data-lucide="trending-up" class="w-7 h-7 text-white"></i>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold text-slate-800">価値実現トラッカー</h1>
+        <p class="text-slate-500 text-sm mt-1">Track and validate the business value delivered by each use case.</p>
+      </div>
     </div>
-    <div class="flex items-center gap-3">
-      <button class="btn-secondary flex items-center gap-2">
-        <span class="material-symbols-outlined text-[18px]">download</span>
+    <div class="flex gap-3">
+      <button class="px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50 flex items-center gap-2">
+        <i data-lucide="download" class="w-4 h-4"></i>
         エクスポート
       </button>
-      <button class="btn-primary flex items-center gap-2" data-action="add-value-row">
-        <span class="material-symbols-outlined text-[18px]">add</span>
+      <button id="btn-add-value" class="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-md hover:bg-primary-hover flex items-center gap-2">
+        <i data-lucide="plus" class="w-4 h-4"></i>
         価値を追加
       </button>
     </div>
   </div>
 
   <!-- Summary Cards -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
     <div class="bg-white rounded-xl border border-border-color shadow-card p-5">
       <div class="flex items-center gap-3 mb-3">
-        <div class="size-10 rounded-lg bg-green-100 text-green-600 flex items-center justify-center">
-          <span class="material-symbols-outlined text-[22px]">trending_up</span>
+        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-green-400 to-green-600 text-white flex items-center justify-center shadow-md">
+          <i data-lucide="banknote" class="w-6 h-6"></i>
         </div>
         <div>
-          <p class="text-xs text-slate-500 font-medium">総定量効果</p>
-          <p id="total-quantitative" class="text-2xl font-bold text-slate-900">¥0</p>
+          <p class="text-xs text-slate-500 font-medium uppercase tracking-wide">総定量効果</p>
+          <p id="total-quantitative" class="text-2xl font-bold text-slate-900">¥14.2M</p>
         </div>
       </div>
-      <div class="h-1 bg-slate-100 rounded-full overflow-hidden">
-        <div class="h-1 bg-green-500 rounded-full" style="width: 0%"></div>
+      <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+        <div class="h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full transition-all" style="width: 75%"></div>
       </div>
+      <p class="text-xs text-slate-500 mt-2">目標: ¥20M / 年</p>
     </div>
 
     <div class="bg-white rounded-xl border border-border-color shadow-card p-5">
       <div class="flex items-center gap-3 mb-3">
-        <div class="size-10 rounded-lg bg-blue-100 text-primary flex items-center justify-center">
-          <span class="material-symbols-outlined text-[22px]">verified</span>
+        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 text-white flex items-center justify-center shadow-md">
+          <i data-lucide="badge-check" class="w-6 h-6"></i>
         </div>
         <div>
-          <p class="text-xs text-slate-500 font-medium">確認済み効果</p>
-          <p id="verified-count" class="text-2xl font-bold text-slate-900">0 件</p>
+          <p class="text-xs text-slate-500 font-medium uppercase tracking-wide">確認済み</p>
+          <p id="verified-count" class="text-2xl font-bold text-slate-900">2 件</p>
         </div>
       </div>
-      <div class="h-1 bg-slate-100 rounded-full overflow-hidden">
-        <div class="h-1 bg-primary rounded-full" style="width: 0%"></div>
+      <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+        <div class="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all" style="width: 66%"></div>
       </div>
+      <p class="text-xs text-slate-500 mt-2">全 3 件中</p>
     </div>
 
     <div class="bg-white rounded-xl border border-border-color shadow-card p-5">
       <div class="flex items-center gap-3 mb-3">
-        <div class="size-10 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center">
-          <span class="material-symbols-outlined text-[22px]">pending_actions</span>
+        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 text-white flex items-center justify-center shadow-md">
+          <i data-lucide="clock" class="w-6 h-6"></i>
         </div>
         <div>
-          <p class="text-xs text-slate-500 font-medium">検証待ち</p>
-          <p id="pending-count" class="text-2xl font-bold text-slate-900">0 件</p>
+          <p class="text-xs text-slate-500 font-medium uppercase tracking-wide">検証待ち</p>
+          <p id="pending-count" class="text-2xl font-bold text-slate-900">1 件</p>
         </div>
       </div>
-      <div class="h-1 bg-slate-100 rounded-full overflow-hidden">
-        <div class="h-1 bg-amber-500 rounded-full" style="width: 0%"></div>
+      <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+        <div class="h-full bg-gradient-to-r from-amber-400 to-amber-600 rounded-full transition-all" style="width: 33%"></div>
       </div>
+      <p class="text-xs text-slate-500 mt-2">レビュー予定: 今週</p>
+    </div>
+
+    <div class="bg-white rounded-xl border border-border-color shadow-card p-5">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-400 to-purple-600 text-white flex items-center justify-center shadow-md">
+          <i data-lucide="sparkles" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <p class="text-xs text-slate-500 font-medium uppercase tracking-wide">ROI</p>
+          <p id="roi-value" class="text-2xl font-bold text-slate-900">285%</p>
+        </div>
+      </div>
+      <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+        <div class="h-full bg-gradient-to-r from-purple-400 to-purple-600 rounded-full transition-all" style="width: 100%"></div>
+      </div>
+      <p class="text-xs text-slate-500 mt-2">投資額: ¥5M</p>
     </div>
   </div>
 
-  <!-- Value Table -->
-  <div class="bg-white rounded-xl border border-border-color shadow-card overflow-hidden">
-    <div class="px-6 py-4 bg-slate-50 border-b border-border-color flex items-center justify-between">
-      <h3 class="text-sm font-bold text-slate-900">価値一覧</h3>
-      <div class="flex items-center gap-2">
-        <input type="text" id="value-search" class="px-3 py-1.5 text-sm border border-slate-200 rounded-md focus:border-primary focus:ring-1 focus:ring-primary w-48" placeholder="検索..."/>
+  <!-- Value Cards Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="value-cards">
+    <!-- Value Card 1 -->
+    <div class="bg-white rounded-xl border border-border-color shadow-card overflow-hidden hover:shadow-card-hover transition-shadow">
+      <div class="p-5 border-b border-border-color bg-gradient-to-r from-green-50 to-white">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-green-600 text-white flex items-center justify-center">
+              <i data-lucide="workflow" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-800">ワークフロー自動化</h3>
+              <p class="text-xs text-slate-500">Workflow Automation</p>
+            </div>
+          </div>
+          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200">
+            <i data-lucide="check-circle" class="w-3 h-3"></i>
+            確認済み
+          </span>
+        </div>
+      </div>
+      <div class="p-5 space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-slate-50 rounded-lg p-3">
+            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wide block mb-1">定量効果</label>
+            <div class="flex items-baseline gap-1">
+              <span class="text-xl font-bold text-green-600">¥5,000,000</span>
+              <span class="text-xs text-slate-500">/年</span>
+            </div>
+          </div>
+          <div class="bg-slate-50 rounded-lg p-3">
+            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wide block mb-1">削減時間</label>
+            <div class="flex items-baseline gap-1">
+              <span class="text-xl font-bold text-blue-600">120</span>
+              <span class="text-xs text-slate-500">時間/月</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wide block mb-2">定性効果</label>
+          <p class="text-sm text-slate-700 leading-relaxed">処理時間50%削減、ヒューマンエラー排除、従業員満足度向上</p>
+        </div>
+        <div class="flex items-center justify-between pt-3 border-t border-border-color">
+          <a href="#" class="text-sm text-primary font-medium hover:underline flex items-center gap-1">
+            <i data-lucide="external-link" class="w-4 h-4"></i>
+            証跡を確認
+          </a>
+          <div class="flex items-center gap-2">
+            <button class="p-2 rounded-md hover:bg-slate-100 text-slate-500 transition-colors">
+              <i data-lucide="pencil" class="w-4 h-4"></i>
+            </button>
+            <button class="p-2 rounded-md hover:bg-red-50 text-slate-500 hover:text-red-600 transition-colors">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="overflow-x-auto">
-      <table id="value-table" class="w-full min-w-[900px]">
-        <thead>
-          <tr class="bg-slate-50 border-b border-slate-200">
-            <th class="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase w-[180px]">ユースケース</th>
-            <th class="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase w-[150px]">定量効果</th>
-            <th class="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase">定性効果</th>
-            <th class="text-center px-4 py-3 text-xs font-bold text-slate-500 uppercase w-[100px]">証跡</th>
-            <th class="text-center px-4 py-3 text-xs font-bold text-slate-500 uppercase w-[120px]">ステータス</th>
-            <th class="text-center px-4 py-3 text-xs font-bold text-slate-500 uppercase w-[80px]">操作</th>
-          </tr>
-        </thead>
-        <tbody id="value-table-body">
-          <!-- Row 1 -->
-          <tr class="border-b border-slate-100 hover:bg-slate-50">
-            <td class="px-4 py-4">
-              <input type="text" data-field="value_1_usecase" class="w-full bg-transparent border-none p-0 text-sm font-medium text-slate-800 focus:ring-0" value="ワークフロー自動化"/>
-            </td>
-            <td class="px-4 py-4">
-              <div class="flex items-center gap-1">
-                <span class="text-slate-400 text-sm">¥</span>
-                <input type="text" data-field="value_1_quantitative" class="w-full bg-transparent border-none p-0 text-sm text-slate-700 focus:ring-0" value="5,000,000"/>
-                <span class="text-slate-400 text-xs">/年</span>
-              </div>
-            </td>
-            <td class="px-4 py-4">
-              <input type="text" data-field="value_1_qualitative" class="w-full bg-transparent border-none p-0 text-sm text-slate-600 focus:ring-0" value="処理時間50%削減、ヒューマンエラー排除"/>
-            </td>
-            <td class="text-center px-4 py-4">
-              <a href="#" class="text-primary hover:underline text-sm flex items-center justify-center gap-1">
-                <span class="material-symbols-outlined text-[16px]">link</span>
-                証跡
-              </a>
-            </td>
-            <td class="text-center px-4 py-4">
-              <select data-field="value_1_status" class="text-xs font-medium px-2 py-1 rounded border-none bg-green-50 text-green-700 focus:ring-2 focus:ring-primary">
-                <option value="verified" selected>確認済み</option>
-                <option value="pending">検証待ち</option>
-                <option value="rejected">却下</option>
-              </select>
-            </td>
-            <td class="text-center px-4 py-4">
-              <button class="text-slate-400 hover:text-red-500 transition-colors">
-                <span class="material-symbols-outlined text-[18px]">delete</span>
-              </button>
-            </td>
-          </tr>
 
-          <!-- Row 2 -->
-          <tr class="border-b border-slate-100 hover:bg-slate-50">
-            <td class="px-4 py-4">
-              <input type="text" data-field="value_2_usecase" class="w-full bg-transparent border-none p-0 text-sm font-medium text-slate-800 focus:ring-0" value="レポート自動生成"/>
-            </td>
-            <td class="px-4 py-4">
-              <div class="flex items-center gap-1">
-                <span class="text-slate-400 text-sm">¥</span>
-                <input type="text" data-field="value_2_quantitative" class="w-full bg-transparent border-none p-0 text-sm text-slate-700 focus:ring-0" value="1,200,000"/>
-                <span class="text-slate-400 text-xs">/年</span>
-              </div>
-            </td>
-            <td class="px-4 py-4">
-              <input type="text" data-field="value_2_qualitative" class="w-full bg-transparent border-none p-0 text-sm text-slate-600 focus:ring-0" value="レポート作成工数80%削減"/>
-            </td>
-            <td class="text-center px-4 py-4">
-              <button class="text-slate-400 hover:text-primary text-sm flex items-center justify-center gap-1 mx-auto">
-                <span class="material-symbols-outlined text-[16px]">add_link</span>
-                追加
-              </button>
-            </td>
-            <td class="text-center px-4 py-4">
-              <select data-field="value_2_status" class="text-xs font-medium px-2 py-1 rounded border-none bg-amber-50 text-amber-700 focus:ring-2 focus:ring-primary">
-                <option value="verified">確認済み</option>
-                <option value="pending" selected>検証待ち</option>
-                <option value="rejected">却下</option>
-              </select>
-            </td>
-            <td class="text-center px-4 py-4">
-              <button class="text-slate-400 hover:text-red-500 transition-colors">
-                <span class="material-symbols-outlined text-[18px]">delete</span>
-              </button>
-            </td>
-          </tr>
-
-          <!-- Row 3 -->
-          <tr class="border-b border-slate-100 hover:bg-slate-50">
-            <td class="px-4 py-4">
-              <input type="text" data-field="value_3_usecase" class="w-full bg-transparent border-none p-0 text-sm font-medium text-slate-800 focus:ring-0" value="パーソナライズ推奨"/>
-            </td>
-            <td class="px-4 py-4">
-              <div class="flex items-center gap-1">
-                <span class="text-slate-400 text-sm">¥</span>
-                <input type="text" data-field="value_3_quantitative" class="w-full bg-transparent border-none p-0 text-sm text-slate-700 focus:ring-0" value="8,000,000"/>
-                <span class="text-slate-400 text-xs">/年</span>
-              </div>
-            </td>
-            <td class="px-4 py-4">
-              <input type="text" data-field="value_3_qualitative" class="w-full bg-transparent border-none p-0 text-sm text-slate-600 focus:ring-0" value="コンバージョン率15%向上"/>
-            </td>
-            <td class="text-center px-4 py-4">
-              <a href="#" class="text-primary hover:underline text-sm flex items-center justify-center gap-1">
-                <span class="material-symbols-outlined text-[16px]">link</span>
-                証跡
-              </a>
-            </td>
-            <td class="text-center px-4 py-4">
-              <select data-field="value_3_status" class="text-xs font-medium px-2 py-1 rounded border-none bg-green-50 text-green-700 focus:ring-2 focus:ring-primary">
-                <option value="verified" selected>確認済み</option>
-                <option value="pending">検証待ち</option>
-                <option value="rejected">却下</option>
-              </select>
-            </td>
-            <td class="text-center px-4 py-4">
-              <button class="text-slate-400 hover:text-red-500 transition-colors">
-                <span class="material-symbols-outlined text-[18px]">delete</span>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- Value Card 2 -->
+    <div class="bg-white rounded-xl border border-border-color shadow-card overflow-hidden hover:shadow-card-hover transition-shadow">
+      <div class="p-5 border-b border-border-color bg-gradient-to-r from-amber-50 to-white">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-amber-500 text-white flex items-center justify-center">
+              <i data-lucide="file-bar-chart" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-800">レポート自動生成</h3>
+              <p class="text-xs text-slate-500">Automated Reporting</p>
+            </div>
+          </div>
+          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 border border-amber-200">
+            <i data-lucide="clock" class="w-3 h-3"></i>
+            検証待ち
+          </span>
+        </div>
+      </div>
+      <div class="p-5 space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-slate-50 rounded-lg p-3">
+            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wide block mb-1">定量効果</label>
+            <div class="flex items-baseline gap-1">
+              <span class="text-xl font-bold text-green-600">¥1,200,000</span>
+              <span class="text-xs text-slate-500">/年</span>
+            </div>
+          </div>
+          <div class="bg-slate-50 rounded-lg p-3">
+            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wide block mb-1">削減時間</label>
+            <div class="flex items-baseline gap-1">
+              <span class="text-xl font-bold text-blue-600">40</span>
+              <span class="text-xs text-slate-500">時間/月</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wide block mb-2">定性効果</label>
+          <p class="text-sm text-slate-700 leading-relaxed">レポート作成工数80%削減、リアルタイム可視化実現</p>
+        </div>
+        <div class="flex items-center justify-between pt-3 border-t border-border-color">
+          <button class="text-sm text-slate-500 font-medium hover:text-primary flex items-center gap-1">
+            <i data-lucide="link" class="w-4 h-4"></i>
+            証跡を追加
+          </button>
+          <div class="flex items-center gap-2">
+            <button class="p-2 rounded-md hover:bg-slate-100 text-slate-500 transition-colors">
+              <i data-lucide="pencil" class="w-4 h-4"></i>
+            </button>
+            <button class="p-2 rounded-md hover:bg-red-50 text-slate-500 hover:text-red-600 transition-colors">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Add Row Button -->
-    <div class="p-4 border-t border-slate-100">
-      <button class="w-full py-3 border-2 border-dashed border-slate-200 rounded-lg text-slate-400 text-sm font-medium hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2" data-action="add-value-row">
-        <span class="material-symbols-outlined text-[18px]">add</span>
-        新しい価値を追加
-      </button>
+    <!-- Value Card 3 -->
+    <div class="bg-white rounded-xl border border-border-color shadow-card overflow-hidden hover:shadow-card-hover transition-shadow">
+      <div class="p-5 border-b border-border-color bg-gradient-to-r from-green-50 to-white">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-purple-600 text-white flex items-center justify-center">
+              <i data-lucide="sparkles" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-800">パーソナライズ推奨</h3>
+              <p class="text-xs text-slate-500">Personalization Engine</p>
+            </div>
+          </div>
+          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200">
+            <i data-lucide="check-circle" class="w-3 h-3"></i>
+            確認済み
+          </span>
+        </div>
+      </div>
+      <div class="p-5 space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-slate-50 rounded-lg p-3">
+            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wide block mb-1">定量効果</label>
+            <div class="flex items-baseline gap-1">
+              <span class="text-xl font-bold text-green-600">¥8,000,000</span>
+              <span class="text-xs text-slate-500">/年</span>
+            </div>
+          </div>
+          <div class="bg-slate-50 rounded-lg p-3">
+            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wide block mb-1">CVR向上</label>
+            <div class="flex items-baseline gap-1">
+              <span class="text-xl font-bold text-blue-600">+15</span>
+              <span class="text-xs text-slate-500">%</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wide block mb-2">定性効果</label>
+          <p class="text-sm text-slate-700 leading-relaxed">コンバージョン率15%向上、顧客エンゲージメント改善、リピート率向上</p>
+        </div>
+        <div class="flex items-center justify-between pt-3 border-t border-border-color">
+          <a href="#" class="text-sm text-primary font-medium hover:underline flex items-center gap-1">
+            <i data-lucide="external-link" class="w-4 h-4"></i>
+            証跡を確認
+          </a>
+          <div class="flex items-center gap-2">
+            <button class="p-2 rounded-md hover:bg-slate-100 text-slate-500 transition-colors">
+              <i data-lucide="pencil" class="w-4 h-4"></i>
+            </button>
+            <button class="p-2 rounded-md hover:bg-red-50 text-slate-500 hover:text-red-600 transition-colors">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add New Card -->
+    <div class="bg-white rounded-xl border-2 border-dashed border-slate-300 shadow-sm overflow-hidden hover:border-primary hover:bg-blue-50/30 transition-all cursor-pointer flex items-center justify-center min-h-[280px]" id="add-value-card">
+      <div class="text-center p-6">
+        <div class="w-16 h-16 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="plus" class="w-8 h-8"></i>
+        </div>
+        <h3 class="font-bold text-slate-600 mb-1">新しい価値を追加</h3>
+        <p class="text-sm text-slate-500">ユースケースの成果を記録</p>
+      </div>
     </div>
   </div>
 
   <!-- Next Investment Decision -->
   <div class="bg-white rounded-xl border border-border-color shadow-card p-6">
-    <h3 class="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
-      <span class="material-symbols-outlined text-primary text-[18px]">rocket_launch</span>
-      次の投資判断
-    </h3>
+    <div class="flex items-center gap-3 mb-4 border-b border-border-color pb-4">
+      <div class="p-2 rounded-lg bg-purple-100 text-purple-600">
+        <i data-lucide="rocket" class="w-5 h-5"></i>
+      </div>
+      <div>
+        <h3 class="font-bold text-slate-800 text-base">次の投資判断</h3>
+        <p class="text-xs text-slate-500">Recommendations for the next phase</p>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <label class="flex items-center gap-3 p-4 rounded-lg border border-green-200 bg-green-50 cursor-pointer hover:bg-green-100 transition-colors">
+        <input type="radio" name="investment" value="expand" class="w-4 h-4 text-green-600 focus:ring-green-500"/>
+        <div>
+          <span class="font-bold text-green-700 block">拡大</span>
+          <span class="text-xs text-green-600">Expand Investment</span>
+        </div>
+      </label>
+      <label class="flex items-center gap-3 p-4 rounded-lg border border-blue-200 bg-blue-50 cursor-pointer hover:bg-blue-100 transition-colors">
+        <input type="radio" name="investment" value="continue" checked class="w-4 h-4 text-blue-600 focus:ring-blue-500"/>
+        <div>
+          <span class="font-bold text-blue-700 block">継続</span>
+          <span class="text-xs text-blue-600">Continue as Planned</span>
+        </div>
+      </label>
+      <label class="flex items-center gap-3 p-4 rounded-lg border border-slate-200 bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors">
+        <input type="radio" name="investment" value="reduce" class="w-4 h-4 text-slate-600 focus:ring-slate-500"/>
+        <div>
+          <span class="font-bold text-slate-700 block">縮小</span>
+          <span class="text-xs text-slate-600">Reduce Scope</span>
+        </div>
+      </label>
+    </div>
     <textarea id="next-investment" data-field="nextInvestment" class="w-full rounded-lg border-slate-300 bg-slate-50/50 p-4 text-sm text-slate-800 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary min-h-[100px] resize-y placeholder:text-slate-400" placeholder="次の投資フェーズに向けた判断材料や推奨事項を記載してください..."></textarea>
   </div>
 
@@ -219,15 +318,24 @@
 <!-- Footer Actions -->
 <div class="fixed bottom-0 left-0 right-0 md:left-64 border-t border-border-color bg-white p-4 px-8 flex justify-between items-center z-30 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.05)]">
   <div class="hidden sm:flex items-center gap-4">
-    <span class="text-sm text-slate-500">合計価値: <strong id="footer-total" class="text-primary">¥14,200,000</strong>/年</span>
+    <span class="text-sm text-slate-500">合計価値: <strong id="footer-total" class="text-green-600">¥14,200,000</strong>/年</span>
+    <span class="text-slate-300">|</span>
+    <span class="text-sm text-slate-500">ROI: <strong class="text-purple-600">285%</strong></span>
   </div>
   <div class="flex gap-3 w-full sm:w-auto">
-    <button class="flex-1 sm:flex-none px-5 py-2.5 rounded-md border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors" data-action="save-module">
-      保存
+    <button class="flex-1 sm:flex-none px-5 py-2.5 rounded-md border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors flex items-center justify-center gap-2" data-action="generate-report">
+      <i data-lucide="file-text" class="w-4 h-4"></i>
+      稟議書を生成
     </button>
     <button class="flex-1 sm:flex-none px-6 py-2.5 rounded-md bg-primary text-white font-semibold text-sm hover:bg-primary-hover transition-colors shadow-sm flex items-center justify-center gap-2" data-action="complete-module">
-      <span class="material-symbols-outlined text-[18px]">check</span>
+      <i data-lucide="check" class="w-4 h-4"></i>
       このモジュールを完了
     </button>
   </div>
 </div>
+
+<script>
+(function() {
+  if (window.lucide) lucide.createIcons({ nameAttr: 'data-lucide' });
+})();
+</script>
