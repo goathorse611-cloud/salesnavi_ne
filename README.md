@@ -1,198 +1,145 @@
-# Blueprint ワークショップ
+# Tableau Blueprint v10 営業ワークショップアプリ
 
-Google Apps Script (GAS) Web Application for sales team collaboration with customers.
+営業が顧客と画面を見ながら、合意形成から稟議書案までを一気通貫で進められるワークショップ型アプリです。
 
-## Overview
+## 概要
 
-Blueprint ワークショップ is a workshop facilitation tool that enables sales teams to:
-- Build consensus with customers
-- Plan next actions
-- Generate approval documents (稟議書) via Google Docs export
+Tableau Blueprint v10の「始動→強化→凌駕」思想に基づき、以下の7つのモジュールを提供します：
 
-## Features
+### MVPモジュール (優先実装)
+1. **北極星ビジョン・メーカー** - ビジョン策定支援
+2. **戦略的ユースケース選定 + 90日計画** - 始動段階の計画立案
+3. **3本柱組織 + RACI設計** - 体制・責任の明確化
+4. **価値実現トラッカー** - 成果と証跡の管理
 
-- **9 Screens**: Home, Project List, Project Detail, and 7 Workshop Modules
-- **Project CRUD**: Create, list, view, and update projects
-- **Module System**: 7 structured workshop modules with save/load/complete functionality
-- **Value Tracker**: Track quantitative and qualitative benefits per use case
-- **Export to Google Docs**: Generate formal approval documents
-- **Permission Control**: Creator and editors only access
-- **Audit Logging**: All write operations are logged
+### 拡張モジュール
+5. **6コアプロセス ギャップ診断** - 現状診断とロードマップ生成
+6. **最小限の統制設計キット** - データガバナンスの骨格
+7. **運営支援設計 + 運用台帳** - 継続運用の仕組み
 
-## Project Structure
+## 技術スタック
 
-```
-salesnavi_ne/
-├── Code.gs              # Server-side GAS code (APIs, CRUD, permissions)
-├── Index.html           # Main HTML template with shared layout
-├── Stylesheet.html      # CSS, Tailwind config, custom styles
-├── ClientJS.html        # Client-side JavaScript (SPA routing, events)
-├── Views/               # Extracted view templates
-│   ├── home.html
-│   ├── projectlist.html
-│   ├── projectdetail.html
-│   ├── vision.html
-│   ├── usecaseselect.html
-│   ├── 90daysplan.html
-│   ├── raci.html
-│   └── valuetracker.html
-├── stitch_raw/          # Original Stitch View Code files (preserved as-is)
-│   ├── home.html
-│   ├── projectlist.html
-│   ├── projectdetail.html
-│   ├── vision.html
-│   ├── usecaseselect.html
-│   ├── 90daysplan.html
-│   ├── raci.html
-│   └── valuetracker.html
-└── README.md            # This file
-```
+- **プラットフォーム**: Google Apps Script (Web App)
+- **データストア**: Google Spreadsheet
+- **ドキュメント生成**: Google Docs API
+- **認証**: Google Account
+- **UI**: HTML Service
 
-## Database Schema
+## セットアップ手順
 
-Uses Google Spreadsheet as database with 4 sheets:
+### 1. Google Apps Script プロジェクト作成
 
-### 1. プロジェクト (Projects)
-| Column | Description |
-|--------|-------------|
-| プロジェクトID | UUID |
-| 顧客名 | Customer name |
-| 作成日 | Created date |
-| 作成者メール | Creator email |
-| 編集者メールCSV | Editors (comma-separated) |
-| 状態 | Status (下書き/確定) |
-| 最終更新 | Last updated |
+1. [Google Apps Script](https://script.google.com) にアクセス
+2. 新しいプロジェクトを作成
+3. プロジェクト名を「Tableau Blueprint Workshop」などに設定
 
-### 2. モジュールデータ (Module Data)
-| Column | Description |
-|--------|-------------|
-| プロジェクトID | Project ID |
-| モジュールID | Module number (1-7) |
-| JSON | Module data as JSON |
-| 最終更新 | Last updated |
-| 更新者 | Updated by |
+### 2. スプレッドシート (データベース) 作成
 
-### 3. 価値 (Values)
-| Column | Description |
-|--------|-------------|
-| プロジェクトID | Project ID |
-| ユースケースID | Use case identifier |
-| 定量効果 | Quantitative effect |
-| 定性効果 | Qualitative effect |
-| 証跡リンク | Evidence link |
-| 次の投資判断 | Next investment decision |
-| 最終更新 | Last updated |
+1. 新しいGoogleスプレッドシートを作成
+2. 以下の9つのシートを作成:
+   - プロジェクト
+   - ビジョン
+   - ユースケース
+   - 90日計画
+   - 体制RACI
+   - 統制
+   - 運営支援
+   - 価値
+   - 監査ログ
 
-### 4. 監査ログ (Audit Log)
-| Column | Description |
-|--------|-------------|
-| 日時 | Timestamp |
-| ユーザー | User email |
-| 操作 | Operation type |
-| プロジェクトID | Project ID |
-| 詳細JSON | Details as JSON |
+3. スプレッドシートのIDをコピー (URLの `/d/` と `/edit` の間の文字列)
 
-## Deployment
+### 3. コードのデプロイ
 
-### Prerequisites
-- Google Account with access to Google Apps Script
-- Google Drive for storing the Spreadsheet database
+#### 方法A: clasp を使用 (推奨)
 
-### Steps
+```bash
+# claspのインストール (初回のみ)
+npm install -g @google/clasp
 
-1. **Create a new Google Apps Script project**
-   - Go to https://script.google.com
-   - Create a new project
-   - Name it "Blueprint ワークショップ"
+# Google アカウントでログイン
+clasp login
 
-2. **Upload the files**
-   - Create each file in the Apps Script editor:
-     - `Code.gs` (main server code)
-     - `Index.html`
-     - `Stylesheet.html`
-     - `ClientJS.html`
-   - Create `Views` folder and add all view files
+# Apps Script プロジェクトと連携
+# .clasp.json.template をコピーして .clasp.json を作成し、
+# scriptId を設定してください
 
-3. **Configure the Spreadsheet**
-   - Update `CONFIG.SPREADSHEET_ID` in `Code.gs` with your Spreadsheet ID
-   - Or leave empty to auto-create on first run
+cp .clasp.json.template .clasp.json
+# .clasp.json の scriptId を編集
 
-4. **Initialize the database**
-   - Run the `initDb()` function from the Apps Script editor
-   - This creates the 4 required sheets with headers
-
-5. **Deploy as Web App**
-   - Click "Deploy" > "New deployment"
-   - Select "Web app"
-   - Set:
-     - Execute as: "User accessing the web app"
-     - Who has access: "Anyone with Google account" (or your organization)
-   - Click "Deploy"
-   - Copy the web app URL
-
-6. **Test the application**
-   - Open the web app URL in a browser
-   - Create a test project
-   - Navigate through modules
-   - Test save/load functionality
-
-## Configuration
-
-Edit `CONFIG` object in `Code.gs`:
-
-```javascript
-const CONFIG = {
-  SPREADSHEET_ID: '',  // Leave empty to auto-create, or set your Spreadsheet ID
-  SHEET_NAMES: {
-    PROJECTS: 'プロジェクト',
-    MODULE_DATA: 'モジュールデータ',
-    VALUES: '価値',
-    AUDIT_LOG: '監査ログ'
-  }
-};
+# コードをプッシュ
+clasp push
 ```
 
-## API Reference
+#### 方法B: 手動コピー
 
-### Project APIs
-- `createProject(customerName, editorsCsv)` - Create new project
-- `listProjects(filter, search)` - List projects (filter: 'all', 'mine', 'shared')
-- `getProject(projectId)` - Get project details
-- `updateProjectStatus(projectId, newStatus)` - Update project status
+1. `src/` 配下のすべての `.gs` ファイルをApps Script エディタにコピー
+2. `src/html/` 配下のHTMLファイルも同様にコピー
 
-### Module APIs
-- `loadModule(projectId, moduleId)` - Load module data
-- `saveModule(projectId, moduleId, payloadJson)` - Save module data
-- `markComplete(projectId, moduleId)` - Mark module as complete
-- `unmarkComplete(projectId, moduleId)` - Unmark module completion
+### 4. スクリプトプロパティの設定
 
-### Value Tracker APIs
-- `saveValue(projectId, useCaseId, quantitative, qualitative, evidenceLink, nextInvestment)` - Save value entry
-- `listValues(projectId)` - List all values for a project
+Apps Script エディタで:
+1. プロジェクト設定 (⚙️) → スクリプトプロパティ
+2. `SPREADSHEET_ID` を追加し、手順2で作成したスプレッドシートのIDを設定
 
-### Export APIs
-- `exportProjectDoc(projectId)` - Generate Google Doc and return URL
+### 5. Web App としてデプロイ
 
-### Utility APIs
-- `getCurrentUserInfo()` - Get current user email
-- `getAuditLogs(projectId)` - Get audit logs for a project
+1. Apps Script エディタで「デプロイ」→「新しいデプロイ」
+2. 種類: Web アプリ
+3. 実行ユーザー: **アプリにアクセスするユーザー**
+4. アクセスできるユーザー: 自分だけ (または組織内)
+5. デプロイ
 
-## Security
+### 6. 初回アクセス
 
-- **Permission Checks**: All APIs verify user is creator or editor
-- **XSS Prevention**: HTML escaping for all user input
-- **Audit Logging**: All write operations logged with user, timestamp, and details
-- **HTTPS Only**: All external resources loaded via HTTPS (IFRAME sandbox requirement)
+1. デプロイされたURLにアクセス
+2. 権限の承認を求められるので承認
+3. アプリが起動します
 
-## Browser Support
+## 開発
 
-- Chrome (recommended)
-- Firefox
-- Safari
-- Edge
+詳細な設計ドキュメントは [CLAUDE.md](./CLAUDE.md) を参照してください。
 
-Note: Uses Tailwind CSS CDN and Google Material Symbols for styling.
+### ディレクトリ構造
 
-## License
+```
+.
+├── README.md                      # このファイル
+├── CLAUDE.md                      # 設計ドキュメント
+├── appsscript.json               # Apps Script マニフェスト
+├── .clasp.json.template          # clasp 設定テンプレート
+└── src/
+    ├── Code.gs                   # エントリーポイント
+    ├── Config.gs                 # 設定・定数
+    ├── services/                 # ビジネスロジック層
+    │   ├── ProjectService.gs
+    │   ├── VisionService.gs
+    │   ├── UsecaseService.gs
+    │   ├── OrganizationService.gs
+    │   ├── ValueService.gs
+    │   └── DocumentService.gs
+    ├── repositories/             # データアクセス層
+    │   ├── SpreadsheetRepository.gs
+    │   └── DriveRepository.gs
+    └── html/                     # UI
+        ├── Index.html
+        ├── Styles.html
+        └── Scripts.html
+```
 
-Internal use only.
+## 使い方
+
+1. **新規プロジェクト作成**: ホーム画面で顧客名を入力して作成
+2. **ビジョン策定**: Module 1 で北極星ビジョンを入力
+3. **ユースケース選定**: Module 2 で戦略的ユースケースを登録し、90日計画を作成
+4. **体制確定**: Module 4 で3本柱組織とRACIマトリクスを設計
+5. **価値トラッキング**: Module 7 で成果を記録し、証跡を添付
+6. **稟議書生成**: プロジェクトを「確定」すると、稟議書案が自動生成されます
+
+## ライセンス
+
+MIT License
+
+## サポート
+
+Issues または Pull Requests をお寄せください。
