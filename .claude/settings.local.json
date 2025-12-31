@@ -3,7 +3,9 @@
     "allow": [
       "Bash(git rm:*)",
       "Bash(git config:*)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nchore: レガシーファイルを削除\n\n- ルート直下の旧実装ファイル（ClientJS.html, Code.gs, Index.html, Stylesheet.html）を削除\n- 古いViewsディレクトリを削除\n- 現在の実装はsrc/ディレクトリに統一\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nchore: レガシーファイルを削除\n\n- ルート直下の旧実装ファイル（ClientJS.html, Code.gs, Index.html, Stylesheet.html）を削除\n- 古いViewsディレクトリを削除\n- 現在の実装はsrc/ディレクトリに統一\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(rm:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

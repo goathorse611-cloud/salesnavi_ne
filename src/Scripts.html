@@ -1,0 +1,1475 @@
+﻿<script>
+// ========================================
+// Application State
+// ========================================
+const App = {
+  state: {
+    currentProjectId: null,
+    currentProject: null,
+    projects: [],
+    usecases: [],
+    raciEntries: [],
+    values: [],
+    selectedUsecases: [],
+    currentView: 'home',
+    projectFilter: 'all',
+    risks: [],
+    governanceEntries: []
+  },
+
+  // ========================================
+  // Initialization
+  // ========================================
+  init() {
+    this.setupUserAvatar();
+    this.loadProjects();
+    this.setupEventListeners();
+    this.setupVisionPreview();
+    this.render90DayTimeline();
+  },
+
+  setupUserAvatar() {
+    const email = document.getElementById('user-name')?.textContent || '';
+    const avatar = document.getElementById('user-avatar');
+    if (avatar && email) {
+      avatar.textContent = email.charAt(0).toUpperCase();
+    }
+  },
+
+  setupEventListeners() {
+    // Project search
+    const searchInput = document.getElementById('project-search');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        this.filterProjectsBySearch(e.target.value);
+      });
+    }
+
+    // Vision text counter
+    const visionText = document.getElementById('vision-text');
+    if (visionText) {
+      visionText.addEventListener('input', () => {
+        this.updateVisionCount();
+        this.updateVisionPreview();
+      });
+    }
+
+    const visionRules = document.getElementById('vision-rules');
+    if (visionRules) {
+      visionRules.addEventListener('input', () => this.updateVisionPreview());
+    }
+
+    const visionMetrics = document.getElementById('vision-metrics');
+    if (visionMetrics) {
+      visionMetrics.addEventListener('input', () => this.updateVisionPreview());
+    }
+  },
+
+  setupVisionPreview() {
+    this.updateVisionCount();
+    this.updateVisionPreview();
+  },
+
+  // ========================================
+  // Navigation
+  // ========================================
+  navigate(viewName) {
+    // Hide all views
+    document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+
+    // Show target view
+    const target = document.getElementById('view-' + viewName);
+    if (target) {
+      target.classList.remove('hidden');
+    }
+
+    // Update navigation state
+    this.state.currentView = viewName;
+    this.updateNavigation(viewName);
+    this.updateBreadcrumb(viewName);
+
+    // Load view-specific data
+    if (this.state.currentProjectId) {
+      switch (viewName) {
+        case 'vision':
+          this.loadVision();
+          break;
+        case 'usecases':
+          this.loadUsecases();
+          break;
+        case '90days':
+          this.load90DayPlan();
+          break;
+        case 'raci':
+          this.loadRACIEntries();
+          break;
+        case 'value':
+          this.loadValues();
+          break;
+        case 'coreprocess':
+          this.loadCoreProcess();
+          break;
+        case 'governance':
+          this.loadGovernance();
+          break;
+        case 'operations':
+          this.loadOperationsSupport();
+          break;
+      }
+    }
+
+    // Scroll to top
+    document.getElementById('main-content')?.scrollTo(0, 0);
+    return false;
+  },
+
+  updateNavigation(viewName) {
+    // Remove active state from all nav items
+    document.querySelectorAll('[data-nav]').forEach(item => {
+      item.className = 'nav-item';
+    });
+
+    // Add active state to current nav item
+    const activeNav = document.querySelector(`[data-nav="${viewName}"]`);
+    if (activeNav) {
+      activeNav.className = 'nav-item-active';
+    }
+
+    // Show/hide project nav
+    const projectNav = document.getElementById('project-nav');
+    if (projectNav) {
+      projectNav.classList.toggle('hidden', !this.state.currentProjectId);
+    }
+  },
+
+  updateBreadcrumb(viewName) {
+    const titles = {
+      'home': 'Home',
+      'projects': 'Projects',
+      'project-detail': this.state.currentProject?.customerName || 'Project',
+      'vision': 'Vision (Module 1)',
+      'usecases': 'Use Case Selection (Module 2)',
+      '90days': '90-Day Plan (Module 2)',
+      'raci': 'Org & RACI (Module 4)',
+      'value': 'Value Tracker (Module 7)',
+      'coreprocess': 'Gap Analysis (Module 3)',
+      'governance': 'Governance (Module 5)',
+      'operations': 'Ops Support (Module 6)'
+    };
+    const breadcrumbTitle = document.getElementById('breadcrumb-title');
+    if (breadcrumbTitle) {
+      breadcrumbTitle.textContent = titles[viewName] || 'Home';
+    }
+  },
+
+  toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+      sidebar.classList.toggle('hidden');
+    }
+  },
+
+  // ========================================
+  // Projects
+  // ========================================
+  loadProjects() {
+    google.script.run
+      .withSuccessHandler((response) => {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('app').classList.remove('hidden');
+        document.getElementById('app').classList.add('flex');
+
+        if (!response.success) {
+          this.showError(response.error);
+          return;
+        }
+
+        this.state.projects = response.data || [];
+        this.renderRecentProjects();
+        this.renderProjectsList();
+      })
+      .withFailureHandler((error) => {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('app').classList.remove('hidden');
+        this.showError(error.message);
+      })
+      .apiGetUserProjects();
+  },
+
+  renderRecentProjects() {
+    const container = document.getElementById('recent-projects-list');
+    if (!container) return;
+
+    const recent = this.state.projects.slice(0, 5);
+
+    if (recent.length === 0) {
+      container.innerHTML = `
+        <div class="px-6 py-8 text-center text-slate-500">
+          <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">folder_open</span>
+          <p>No projects yet. Create your first project to get started.</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = recent.map(project => this.renderProjectRow(project)).join('');
+  },
+
+  renderProjectsList() {
+    const container = document.getElementById('projects-list');
+    if (!container) return;
+
+    let filtered = this.state.projects;
+
+    // Apply filter
+    if (this.state.projectFilter !== 'all') {
+      const filterMap = {
+        'draft': 'Draft',
+        'confirmed': 'Confirmed',
+        'archived': 'Archived'
+      };
+      filtered = filtered.filter(p => p.status === filterMap[this.state.projectFilter]);
+    }
+
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div class="bg-white rounded-lg border border-slate-200 shadow-card p-8 text-center text-slate-500">
+          <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">search_off</span>
+          <p>No projects found matching the current filter.</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = filtered.map(project => this.renderProjectCard(project)).join('');
+  },
+
+  renderProjectRow(project) {
+    const statusClass = this.getStatusClass(project.status);
+    return `
+      <div onclick="App.selectProject('${project.projectId}')" class="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-slate-50 cursor-pointer transition-colors items-center">
+        <div class="col-span-6 md:col-span-5 flex items-center gap-3">
+          <div class="size-9 bg-slate-100 rounded-lg flex items-center justify-center text-slate-500 shrink-0">
+            <span class="material-symbols-outlined text-[18px]">domain</span>
+          </div>
+          <span class="font-semibold text-slate-900 truncate">${this.escapeHtml(project.customerName)}</span>
+        </div>
+        <div class="col-span-3 md:col-span-3 text-sm text-slate-500">${this.formatDate(project.updatedDate || project.createdDate)}</div>
+        <div class="col-span-3 md:col-span-2">
+          <span class="${statusClass}">${project.status}</span>
+        </div>
+        <div class="hidden md:flex md:col-span-2 justify-end">
+          <button class="text-primary hover:text-primary-dark text-sm font-medium flex items-center gap-1">
+            Open
+            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </button>
+        </div>
+      </div>
+    `;
+  },
+
+  renderProjectCard(project) {
+    const statusClass = this.getStatusClass(project.status);
+    return `
+      <div onclick="App.selectProject('${project.projectId}')" class="bg-white rounded-lg border border-slate-200 shadow-card p-5 hover:shadow-card-hover hover:border-primary/30 transition-all cursor-pointer">
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="size-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-500">
+              <span class="material-symbols-outlined">domain</span>
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-900">${this.escapeHtml(project.customerName)}</h3>
+              <p class="text-xs text-slate-500">Created ${this.formatDate(project.createdDate)}</p>
+            </div>
+          </div>
+          <span class="${statusClass}">${project.status}</span>
+        </div>
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-slate-500">Last updated: ${this.formatDate(project.updatedDate || project.createdDate)}</span>
+          <button class="text-primary hover:text-primary-dark font-medium flex items-center gap-1">
+            Open
+            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </button>
+        </div>
+      </div>
+    `;
+  },
+
+  getStatusClass(status) {
+    const classes = {
+      'Draft': 'px-2 py-0.5 rounded text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200',
+      'Confirmed': 'px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200',
+      'Archived': 'px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200'
+    };
+    return classes[status] || classes['Draft'];
+  },
+
+
+
+  filterProjects(filter) {
+    this.state.projectFilter = filter;
+
+    // Update filter tabs UI
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+      if (tab.dataset.filter === filter) {
+        tab.className = 'filter-tab px-4 py-1.5 rounded bg-white text-primary shadow-sm text-sm font-semibold whitespace-nowrap';
+      } else {
+        tab.className = 'filter-tab px-4 py-1.5 rounded hover:bg-white/50 text-slate-600 text-sm font-medium whitespace-nowrap transition-colors';
+      }
+    });
+
+    this.renderProjectsList();
+  },
+
+  filterProjectsBySearch(query) {
+    const container = document.getElementById('projects-list');
+    if (!container) return;
+
+    let filtered = this.state.projects;
+
+    if (query) {
+      const lowerQuery = query.toLowerCase();
+      filtered = filtered.filter(p =>
+        p.customerName.toLowerCase().includes(lowerQuery)
+      );
+    }
+
+    if (this.state.projectFilter !== 'all') {
+      const filterMap = {
+        'draft': 'Draft',
+        'confirmed': 'Confirmed',
+        'archived': 'Archived'
+      };
+      filtered = filtered.filter(p => p.status === filterMap[this.state.projectFilter]);
+    }
+
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div class="bg-white rounded-lg border border-slate-200 shadow-card p-8 text-center text-slate-500">
+          <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">search_off</span>
+          <p>No projects found matching "${this.escapeHtml(query)}"</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = filtered.map(project => this.renderProjectCard(project)).join('');
+  },
+
+  selectProject(projectId) {
+    this.state.currentProjectId = projectId;
+
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (!response.success) {
+          this.showError(response.error);
+          return;
+        }
+
+        this.state.currentProject = response.data;
+        this.navigate('project-detail');
+        this.renderProjectDetail();
+      })
+      .withFailureHandler((error) => this.showError(error.message))
+      .apiGetProject(projectId);
+  },
+
+  renderProjectDetail() {
+    const project = this.state.currentProject;
+    if (!project) return;
+
+    document.getElementById('project-title').textContent = project.customerName;
+    document.getElementById('project-updated').textContent = this.formatDate(project.updatedDate || project.createdDate);
+    document.getElementById('project-owner').textContent = project.createdBy || project.creatorEmail || 'Unknown';
+
+    // Render module cards
+    this.renderModuleCards();
+  },
+
+  renderModuleCards() {
+    const container = document.getElementById('module-cards');
+    if (!container) return;
+
+    const modules = [
+      { id: 'vision', num: 1, title: 'Vision', icon: 'flag', desc: 'Define the North Star vision' },
+      { id: 'usecases', num: 2, title: 'Use Cases', icon: 'checklist', desc: 'Select strategic use cases' },
+      { id: '90days', num: 3, title: '90-Day Plan', icon: 'calendar_month', desc: 'Create implementation roadmap' },
+      { id: 'raci', num: 4, title: 'Org & RACI', icon: 'group', desc: 'Define roles and responsibilities' },
+      { id: 'value', num: 7, title: 'Value Tracker', icon: 'trending_up', desc: 'Track and validate results' }
+    ];
+
+    container.innerHTML = modules.map(m => `
+      <div onclick="App.navigate('${m.id}')" class="bg-white rounded-lg border border-slate-200 shadow-card p-5 hover:shadow-card-hover hover:border-primary/30 transition-all cursor-pointer group">
+        <div class="flex items-center justify-between mb-3">
+          <div class="size-10 rounded-md bg-primary-light text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+            <span class="material-symbols-outlined">${m.icon}</span>
+          </div>
+          <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600">Module ${m.num}</span>
+        </div>
+        <h3 class="font-bold text-slate-900 mb-1">${m.title}</h3>
+        <p class="text-sm text-slate-500">${m.desc}</p>
+      </div>
+    `).join('');
+  },
+
+  showNewProjectModal() {
+    document.getElementById('modal-new-project').classList.remove('hidden');
+    document.getElementById('new-project-name').focus();
+  },
+
+  closeModal(modalId) {
+    document.getElementById(modalId).classList.add('hidden');
+  },
+
+  createProject() {
+    const name = document.getElementById('new-project-name').value.trim();
+    if (!name) {
+      alert('Please enter a customer name');
+      return;
+    }
+
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (!response.success) {
+          this.showError(response.error);
+          return;
+        }
+
+        this.closeModal('modal-new-project');
+        document.getElementById('new-project-name').value = '';
+        this.showSuccess('Project created successfully');
+        this.loadProjects();
+      })
+      .withFailureHandler((error) => this.showError(error.message))
+      .apiCreateProject(name);
+  },
+
+  confirmProject() {
+    if (!this.state.currentProjectId) return;
+
+    if (!confirm('Confirm this project? This action cannot be undone.')) {
+      return;
+    }
+
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (!response.success) {
+          this.showError(response.error);
+          return;
+        }
+
+        this.showSuccess('Project confirmed');
+        this.selectProject(this.state.currentProjectId);
+      })
+      .withFailureHandler((error) => this.showError(error.message))
+      .apiUpdateProjectStatus(this.state.currentProjectId, 'Confirmed');
+  },
+
+  // ========================================
+  // Vision (Module 1)
+  // ========================================
+  loadVision() {
+    if (!this.state.currentProjectId) return;
+
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (!response.success) return;
+
+        const vision = response.data;
+        if (vision) {
+          document.getElementById('vision-text').value = vision.visionText || '';
+          document.getElementById('vision-rules').value = vision.decisionRules || '';
+          document.getElementById('vision-metrics').value = vision.successMetrics || '';
+          document.getElementById('vision-notes').value = vision.notes || '';
+          this.updateVisionCount();
+          this.updateVisionPreview();
+        }
+      })
+      .withFailureHandler((error) => console.error(error))
+      .apiGetVision(this.state.currentProjectId);
+  },
+
+  saveVision() {
+    if (!this.state.currentProjectId) return;
+
+    const visionData = {
+      projectId: this.state.currentProjectId,
+      visionText: document.getElementById('vision-text').value.trim(),
+      decisionRules: document.getElementById('vision-rules').value.trim(),
+      successMetrics: document.getElementById('vision-metrics').value.trim(),
+      notes: document.getElementById('vision-notes').value.trim()
+    };
+
+    if (!visionData.visionText) {
+      alert('Please enter a vision statement');
+      return;
+    }
+
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (!response.success) {
+          this.showError(response.error);
+          return;
+        }
+
+        this.showSaveStatus();
+      })
+      .withFailureHandler((error) => this.showError(error.message))
+      .apiSaveVision(visionData);
+  },
+
+  updateVisionCount() {
+    const text = document.getElementById('vision-text')?.value || '';
+    const count = document.getElementById('vision-count');
+    if (count) {
+      count.textContent = `${text.length}/200`;
+    }
+  },
+
+  updateVisionPreview() {
+    const vision = document.getElementById('vision-text')?.value || '';
+    const rules = document.getElementById('vision-rules')?.value || '';
+    const metrics = document.getElementById('vision-metrics')?.value || '';
+
+    const previewVision = document.getElementById('preview-vision');
+    const previewRules = document.getElementById('preview-rules');
+    const previewMetrics = document.getElementById('preview-metrics');
+
+    if (previewVision) {
+      previewVision.textContent = vision ? `"${vision}"` : '"Your vision will appear here..."';
+    }
+
+    if (previewRules) {
+      if (rules) {
+        const lines = rules.split('\n').filter(l => l.trim());
+        previewRules.innerHTML = lines.map(l => `<p class="flex items-start gap-2"><span class="text-primary">-</span>${this.escapeHtml(l)}</p>`).join('');
+      } else {
+        previewRules.innerHTML = '<p class="text-slate-400">No rules defined yet...</p>';
+      }
+    }
+
+    if (previewMetrics) {
+      if (metrics) {
+        const lines = metrics.split('\n').filter(l => l.trim());
+        previewMetrics.innerHTML = lines.map(l => `<p class="flex items-start gap-2"><span class="text-primary">-</span>${this.escapeHtml(l)}</p>`).join('');
+      } else {
+        previewMetrics.innerHTML = '<p class="text-slate-400">No metrics defined yet...</p>';
+      }
+    }
+  },
+
+  completeModule(moduleName) {
+    this.saveVision();
+    this.showSuccess(`${moduleName.charAt(0).toUpperCase() + moduleName.slice(1)} module completed`);
+    // Navigate to next module
+    const nextModule = {
+      'vision': 'usecases',
+      'usecases': '90days',
+      '90days': 'raci',
+      'raci': 'value'
+    };
+    if (nextModule[moduleName]) {
+      setTimeout(() => this.navigate(nextModule[moduleName]), 500);
+    }
+  },
+
+  // ========================================
+  // Use Cases (Module 2 Part A)
+  // ========================================
+  loadUsecases() {
+    if (!this.state.currentProjectId) return;
+
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (!response.success) return;
+
+        this.state.usecases = response.data || [];
+        this.renderUsecasesTable();
+      })
+      .withFailureHandler((error) => console.error(error))
+      .apiGetUsecases(this.state.currentProjectId);
+  },
+
+  renderUsecasesTable() {
+    const tbody = document.getElementById('usecases-table-body');
+    if (!tbody) return;
+
+    if (this.state.usecases.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="px-6 py-8 text-center text-slate-500">
+            <span class="material-symbols-outlined text-4xl text-slate-300 mb-2 block">assignment</span>
+            No use cases yet. Click "Add Use Case" to create one.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    // Sort by score
+    const sorted = [...this.state.usecases].sort((a, b) => (b.score || 0) - (a.score || 0));
+
+    tbody.innerHTML = sorted.map((uc, index) => {
+      const impact = Math.ceil((uc.score || 50) / 20) || 3;
+      const feasibility = 3;
+      const capability = 3;
+      const total = (impact * 0.4 + feasibility * 0.3 + capability * 0.3) * 20;
+      const isSelected = this.state.selectedUsecases.includes(uc.usecaseId);
+
+      return `
+        <tr class="hover:bg-slate-50 transition-colors ${isSelected ? 'bg-blue-50/50' : ''}">
+          <td class="px-6 py-4">
+            <div class="flex flex-col gap-1">
+              <span class="font-semibold text-slate-800">${this.escapeHtml(uc.goal)}</span>
+              <span class="text-xs text-slate-500 line-clamp-1">${this.escapeHtml(uc.challenge)}</span>
+            </div>
+          </td>
+          <td class="px-4 py-4">
+            <div class="flex flex-col gap-1.5">
+              <input type="range" min="1" max="5" value="${impact}" class="w-full" data-id="${uc.usecaseId}" data-type="impact"/>
+              <span class="text-xs font-bold text-slate-700 text-center">${impact}</span>
+            </div>
+          </td>
+          <td class="px-4 py-4">
+            <div class="flex flex-col gap-1.5">
+              <input type="range" min="1" max="5" value="${feasibility}" class="w-full" data-id="${uc.usecaseId}" data-type="feasibility"/>
+              <span class="text-xs font-bold text-slate-700 text-center">${feasibility}</span>
+            </div>
+          </td>
+          <td class="px-4 py-4">
+            <div class="flex flex-col gap-1.5">
+              <input type="range" min="1" max="5" value="${capability}" class="w-full" data-id="${uc.usecaseId}" data-type="capability"/>
+              <span class="text-xs font-bold text-slate-700 text-center">${capability}</span>
+            </div>
+          </td>
+          <td class="px-4 py-4 text-center border-l border-slate-100">
+            <span class="text-lg font-bold text-primary">${total.toFixed(0)}</span>
+          </td>
+          <td class="px-4 py-4 text-center">
+            <span class="inline-flex items-center justify-center size-7 rounded-full ${index < 2 ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600'} text-sm font-bold">${index + 1}</span>
+          </td>
+          <td class="px-6 py-4 text-center bg-blue-50/30">
+            <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="App.toggleUsecaseSelection('${uc.usecaseId}')" class="w-5 h-5 text-primary rounded border-slate-300 focus:ring-primary cursor-pointer"/>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    this.updateSelectionCount();
+  },
+
+  toggleUsecaseSelection(usecaseId) {
+    const idx = this.state.selectedUsecases.indexOf(usecaseId);
+    if (idx === -1) {
+      if (this.state.selectedUsecases.length >= 2) {
+        alert('You can select up to 2 use cases');
+        this.renderUsecasesTable();
+        return;
+      }
+      this.state.selectedUsecases.push(usecaseId);
+    } else {
+      this.state.selectedUsecases.splice(idx, 1);
+    }
+    this.renderUsecasesTable();
+  },
+
+  updateSelectionCount() {
+    const countEl = document.getElementById('selected-count');
+    if (countEl) {
+      countEl.textContent = this.state.selectedUsecases.length;
+    }
+  },
+
+  showNewUsecaseModal() {
+    document.getElementById('modal-new-usecase').classList.remove('hidden');
+    document.getElementById('new-usecase-challenge').focus();
+  },
+
+  addUsecase() {
+    if (!this.state.currentProjectId) return;
+
+    const usecaseData = {
+      projectId: this.state.currentProjectId,
+      challenge: document.getElementById('new-usecase-challenge').value.trim(),
+      goal: document.getElementById('new-usecase-goal').value.trim(),
+      expectedImpact: document.getElementById('new-usecase-impact').value.trim(),
+      ninetyDayGoal: document.getElementById('new-usecase-90day').value.trim(),
+      score: 50,
+      priority: this.state.usecases.length + 1
+    };
+
+    if (!usecaseData.challenge || !usecaseData.goal) {
+      alert('Please enter both Challenge and Goal');
+      return;
+    }
+
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (!response.success) {
+          this.showError(response.error);
+          return;
+        }
+
+        this.closeModal('modal-new-usecase');
+        document.getElementById('new-usecase-challenge').value = '';
+        document.getElementById('new-usecase-goal').value = '';
+        document.getElementById('new-usecase-impact').value = '';
+        document.getElementById('new-usecase-90day').value = '';
+        this.loadUsecases();
+      })
+      .withFailureHandler((error) => this.showError(error.message))
+      .apiAddUsecase(usecaseData);
+  },
+
+  // ========================================
+  // 90-Day Plan (Module 2 Part B)
+  // ========================================
+  render90DayTimeline() {
+    const container = document.getElementById('timeline-grid');
+    if (!container) return;
+
+    let html = '';
+    for (let i = 1; i <= 12; i++) {
+      const month = Math.ceil(i / 4);
+      html += `
+        <div class="col-span-1 flex flex-col gap-2">
+          <div class="text-center py-2 bg-slate-50 rounded text-xs font-bold text-slate-500">W${i}</div>
+          <div class="min-h-[60px] bg-white border border-dashed border-slate-200 rounded-md p-2 hover:border-primary hover:bg-primary-light/30 transition-colors cursor-pointer flex items-center justify-center">
+            <span class="text-xs text-slate-400">+ Add</span>
+          </div>
+        </div>
+      `;
+    }
+    container.innerHTML = html;
+  },
+
+  load90DayPlan() {
+    // Load selected use cases for the plan
+    if (this.state.selectedUsecases.length > 0) {
+      const selected = this.state.usecases.filter(uc => this.state.selectedUsecases.includes(uc.usecaseId));
+      if (selected.length > 0) {
+        document.getElementById('plan-objective').value = selected.map(s => s.ninetyDayGoal || s.goal).join('\n');
+      }
+    }
+
+    this.renderRoles();
+    this.renderRisks();
+  },
+
+  save90DayPlan() {
+    this.showSaveStatus();
+    this.showSuccess('90-Day Plan saved');
+  },
+
+  renderRoles() {
+    const container = document.getElementById('plan-roles');
+    if (!container) return;
+
+    const roles = [
+      { title: 'Executive Sponsor', name: '' },
+      { title: 'Project Lead', name: '' },
+      { title: 'Technical Lead', name: '' }
+    ];
+
+    container.innerHTML = roles.map(r => `
+      <div class="flex items-center justify-between p-3 bg-slate-50 rounded-md">
+        <div>
+          <p class="text-xs text-slate-500 uppercase tracking-wide">${r.title}</p>
+          <input type="text" class="text-sm font-medium text-slate-800 bg-transparent border-none p-0 focus:ring-0 w-full" placeholder="Enter name..."/>
+        </div>
+        <div class="size-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400">
+          <span class="material-symbols-outlined text-[16px]">person</span>
+        </div>
+      </div>
+    `).join('');
+  },
+
+  renderRisks() {
+    const container = document.getElementById('risks-list');
+    if (!container) return;
+
+    if (this.state.risks.length === 0) {
+      container.innerHTML = `<p class="text-sm text-slate-400 text-center py-4">No risks identified yet</p>`;
+      return;
+    }
+
+    container.innerHTML = this.state.risks.map((risk, idx) => `
+      <div class="flex items-start gap-3 p-3 bg-red-50 rounded-md border border-red-100">
+        <span class="material-symbols-outlined text-red-500 text-[18px] mt-0.5">error</span>
+        <div class="flex-1">
+          <p class="text-sm text-slate-700">${this.escapeHtml(risk)}</p>
+        </div>
+        <button onclick="App.removeRisk(${idx})" class="text-slate-400 hover:text-red-500">
+          <span class="material-symbols-outlined text-[16px]">close</span>
+        </button>
+      </div>
+    `).join('');
+  },
+
+  addRisk() {
+    const risk = prompt('Enter risk description:');
+    if (risk && risk.trim()) {
+      this.state.risks.push(risk.trim());
+      this.renderRisks();
+    }
+  },
+
+  removeRisk(idx) {
+    this.state.risks.splice(idx, 1);
+    this.renderRisks();
+  },
+
+  // ========================================
+  // RACI (Module 4)
+  // ========================================
+  loadRACIEntries() {
+    if (!this.state.currentProjectId) return;
+
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (!response.success) return;
+
+        this.state.raciEntries = response.data || [];
+        this.renderRACITable();
+        this.renderPillarCards();
+      })
+      .withFailureHandler((error) => console.error(error))
+      .apiGetRACIEntries(this.state.currentProjectId);
+  },
+
+  renderRACITable() {
+    const tbody = document.getElementById('raci-table-body');
+    if (!tbody) return;
+
+    if (this.state.raciEntries.length === 0) {
+      // Add default empty row
+      this.state.raciEntries = [{ pillar: 'CoE', task: '', assignee: '', raci: 'R' }];
+    }
+
+    tbody.innerHTML = this.state.raciEntries.map((entry, idx) => `
+      <tr class="hover:bg-slate-50 transition-colors">
+        <td class="p-4">
+          <select data-idx="${idx}" data-field="pillar" onchange="App.updateRACIEntry(this)" class="w-full px-3 py-2 rounded-md border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent">
+            <option value="CoE" ${entry.pillar === 'CoE' ? 'selected' : ''}>CoE</option>
+            <option value="Biz Data Network" ${entry.pillar === 'Biz Data Network' ? 'selected' : ''}>Biz Data Network</option>
+            <option value="IT" ${entry.pillar === 'IT' ? 'selected' : ''}>IT</option>
+          </select>
+        </td>
+        <td class="p-4">
+          <input type="text" data-idx="${idx}" data-field="task" onchange="App.updateRACIEntry(this)" value="${this.escapeHtml(entry.task)}" class="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Task name"/>
+        </td>
+        <td class="p-4">
+          <input type="text" data-idx="${idx}" data-field="assignee" onchange="App.updateRACIEntry(this)" value="${this.escapeHtml(entry.assignee)}" class="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Assignee"/>
+        </td>
+        <td class="p-4 text-center">
+          <select data-idx="${idx}" data-field="raci" onchange="App.updateRACIEntry(this)" class="px-3 py-2 rounded-md border border-slate-300 bg-white text-sm font-bold focus:ring-2 focus:ring-primary focus:border-transparent">
+            <option value="R" ${entry.raci === 'R' ? 'selected' : ''}>R</option>
+            <option value="A" ${entry.raci === 'A' ? 'selected' : ''}>A</option>
+            <option value="C" ${entry.raci === 'C' ? 'selected' : ''}>C</option>
+            <option value="I" ${entry.raci === 'I' ? 'selected' : ''}>I</option>
+          </select>
+        </td>
+        <td class="p-4 text-center">
+          <button onclick="App.removeRACIRow(${idx})" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors">
+            <span class="material-symbols-outlined text-[18px]">delete</span>
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  },
+
+  renderPillarCards() {
+    const pillars = {
+      'CoE': 'pillar-coe',
+      'Biz Data Network': 'pillar-biz',
+      'IT': 'pillar-it'
+    };
+
+    Object.entries(pillars).forEach(([pillar, containerId]) => {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      const entries = this.state.raciEntries.filter(e => e.pillar === pillar && e.task);
+
+      if (entries.length === 0) {
+        container.innerHTML = `<p class="text-sm text-slate-400 italic">No tasks assigned</p>`;
+        return;
+      }
+
+      container.innerHTML = entries.map(e => `
+        <div class="flex items-center justify-between p-3 bg-slate-50 rounded-md border border-slate-100">
+          <div class="flex items-center gap-2">
+            <span class="size-7 rounded-full bg-white border border-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">${e.assignee?.charAt(0)?.toUpperCase() || '?'}</span>
+            <div>
+              <p class="text-sm font-medium text-slate-800">${this.escapeHtml(e.task)}</p>
+              <p class="text-xs text-slate-500">${this.escapeHtml(e.assignee)}</p>
+            </div>
+          </div>
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold ${this.getRACIBadgeClass(e.raci)}">${e.raci}</span>
+        </div>
+      `).join('');
+    });
+  },
+
+  getRACIBadgeClass(raci) {
+    const classes = {
+      'R': 'bg-blue-50 text-blue-700 border border-blue-100',
+      'A': 'bg-red-50 text-red-700 border border-red-100',
+      'C': 'bg-amber-50 text-amber-700 border border-amber-100',
+      'I': 'bg-slate-100 text-slate-600 border border-slate-200'
+    };
+    return classes[raci] || classes['R'];
+  },
+
+  updateRACIEntry(el) {
+    const idx = parseInt(el.dataset.idx);
+    const field = el.dataset.field;
+    this.state.raciEntries[idx][field] = el.value;
+    this.renderPillarCards();
+  },
+
+  addRACIRow() {
+    this.state.raciEntries.push({ pillar: 'CoE', task: '', assignee: '', raci: 'R' });
+    this.renderRACITable();
+  },
+
+  removeRACIRow(idx) {
+    this.state.raciEntries.splice(idx, 1);
+    if (this.state.raciEntries.length === 0) {
+      this.state.raciEntries.push({ pillar: 'CoE', task: '', assignee: '', raci: 'R' });
+    }
+    this.renderRACITable();
+    this.renderPillarCards();
+  },
+
+  saveRACIEntries() {
+    if (!this.state.currentProjectId) return;
+
+    const entries = this.state.raciEntries.filter(e => e.task && e.assignee);
+
+    if (entries.length === 0) {
+      alert('Please add at least one task with an assignee');
+      return;
+    }
+
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (!response.success) {
+          this.showError(response.error);
+          return;
+        }
+
+        this.showSaveStatus();
+        this.loadRACIEntries();
+      })
+      .withFailureHandler((error) => this.showError(error.message))
+      .apiSaveRACIEntries(this.state.currentProjectId, entries);
+  },
+
+  // ========================================
+  // Value Tracker (Module 7)
+  // ========================================
+  loadValues() {
+    if (!this.state.currentProjectId) return;
+
+    // First load usecases
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (response.success) {
+          this.state.usecases = response.data || [];
+          this.loadValuesData();
+        }
+      })
+      .withFailureHandler((error) => console.error(error))
+      .apiGetUsecases(this.state.currentProjectId);
+
+    // Update project name in breadcrumb
+    if (this.state.currentProject) {
+      const el = document.getElementById('value-project-name');
+      if (el) el.textContent = this.state.currentProject.customerName;
+    }
+  },
+
+  loadValuesData() {
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (!response.success) return;
+
+        this.state.values = response.data || [];
+        this.renderValueCards();
+      })
+      .withFailureHandler((error) => console.error(error))
+      .apiGetValues(this.state.currentProjectId);
+  },
+
+  renderValueCards() {
+    const container = document.getElementById('value-cards');
+    if (!container) return;
+
+    if (this.state.usecases.length === 0) {
+      container.innerHTML = `
+        <div class="col-span-full text-center py-12 bg-white rounded-lg border border-slate-200">
+          <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">assignment</span>
+          <p class="text-slate-500">No use cases to track. Create use cases in Module 2 first.</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = this.state.usecases.map(uc => {
+      const value = this.state.values.find(v => v.usecaseId === uc.usecaseId) || {};
+
+      return `
+        <div class="bg-white rounded-lg border border-slate-200 shadow-card overflow-hidden">
+          <div class="p-5 border-b border-slate-100 bg-slate-50">
+            <div class="flex items-start justify-between">
+              <div>
+                <h3 class="font-bold text-slate-800 mb-1">${this.escapeHtml(uc.goal)}</h3>
+                <p class="text-xs text-slate-500">${this.escapeHtml(uc.challenge)}</p>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-primary-light text-primary border border-primary/20">Active</span>
+            </div>
+          </div>
+          <div class="p-5 space-y-4">
+            <div>
+              <label class="label-base">Quantitative Impact</label>
+              <textarea id="quant-${uc.usecaseId}" class="input-base min-h-[60px]" placeholder="e.g. 30% cost reduction, 2hr/day saved">${this.escapeHtml(value.quantitativeImpact || '')}</textarea>
+            </div>
+            <div>
+              <label class="label-base">Qualitative Impact</label>
+              <textarea id="qual-${uc.usecaseId}" class="input-base min-h-[60px]" placeholder="e.g. Improved team morale, faster decision making">${this.escapeHtml(value.qualitativeImpact || '')}</textarea>
+            </div>
+            <div>
+              <label class="label-base">Evidence (Drive Link)</label>
+              <input id="evidence-${uc.usecaseId}" type="text" class="input-base" value="${this.escapeHtml(value.evidence || '')}" placeholder="https://drive.google.com/..."/>
+            </div>
+            <div>
+              <label class="label-base">Investment Decision</label>
+              <select id="invest-${uc.usecaseId}" class="input-base">
+                <option value="" ${!value.nextInvestment ? 'selected' : ''}>Select...</option>
+                <option value="Continue" ${value.nextInvestment === 'Continue' ? 'selected' : ''}>Continue</option>
+                <option value="Expand" ${value.nextInvestment === 'Expand' ? 'selected' : ''}>Expand</option>
+                <option value="Reduce" ${value.nextInvestment === 'Reduce' ? 'selected' : ''}>Reduce</option>
+              </select>
+            </div>
+          </div>
+          <div class="px-5 py-3 bg-slate-50 border-t border-slate-100">
+            <button onclick="App.saveValue('${uc.usecaseId}')" class="w-full btn-primary text-sm">
+              Save Changes
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  },
+
+  saveValue(usecaseId) {
+    if (!this.state.currentProjectId) return;
+
+    const valueData = {
+      projectId: this.state.currentProjectId,
+      usecaseId: usecaseId,
+      quantitativeImpact: document.getElementById('quant-' + usecaseId)?.value.trim() || '',
+      qualitativeImpact: document.getElementById('qual-' + usecaseId)?.value.trim() || '',
+      evidence: document.getElementById('evidence-' + usecaseId)?.value.trim() || '',
+      nextInvestment: document.getElementById('invest-' + usecaseId)?.value || ''
+    };
+
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (!response.success) {
+          this.showError(response.error);
+          return;
+        }
+
+        this.showSuccess('Value tracking saved');
+      })
+      .withFailureHandler((error) => this.showError(error.message))
+      .apiSaveValue(valueData);
+  },
+
+  // ========================================
+  // Core Process (Module 3)
+  // ========================================
+  loadCoreProcess() {
+    if (!this.state.currentProjectId) return;
+
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (!response.success) return;
+
+        const data = response.data;
+        if (data) {
+          document.getElementById('agility-score').value = data.agilityScore || 3;
+          document.getElementById('skills-score').value = data.skillsScore || 3;
+          document.getElementById('dataQuality-score').value = data.dataQualityScore || 3;
+          document.getElementById('trust-score').value = data.trustScore || 3;
+          document.getElementById('operationalEfficiency-score').value = data.operationalEfficiencyScore || 3;
+          document.getElementById('community-score').value = data.communityScore || 3;
+
+          document.getElementById('agility-comment').value = data.agilityComment || '';
+          document.getElementById('skills-comment').value = data.skillsComment || '';
+          document.getElementById('dataQuality-comment').value = data.dataQualityComment || '';
+          document.getElementById('trust-comment').value = data.trustComment || '';
+          document.getElementById('operationalEfficiency-comment').value = data.operationalEfficiencyComment || '';
+          document.getElementById('community-comment').value = data.communityComment || '';
+
+          // Update score displays
+          ['agility', 'skills', 'dataQuality', 'trust', 'operationalEfficiency', 'community'].forEach(key => {
+            this.updateScoreDisplay(key);
+          });
+
+          this.generateRoadmap(data);
+        }
+      })
+      .withFailureHandler((error) => console.error(error))
+      .apiGetCoreProcess(this.state.currentProjectId);
+  },
+
+  updateScoreDisplay(key) {
+    const score = document.getElementById(key + '-score')?.value || 3;
+    const display = document.getElementById(key + '-score-display');
+    if (display) {
+      display.textContent = score;
+    }
+  },
+
+  saveCoreProcess() {
+    if (!this.state.currentProjectId) return;
+
+    const processData = {
+      projectId: this.state.currentProjectId,
+      agilityScore: parseInt(document.getElementById('agility-score')?.value) || 3,
+      skillsScore: parseInt(document.getElementById('skills-score')?.value) || 3,
+      dataQualityScore: parseInt(document.getElementById('dataQuality-score')?.value) || 3,
+      trustScore: parseInt(document.getElementById('trust-score')?.value) || 3,
+      operationalEfficiencyScore: parseInt(document.getElementById('operationalEfficiency-score')?.value) || 3,
+      communityScore: parseInt(document.getElementById('community-score')?.value) || 3,
+      agilityComment: document.getElementById('agility-comment')?.value.trim() || '',
+      skillsComment: document.getElementById('skills-comment')?.value.trim() || '',
+      dataQualityComment: document.getElementById('dataQuality-comment')?.value.trim() || '',
+      trustComment: document.getElementById('trust-comment')?.value.trim() || '',
+      operationalEfficiencyComment: document.getElementById('operationalEfficiency-comment')?.value.trim() || '',
+      communityComment: document.getElementById('community-comment')?.value.trim() || ''
+    };
+
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (!response.success) {
+          this.showError(response.error);
+          return;
+        }
+
+        this.showSuccess('Core process assessment saved');
+        this.generateRoadmap(processData);
+      })
+      .withFailureHandler((error) => this.showError(error.message))
+      .apiSaveCoreProcess(processData);
+  },
+
+  generateRoadmap(data) {
+    const container = document.getElementById('roadmap-output');
+    if (!container) return;
+
+    const scores = [
+      { name: 'Agility', score: data.agilityScore || 3, icon: 'bolt', color: 'blue' },
+      { name: 'Skills', score: data.skillsScore || 3, icon: 'school', color: 'green' },
+      { name: 'Data Quality', score: data.dataQualityScore || 3, icon: 'database', color: 'purple' },
+      { name: 'Trust', score: data.trustScore || 3, icon: 'verified_user', color: 'amber' },
+      { name: 'Operational Efficiency', score: data.operationalEfficiencyScore || 3, icon: 'speed', color: 'red' },
+      { name: 'Community', score: data.communityScore || 3, icon: 'groups', color: 'teal' }
+    ];
+
+    const sorted = [...scores].sort((a, b) => a.score - b.score);
+    const phases = {
+      ignite: sorted.filter(s => s.score <= 2),
+      strengthen: sorted.filter(s => s.score === 3),
+      transcend: sorted.filter(s => s.score >= 4)
+    };
+
+    container.innerHTML = `
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="p-4 bg-amber-50 rounded-lg border border-amber-200">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="material-symbols-outlined text-amber-600 text-[20px]">rocket_launch</span>
+            <h4 class="font-bold text-amber-800">Ignite (Priority)</h4>
+          </div>
+          <div class="space-y-2">
+            ${phases.ignite.length ? phases.ignite.map(s => `
+              <div class="flex items-center gap-2 text-sm text-amber-700">
+                <span class="material-symbols-outlined text-[16px]">${s.icon}</span>
+                <span>${s.name} (Score: ${s.score})</span>
+              </div>
+            `).join('') : '<p class="text-sm text-amber-600 italic">No immediate priorities</p>'}
+          </div>
+        </div>
+        <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="material-symbols-outlined text-blue-600 text-[20px]">trending_up</span>
+            <h4 class="font-bold text-blue-800">Strengthen</h4>
+          </div>
+          <div class="space-y-2">
+            ${phases.strengthen.length ? phases.strengthen.map(s => `
+              <div class="flex items-center gap-2 text-sm text-blue-700">
+                <span class="material-symbols-outlined text-[16px]">${s.icon}</span>
+                <span>${s.name} (Score: ${s.score})</span>
+              </div>
+            `).join('') : '<p class="text-sm text-blue-600 italic">No items in this phase</p>'}
+          </div>
+        </div>
+        <div class="p-4 bg-green-50 rounded-lg border border-green-200">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="material-symbols-outlined text-green-600 text-[20px]">stars</span>
+            <h4 class="font-bold text-green-800">Transcend</h4>
+          </div>
+          <div class="space-y-2">
+            ${phases.transcend.length ? phases.transcend.map(s => `
+              <div class="flex items-center gap-2 text-sm text-green-700">
+                <span class="material-symbols-outlined text-[16px]">${s.icon}</span>
+                <span>${s.name} (Score: ${s.score})</span>
+              </div>
+            `).join('') : '<p class="text-sm text-green-600 italic">No items in this phase</p>'}
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  // ========================================
+  // Governance (Module 5)
+  // ========================================
+  loadGovernance() {
+    if (!this.state.currentProjectId) return;
+
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (!response.success) return;
+
+        this.state.governanceEntries = response.data || [];
+        this.renderGovernanceTable();
+      })
+      .withFailureHandler((error) => console.error(error))
+      .apiGetGovernanceEntries(this.state.currentProjectId);
+  },
+
+  renderGovernanceTable() {
+    const tbody = document.getElementById('governance-table-body');
+    if (!tbody) return;
+
+    if (!this.state.governanceEntries) {
+      this.state.governanceEntries = [];
+    }
+
+    if (this.state.governanceEntries.length === 0) {
+      this.state.governanceEntries = [{ target: '', model: '', owner: '', rules: '', exceptionProcess: '' }];
+    }
+
+    tbody.innerHTML = this.state.governanceEntries.map((entry, idx) => `
+      <tr class="hover:bg-slate-50 transition-colors">
+        <td class="p-4">
+          <input type="text" data-idx="${idx}" data-field="target" onchange="App.updateGovernanceEntry(this)" value="${this.escapeHtml(entry.target)}" class="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="e.g. Sales Data"/>
+        </td>
+        <td class="p-4">
+          <select data-idx="${idx}" data-field="model" onchange="App.updateGovernanceEntry(this)" class="w-full px-3 py-2 rounded-md border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent">
+            <option value="" ${!entry.model ? 'selected' : ''}>Select...</option>
+            <option value="Centralized" ${entry.model === 'Centralized' ? 'selected' : ''}>Centralized</option>
+            <option value="Federated" ${entry.model === 'Federated' ? 'selected' : ''}>Federated</option>
+            <option value="Hybrid" ${entry.model === 'Hybrid' ? 'selected' : ''}>Hybrid</option>
+          </select>
+        </td>
+        <td class="p-4">
+          <input type="text" data-idx="${idx}" data-field="owner" onchange="App.updateGovernanceEntry(this)" value="${this.escapeHtml(entry.owner)}" class="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Owner name"/>
+        </td>
+        <td class="p-4">
+          <input type="text" data-idx="${idx}" data-field="rules" onchange="App.updateGovernanceEntry(this)" value="${this.escapeHtml(entry.rules)}" class="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Governance rules"/>
+        </td>
+        <td class="p-4">
+          <input type="text" data-idx="${idx}" data-field="exceptionProcess" onchange="App.updateGovernanceEntry(this)" value="${this.escapeHtml(entry.exceptionProcess)}" class="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Exception handling"/>
+        </td>
+        <td class="p-4 text-center">
+          <button onclick="App.removeGovernanceRow(${idx})" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors">
+            <span class="material-symbols-outlined text-[18px]">delete</span>
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  },
+
+  updateGovernanceEntry(el) {
+    const idx = parseInt(el.dataset.idx);
+    const field = el.dataset.field;
+    if (!this.state.governanceEntries) {
+      this.state.governanceEntries = [];
+    }
+    if (!this.state.governanceEntries[idx]) {
+      this.state.governanceEntries[idx] = {};
+    }
+    this.state.governanceEntries[idx][field] = el.value;
+  },
+
+  addGovernanceRow() {
+    if (!this.state.governanceEntries) {
+      this.state.governanceEntries = [];
+    }
+    this.state.governanceEntries.push({ target: '', model: '', owner: '', rules: '', exceptionProcess: '' });
+    this.renderGovernanceTable();
+  },
+
+  removeGovernanceRow(idx) {
+    if (!this.state.governanceEntries) return;
+    this.state.governanceEntries.splice(idx, 1);
+    if (this.state.governanceEntries.length === 0) {
+      this.state.governanceEntries.push({ target: '', model: '', owner: '', rules: '', exceptionProcess: '' });
+    }
+    this.renderGovernanceTable();
+  },
+
+  saveGovernanceEntries() {
+    if (!this.state.currentProjectId) return;
+
+    const entries = (this.state.governanceEntries || []).filter(e => e.target || e.owner);
+
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (!response.success) {
+          this.showError(response.error);
+          return;
+        }
+
+        this.showSuccess('Governance entries saved');
+        this.loadGovernance();
+      })
+      .withFailureHandler((error) => this.showError(error.message))
+      .apiSaveGovernanceEntries(this.state.currentProjectId, entries);
+  },
+
+  // ========================================
+  // Operations Support (Module 6)
+  // ========================================
+  loadOperationsSupport() {
+    if (!this.state.currentProjectId) return;
+
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (!response.success) return;
+
+        const data = response.data;
+        if (data) {
+          document.getElementById('l1-support').value = data.l1Support || '';
+          document.getElementById('l2-support').value = data.l2Support || '';
+          document.getElementById('l3-support').value = data.l3Support || '';
+          document.getElementById('l4-support').value = data.l4Support || '';
+          document.getElementById('faq-link').value = data.faqLink || '';
+          document.getElementById('escalation-criteria').value = data.escalationCriteria || '';
+          document.getElementById('community-ops').value = data.communityOps || '';
+        }
+      })
+      .withFailureHandler((error) => console.error(error))
+      .apiGetOperationsSupport(this.state.currentProjectId);
+  },
+
+  saveOperationsSupport() {
+    if (!this.state.currentProjectId) return;
+
+    const supportData = {
+      projectId: this.state.currentProjectId,
+      l1Support: document.getElementById('l1-support')?.value.trim() || '',
+      l2Support: document.getElementById('l2-support')?.value.trim() || '',
+      l3Support: document.getElementById('l3-support')?.value.trim() || '',
+      l4Support: document.getElementById('l4-support')?.value.trim() || '',
+      faqLink: document.getElementById('faq-link')?.value.trim() || '',
+      escalationCriteria: document.getElementById('escalation-criteria')?.value.trim() || '',
+      communityOps: document.getElementById('community-ops')?.value.trim() || ''
+    };
+
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (!response.success) {
+          this.showError(response.error);
+          return;
+        }
+
+        this.showSuccess('Operations support saved');
+      })
+      .withFailureHandler((error) => this.showError(error.message))
+      .apiSaveOperationsSupport(supportData);
+  },
+
+  // ========================================
+  // Document Generation
+  // ========================================
+  generateProposal() {
+    if (!this.state.currentProjectId) return;
+
+    if (!confirm('Generate proposal document? This may take a moment.')) {
+      return;
+    }
+
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (!response.success) {
+          this.showError(response.error);
+          return;
+        }
+
+        this.showSuccess('Proposal generated successfully!');
+        if (response.data?.documentUrl) {
+          window.open(response.data.documentUrl, '_blank');
+        }
+      })
+      .withFailureHandler((error) => this.showError(error.message))
+      .apiGenerateProposal(this.state.currentProjectId);
+  },
+
+  // ========================================
+  // Utilities
+  // ========================================
+  escapeHtml(text) {
+    if (!text) return '';
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    };
+    return text.toString().replace(/[&<>"']/g, m => map[m]);
+  },
+
+  formatDate(date) {
+    if (!date) return '-';
+    const d = new Date(date);
+    return d.toLocaleDateString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric' });
+  },
+
+  showError(message) {
+    alert('Error: ' + message);
+  },
+
+  showSuccess(message) {
+    // Simple alert for now, can be enhanced with toast notifications
+    console.log('Success:', message);
+  },
+
+  showSaveStatus() {
+    const status = document.getElementById('save-status');
+    if (status) {
+      status.classList.remove('hidden');
+      status.classList.add('flex');
+      setTimeout(() => {
+        status.classList.add('hidden');
+        status.classList.remove('flex');
+      }, 3000);
+    }
+  }
+};
+
+// Initialize on load
+window.onload = () => App.init();
+</script>
+
+
+
+
+
+

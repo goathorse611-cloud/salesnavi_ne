@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html class="light" lang="ja">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blueprint Workshop</title>
+  <?!= include('Styles'); ?>
+</head>
+<body class="bg-background-light text-slate-700 font-sans antialiased overflow-hidden">
+
+<!-- Loading Screen -->
+<div id="loading" class="fixed inset-0 bg-white flex flex-col items-center justify-center z-50">
+  <div class="loading-spinner mb-4"></div>
+  <p class="text-slate-600 font-medium">Loading...</p>
+</div>
+
+<!-- Main App Container -->
+<div id="app" class="hidden flex h-screen w-full overflow-hidden">
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="w-64 bg-white border-r border-slate-200 flex-shrink-0 flex flex-col h-full hidden md:flex z-20 shadow-sm">
+    <!-- Logo -->
+    <div class="h-16 flex items-center px-6 border-b border-slate-100">
+      <div class="flex items-center gap-3">
+        <div class="size-9 flex items-center justify-center bg-primary rounded-lg text-white shadow-md shadow-blue-200">
+          <span class="material-symbols-outlined text-[22px]">architecture</span>
+        </div>
+        <div>
+          <h1 class="text-slate-900 text-sm font-bold leading-tight">Blueprint<span class="text-primary">.io</span></h1>
+          <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Workshop Edition</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+      <p class="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 mt-2">Main</p>
+      <a href="#" onclick="App.navigate('home')" data-nav="home" class="nav-item">
+        <span class="material-symbols-outlined text-slate-400 group-hover:text-primary">home</span>
+        <span class="text-sm font-medium">Home</span>
+      </a>
+      <a href="#" onclick="App.navigate('projects')" data-nav="projects" class="nav-item">
+        <span class="material-symbols-outlined text-slate-400 group-hover:text-primary">folder</span>
+        <span class="text-sm font-medium">Projects</span>
+      </a>
+
+      <!-- Project Context Nav (shown when project is selected) -->
+      <div id="project-nav" class="hidden">
+        <div class="my-4 border-t border-slate-100 mx-2"></div>
+        <p class="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Modules</p>
+        <a href="#" onclick="App.navigate('vision')" data-nav="vision" class="nav-item">
+          <span class="material-symbols-outlined text-slate-400 group-hover:text-primary">flag</span>
+          <span class="text-sm font-medium">1. Vision</span>
+        </a>
+        <a href="#" onclick="App.navigate('usecases')" data-nav="usecases" class="nav-item">
+          <span class="material-symbols-outlined text-slate-400 group-hover:text-primary">checklist</span>
+          <span class="text-sm font-medium">2. Use Cases</span>
+        </a>
+        <a href="#" onclick="App.navigate('90days')" data-nav="90days" class="nav-item">
+          <span class="material-symbols-outlined text-slate-400 group-hover:text-primary">calendar_month</span>
+          <span class="text-sm font-medium">3. 90-Day Plan</span>
+        </a>
+        <a href="#" onclick="App.navigate('raci')" data-nav="raci" class="nav-item">
+          <span class="material-symbols-outlined text-slate-400 group-hover:text-primary">group</span>
+          <span class="text-sm font-medium">4. Org & RACI</span>
+        </a>
+        <a href="#" onclick="App.navigate('value')" data-nav="value" class="nav-item">
+          <span class="material-symbols-outlined text-slate-400 group-hover:text-primary">trending_up</span>
+          <span class="text-sm font-medium">7. Value Tracker</span>
+        </a>
+
+        <div class="my-4 border-t border-slate-100 mx-2"></div>
+        <p class="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Extended</p>
+        <a href="#" onclick="App.navigate('coreprocess')" data-nav="coreprocess" class="nav-item">
+          <span class="material-symbols-outlined text-slate-400 group-hover:text-primary">analytics</span>
+          <span class="text-sm font-medium">3. Gap Analysis</span>
+        </a>
+        <a href="#" onclick="App.navigate('governance')" data-nav="governance" class="nav-item">
+          <span class="material-symbols-outlined text-slate-400 group-hover:text-primary">security</span>
+          <span class="text-sm font-medium">5. Governance</span>
+        </a>
+        <a href="#" onclick="App.navigate('operations')" data-nav="operations" class="nav-item">
+          <span class="material-symbols-outlined text-slate-400 group-hover:text-primary">support_agent</span>
+          <span class="text-sm font-medium">6. Ops Support</span>
+        </a>
+
+        <div class="my-4 border-t border-slate-100 mx-2"></div>
+        <p class="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Actions</p>
+        <a href="#" onclick="App.generateProposal()" class="nav-item">
+          <span class="material-symbols-outlined text-slate-400 group-hover:text-primary">description</span>
+          <span class="text-sm font-medium">Generate Proposal</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- User Profile -->
+    <div class="p-4 border-t border-slate-200 bg-slate-50">
+      <div class="flex items-center gap-3">
+        <div class="size-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm border border-primary/20">
+          <span id="user-avatar"></span>
+        </div>
+        <div class="flex flex-col overflow-hidden">
+          <p class="text-sm font-semibold text-slate-900 truncate" id="user-name"><?= userEmail ?></p>
+          <p class="text-xs text-slate-500 truncate">Sales Lead</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="flex-1 flex flex-col h-full overflow-hidden bg-background-light relative">
+    <!-- Header -->
+    <header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between shadow-sm z-10 flex-shrink-0">
+      <div class="flex items-center gap-4">
+        <button class="md:hidden text-slate-500 hover:text-primary" onclick="App.toggleSidebar()">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+        <nav id="breadcrumb" class="flex items-center gap-2 text-sm">
+          <span class="text-slate-500">Workspace</span>
+          <span class="material-symbols-outlined text-slate-300 text-[14px]">chevron_right</span>
+          <span id="breadcrumb-title" class="text-slate-900 font-semibold">Home</span>
+        </nav>
+      </div>
+      <div class="flex items-center gap-3">
+        <div id="save-status" class="hidden items-center gap-2 text-[11px] font-semibold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200">
+          <span class="block w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span>Saved</span>
+        </div>
+        <button class="flex items-center justify-center size-9 rounded-md hover:bg-slate-100 text-slate-500 transition-colors relative">
+          <span class="material-symbols-outlined">notifications</span>
+          <span class="absolute top-2 right-2 size-2 bg-red-500 border-2 border-white rounded-full"></span>
+        </button>
+        <button class="flex items-center justify-center size-9 rounded-md hover:bg-slate-100 text-slate-500 transition-colors">
+          <span class="material-symbols-outlined">help</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main-content" class="flex-1 overflow-y-auto p-6 md:p-8">
+
+      <!-- ========== HOME VIEW ========== -->
+      <div id="view-home" class="view max-w-7xl mx-auto">
+        <div class="mb-10">
+          <div class="flex items-end justify-between mb-6">
+            <div>
+              <h2 class="text-xl font-bold text-slate-900">Start Workshop</h2>
+              <p class="text-sm text-slate-500 mt-1">Select a phase that matches your objective</p>
+            </div>
+            <button onclick="App.showNewProjectModal()" class="btn-primary">
+              <span class="material-symbols-outlined text-[18px]">add</span>
+              <span>New Project</span>
+            </button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            <!-- Step 1 Card -->
+            <div onclick="App.navigate('vision')" class="group bg-white rounded-lg border border-slate-200 p-5 shadow-card hover:shadow-card-hover hover:border-primary/50 transition-all duration-200 flex flex-col h-full relative overflow-hidden cursor-pointer">
+              <div class="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity pointer-events-none">
+                <span class="text-8xl font-black text-primary">1</span>
+              </div>
+              <div class="flex items-center justify-between mb-4 relative z-10">
+                <div class="flex items-center justify-center size-10 rounded-md bg-blue-50 text-primary border border-blue-100">
+                  <span class="material-symbols-outlined fill">flag</span>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200 uppercase tracking-wide">Step 1</span>
+              </div>
+              <h3 class="text-base font-bold text-slate-900 mb-2 relative z-10">Define North Star</h3>
+              <p class="text-sm text-slate-500 mb-6 leading-relaxed flex-1 relative z-10">
+                Set and align on the long-term vision that everyone should aim for.
+              </p>
+              <button class="w-full h-9 flex items-center justify-center rounded-md bg-primary hover:bg-primary-dark text-white text-sm font-semibold shadow-sm transition-colors relative z-10">
+                Start Session
+              </button>
+            </div>
+
+            <!-- Step 2 Card -->
+            <div onclick="App.navigate('usecases')" class="group bg-white rounded-lg border border-slate-200 p-5 shadow-card hover:shadow-card-hover hover:border-primary/50 transition-all duration-200 flex flex-col h-full relative overflow-hidden cursor-pointer">
+              <div class="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity pointer-events-none">
+                <span class="text-8xl font-black text-primary">2</span>
+              </div>
+              <div class="flex items-center justify-between mb-4 relative z-10">
+                <div class="flex items-center justify-center size-10 rounded-md bg-blue-50 text-primary border border-blue-100">
+                  <span class="material-symbols-outlined fill">calendar_month</span>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200 uppercase tracking-wide">Step 2</span>
+              </div>
+              <h3 class="text-base font-bold text-slate-900 mb-2 relative z-10">Create 90-Day Plan</h3>
+              <p class="text-sm text-slate-500 mb-6 leading-relaxed flex-1 relative z-10">
+                Develop concrete action plans and milestones for the upcoming quarter.
+              </p>
+              <button class="w-full h-9 flex items-center justify-center rounded-md bg-white border border-slate-300 hover:border-primary hover:text-primary text-slate-700 text-sm font-semibold shadow-sm transition-colors relative z-10">
+                Create Plan
+              </button>
+            </div>
+
+            <!-- Step 4 Card -->
+            <div onclick="App.navigate('raci')" class="group bg-white rounded-lg border border-slate-200 p-5 shadow-card hover:shadow-card-hover hover:border-primary/50 transition-all duration-200 flex flex-col h-full relative overflow-hidden cursor-pointer">
+              <div class="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity pointer-events-none">
+                <span class="text-8xl font-black text-primary">4</span>
+              </div>
+              <div class="flex items-center justify-between mb-4 relative z-10">
+                <div class="flex items-center justify-center size-10 rounded-md bg-blue-50 text-primary border border-blue-100">
+                  <span class="material-symbols-outlined fill">diversity_3</span>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200 uppercase tracking-wide">Step 4</span>
+              </div>
+              <h3 class="text-base font-bold text-slate-900 mb-2 relative z-10">Define Roles & Responsibilities</h3>
+              <p class="text-sm text-slate-500 mb-6 leading-relaxed flex-1 relative z-10">
+                Clarify the team structure and each member's responsibilities.
+              </p>
+              <button class="w-full h-9 flex items-center justify-center rounded-md bg-white border border-slate-300 hover:border-primary hover:text-primary text-slate-700 text-sm font-semibold shadow-sm transition-colors relative z-10">
+                Edit Structure
+              </button>
+            </div>
+
+            <!-- Step 7 Card -->
+            <div onclick="App.navigate('value')" class="group bg-white rounded-lg border border-slate-200 p-5 shadow-card hover:shadow-card-hover hover:border-primary/50 transition-all duration-200 flex flex-col h-full relative overflow-hidden cursor-pointer">
+              <div class="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity pointer-events-none">
+                <span class="text-8xl font-black text-primary">7</span>
+              </div>
+              <div class="flex items-center justify-between mb-4 relative z-10">
+                <div class="flex items-center justify-center size-10 rounded-md bg-blue-50 text-primary border border-blue-100">
+                  <span class="material-symbols-outlined fill">verified_user</span>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200 uppercase tracking-wide">Step 7</span>
+              </div>
+              <h3 class="text-base font-bold text-slate-900 mb-2 relative z-10">Convert to Proposal</h3>
+              <p class="text-sm text-slate-500 mb-6 leading-relaxed flex-1 relative z-10">
+                Generate formal approval documents based on decisions made.
+              </p>
+              <button class="w-full h-9 flex items-center justify-center rounded-md bg-white border border-slate-300 hover:border-primary hover:text-primary text-slate-700 text-sm font-semibold shadow-sm transition-colors relative z-10">
+                Generate Document
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Projects -->
+        <div class="flex flex-col gap-4">
+          <div class="flex items-center justify-between px-1">
+            <h2 class="text-lg font-bold text-slate-900">Recent Projects</h2>
+            <a href="#" onclick="App.navigate('projects')" class="text-sm font-medium text-primary hover:text-primary-dark hover:underline">View All</a>
+          </div>
+          <div id="recent-projects" class="bg-white rounded-lg border border-slate-200 shadow-card overflow-hidden">
+            <div class="grid grid-cols-12 gap-4 px-6 py-3 bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
+              <div class="col-span-6 md:col-span-5">Project Name</div>
+              <div class="col-span-3 md:col-span-3">Last Updated</div>
+              <div class="col-span-3 md:col-span-2">Status</div>
+              <div class="hidden md:block md:col-span-2 text-right">Action</div>
+            </div>
+            <div id="recent-projects-list" class="divide-y divide-slate-100">
+              <!-- Projects will be loaded here dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== PROJECTS LIST VIEW ========== -->
+      <div id="view-projects" class="view hidden max-w-7xl mx-auto">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Projects</h1>
+            <p class="text-slate-500 text-sm mt-1">Manage all ongoing projects and their status</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button onclick="App.showNewProjectModal()" class="btn-primary">
+              <span class="material-symbols-outlined text-[18px]">add</span>
+              <span>New Project</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="bg-white p-1 rounded-lg border border-slate-200 shadow-sm flex flex-col lg:flex-row gap-2 items-center justify-between mb-6">
+          <div class="flex p-1 gap-1 bg-slate-100/50 rounded overflow-x-auto w-full lg:w-auto">
+            <button onclick="App.filterProjects('all')" data-filter="all" class="filter-tab px-4 py-1.5 rounded bg-white text-primary shadow-sm text-sm font-semibold whitespace-nowrap">All</button>
+            <button onclick="App.filterProjects('draft')" data-filter="draft" class="filter-tab px-4 py-1.5 rounded hover:bg-white/50 text-slate-600 text-sm font-medium whitespace-nowrap transition-colors">Draft</button>
+            <button onclick="App.filterProjects('confirmed')" data-filter="confirmed" class="filter-tab px-4 py-1.5 rounded hover:bg-white/50 text-slate-600 text-sm font-medium whitespace-nowrap transition-colors">Confirmed</button>
+            <button onclick="App.filterProjects('archived')" data-filter="archived" class="filter-tab px-4 py-1.5 rounded hover:bg-white/50 text-slate-600 text-sm font-medium whitespace-nowrap transition-colors">Archived</button>
+          </div>
+          <div class="flex items-center gap-2 w-full lg:w-auto px-2 lg:px-0 pb-2 lg:pb-0">
+            <div class="relative w-full lg:w-64">
+              <span class="material-symbols-outlined absolute left-3 top-2 text-slate-400 text-[18px]">search</span>
+              <input id="project-search" type="text" class="w-full h-9 pl-9 pr-3 rounded bg-white border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary text-sm placeholder-slate-400" placeholder="Search by customer..."/>
+            </div>
+          </div>
+        </div>
+
+        <div id="projects-list" class="flex flex-col gap-3">
+          <!-- Projects will be loaded here dynamically -->
+        </div>
+      </div>
+
+      <!-- ========== PROJECT DETAIL VIEW ========== -->
+      <div id="view-project-detail" class="view hidden max-w-7xl mx-auto">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <div class="size-10 bg-white border border-slate-200 rounded-lg flex items-center justify-center shadow-sm">
+                <span class="material-symbols-outlined text-primary text-2xl">domain</span>
+              </div>
+              <h1 id="project-title" class="text-2xl font-bold text-slate-900">Project Name</h1>
+            </div>
+            <div class="flex items-center gap-4 text-sm text-slate-500 ml-1">
+              <span class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                Updated: <span id="project-updated"></span>
+              </span>
+              <span class="text-slate-300">|</span>
+              <span class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px]">person</span>
+                Owner: <span id="project-owner"></span>
+              </span>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <button onclick="App.confirmProject()" class="btn-secondary">
+              <span class="material-symbols-outlined text-[18px]">check_circle</span>
+              Confirm
+            </button>
+            <button onclick="App.generateProposal()" class="btn-primary">
+              <span class="material-symbols-outlined text-[18px]">description</span>
+              Generate Proposal
+            </button>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="bg-white rounded-lg shadow-card border border-slate-200 p-5 mb-8">
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="text-sm font-bold text-slate-700">Project Progress</h2>
+            <span id="progress-percent" class="text-2xl font-bold text-primary tracking-tight">0% <span class="text-xs font-medium text-slate-500 ml-1 align-middle">Complete</span></span>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+            <div id="progress-bar" class="bg-primary h-2.5 rounded-full" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Module Cards Grid -->
+        <div id="module-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 pb-12">
+          <!-- Module cards will be loaded here dynamically -->
+        </div>
+      </div>
+
+      <!-- ========== VISION VIEW (Module 1) ========== -->
+      <div id="view-vision" class="view hidden">
+        <div class="max-w-[1600px] mx-auto h-full">
+          <div class="flex flex-col lg:flex-row gap-6 h-full">
+            <!-- Input Form -->
+            <div class="flex-1 flex flex-col gap-5 max-w-3xl pb-24">
+              <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 flex gap-4 items-start shadow-sm">
+                <div class="bg-white p-2 rounded-lg shadow-sm text-primary mt-1">
+                  <span class="material-symbols-outlined text-[20px] block">lightbulb</span>
+                </div>
+                <div>
+                  <h4 class="text-sm font-bold text-blue-900 mb-1">Workshop Objective</h4>
+                  <p class="text-sm text-blue-800 leading-relaxed opacity-90">
+                    Define the core vision, decision rules, and success metrics for your project. This will serve as the "North Star" for all stakeholders.
+                  </p>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-xl border border-slate-200 shadow-card p-6 lg:p-8 space-y-8">
+                <div class="group relative">
+                  <div class="flex justify-between items-center mb-3">
+                    <label class="text-[13px] font-bold text-slate-700 uppercase tracking-wide flex items-center gap-2">
+                      <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                      Vision Statement
+                    </label>
+                    <span id="vision-count" class="text-[11px] font-semibold text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100">0/200</span>
+                  </div>
+                  <textarea id="vision-text" class="w-full rounded-lg border-slate-300 bg-slate-50/30 p-4 text-base text-slate-800 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary min-h-[140px] resize-y transition-all placeholder:text-slate-400" placeholder="e.g. To empower every remote team in Asia with seamless collaboration tools by 2026."></textarea>
+                  <p class="mt-2 text-xs text-slate-500 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">info</span>
+                    Describe the ultimate goal clearly and concisely. Avoid jargon.
+                  </p>
+                </div>
+
+                <hr class="border-slate-100"/>
+
+                <div class="group">
+                  <div class="flex justify-between items-center mb-3">
+                    <label class="text-[13px] font-bold text-slate-700 uppercase tracking-wide flex items-center gap-2">
+                      <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+                      Decision Rules
+                    </label>
+                  </div>
+                  <textarea id="vision-rules" class="w-full rounded-lg border-slate-300 bg-slate-50/30 p-4 text-sm text-slate-800 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary min-h-[120px] resize-y transition-all placeholder:text-slate-400" placeholder="1. Customer satisfaction over short-term profit. 2. Mobile-first design approach."></textarea>
+                </div>
+
+                <hr class="border-slate-100"/>
+
+                <div class="group">
+                  <div class="flex justify-between items-center mb-3">
+                    <label class="text-[13px] font-bold text-slate-700 uppercase tracking-wide flex items-center gap-2">
+                      <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+                      Success Metrics
+                    </label>
+                  </div>
+                  <textarea id="vision-metrics" class="w-full rounded-lg border-slate-300 bg-slate-50/30 p-4 text-sm text-slate-800 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary min-h-[120px] resize-y transition-all placeholder:text-slate-400" placeholder="- Achieve $10M ARR - Maintain NPS > 50"></textarea>
+                </div>
+
+                <div class="bg-slate-50 rounded-lg p-4 border border-slate-100">
+                  <label class="text-xs font-bold text-slate-500 mb-2 block uppercase">Notes</label>
+                  <input id="vision-notes" type="text" class="w-full rounded-md border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-slate-400" placeholder="Any additional context or constraints..."/>
+                </div>
+              </div>
+            </div>
+
+            <!-- Preview Panel -->
+            <div class="hidden lg:block lg:w-[45%] relative">
+              <div class="sticky top-0 pb-10">
+                <div class="flex items-center justify-between mb-4 px-1">
+                  <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[16px]">preview</span>
+                    Live Preview
+                  </h3>
+                </div>
+                <div id="vision-preview" class="bg-white text-slate-900 rounded-sm shadow-card-hover border border-slate-200 overflow-hidden relative aspect-a4 transform transition-transform duration-300 origin-top">
+                  <div class="h-3 w-full bg-gradient-to-r from-primary to-blue-500"></div>
+                  <div class="p-10 h-full flex flex-col">
+                    <div class="flex justify-between items-start mb-8 border-b border-slate-100 pb-6">
+                      <div>
+                        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-1">Confidential</p>
+                        <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 mb-1">PROJECT NORTH STAR</h1>
+                        <p class="text-sm text-slate-500 font-medium">Strategic Vision Document v1.0</p>
+                      </div>
+                    </div>
+                    <div class="mb-10">
+                      <div class="flex items-center gap-2 mb-4">
+                        <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                          <span class="material-symbols-outlined text-[18px]">flag</span>
+                        </div>
+                        <h4 class="text-xs font-bold uppercase tracking-widest text-slate-500">Vision Statement</h4>
+                      </div>
+                      <div class="p-6 bg-slate-50 rounded-r-lg border-l-4 border-primary">
+                        <p id="preview-vision" class="text-lg font-serif font-medium leading-relaxed italic text-slate-800">
+                          "Your vision will appear here..."
+                        </p>
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-8 mb-8">
+                      <div>
+                        <div class="flex items-center gap-2 mb-4">
+                          <span class="material-symbols-outlined text-slate-400 text-[20px]">gavel</span>
+                          <h4 class="text-xs font-bold uppercase tracking-widest text-slate-500">Decision Rules</h4>
+                        </div>
+                        <div id="preview-rules" class="text-sm text-slate-600 space-y-2">
+                          <p class="text-slate-400">No rules defined yet...</p>
+                        </div>
+                      </div>
+                      <div>
+                        <div class="flex items-center gap-2 mb-4">
+                          <span class="material-symbols-outlined text-slate-400 text-[20px]">monitoring</span>
+                          <h4 class="text-xs font-bold uppercase tracking-widest text-slate-500">Success Metrics</h4>
+                        </div>
+                        <div id="preview-metrics" class="text-sm text-slate-600 space-y-2">
+                          <p class="text-slate-400">No metrics defined yet...</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="fixed bottom-0 left-0 md:left-64 right-0 border-t border-slate-200 bg-white p-4 px-8 flex justify-between items-center z-30 shadow-sticky">
+          <div class="hidden sm:flex items-center gap-2">
+            <span class="material-symbols-outlined text-green-500 text-[20px]">cloud_done</span>
+            <span class="text-sm text-slate-500 font-medium">All changes saved</span>
+          </div>
+          <div class="flex gap-3 w-full sm:w-auto">
+            <button onclick="App.saveVision()" class="flex-1 sm:flex-none px-5 py-2.5 rounded-md border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50 hover:border-slate-400 transition-colors">
+              Save
+            </button>
+            <button onclick="App.completeModule('vision')" class="flex-1 sm:flex-none px-6 py-2.5 rounded-md bg-primary text-white font-semibold text-sm hover:bg-primary-dark transition-colors shadow-sm flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-[18px]">check</span>
+              Complete Module
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== USE CASES VIEW (Module 2 Part A) ========== -->
+      <div id="view-usecases" class="view hidden max-w-[1440px] mx-auto pb-32">
+        <div class="flex flex-col gap-1 bg-white p-6 rounded-lg shadow-card border border-slate-200 mb-6">
+          <div class="flex items-center gap-3 mb-1">
+            <span class="px-2 py-0.5 rounded bg-blue-50 text-primary text-[11px] font-bold uppercase tracking-wide border border-blue-100">Step A</span>
+            <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Use Case Selection</h1>
+          </div>
+          <p class="text-slate-500 text-sm leading-relaxed max-w-3xl">
+            Score candidate use cases and select the top 1-2 based on business impact and feasibility. Selected cases will be automatically transferred to the 90-day planning board.
+          </p>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-6">
+          <main class="flex-1 flex flex-col gap-5">
+            <div class="flex justify-end mb-2">
+              <button onclick="App.showNewUsecaseModal()" class="btn-primary">
+                <span class="material-symbols-outlined text-[18px]">add</span>
+                Add Use Case
+              </button>
+            </div>
+
+            <div class="w-full bg-white rounded-lg shadow-card border border-slate-200 overflow-hidden">
+              <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full min-w-[900px]">
+                  <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200">
+                      <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[28%]">Candidate Use Case</th>
+                      <th class="px-4 py-3 text-left w-[15%]">
+                        <div class="flex flex-col">
+                          <span class="text-xs font-bold text-slate-700">Impact</span>
+                          <span class="text-[10px] text-slate-400 font-normal">(1-5)</span>
+                        </div>
+                      </th>
+                      <th class="px-4 py-3 text-left w-[15%]">
+                        <div class="flex flex-col">
+                          <span class="text-xs font-bold text-slate-700">Feasibility</span>
+                          <span class="text-[10px] text-slate-400 font-normal">(1-5)</span>
+                        </div>
+                      </th>
+                      <th class="px-4 py-3 text-left w-[15%]">
+                        <div class="flex flex-col">
+                          <span class="text-xs font-bold text-slate-700">Capability</span>
+                          <span class="text-[10px] text-slate-400 font-normal">(1-5)</span>
+                        </div>
+                      </th>
+                      <th class="px-4 py-3 text-center text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[10%] border-l border-slate-100">Total</th>
+                      <th class="px-4 py-3 text-center text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[8%]">Rank</th>
+                      <th class="px-6 py-3 text-center text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[9%] bg-blue-50/30">Select</th>
+                    </tr>
+                  </thead>
+                  <tbody id="usecases-table-body" class="divide-y divide-slate-100">
+                    <!-- Use cases will be loaded here dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </main>
+
+          <aside class="w-full lg:w-80 shrink-0 flex flex-col gap-6">
+            <div class="bg-white rounded-lg shadow-card border border-slate-200 sticky top-24">
+              <div class="p-5 border-b border-slate-100 bg-slate-50 rounded-t-lg">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-primary">menu_book</span>
+                  <h3 class="font-bold text-slate-800 text-sm">Scoring Guide</h3>
+                </div>
+              </div>
+              <div class="p-5 flex flex-col gap-6">
+                <div class="flex flex-col gap-2">
+                  <div class="flex items-center justify-between">
+                    <h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide">1. Impact</h4>
+                    <span class="text-[10px] bg-blue-50 text-primary px-2 py-0.5 rounded-full font-bold border border-blue-100">40% Weight</span>
+                  </div>
+                  <p class="text-sm text-slate-600 leading-relaxed">
+                    Potential for revenue growth or cost reduction. Rate 1-5 how much business value it can bring.
+                  </p>
+                </div>
+                <div class="w-full h-px bg-slate-100"></div>
+                <div class="flex flex-col gap-2">
+                  <div class="flex items-center justify-between">
+                    <h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide">2. Feasibility (90-day)</h4>
+                    <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold border border-slate-200">30% Weight</span>
+                  </div>
+                  <p class="text-sm text-slate-600 leading-relaxed">
+                    Technical and organizational readiness. Evaluate if results can be achieved within 3 months.
+                  </p>
+                </div>
+                <div class="w-full h-px bg-slate-100"></div>
+                <div class="flex flex-col gap-2">
+                  <div class="flex items-center justify-between">
+                    <h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide">3. Capability Building</h4>
+                    <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold border border-slate-200">30% Weight</span>
+                  </div>
+                  <p class="text-sm text-slate-600 leading-relaxed">
+                    Contribution to future skill acquisition. Evaluate if the team can grow through this project.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="fixed bottom-0 left-0 md:left-64 right-0 bg-white border-t border-slate-200 shadow-sticky z-40">
+          <div class="max-w-[1440px] mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-6 w-full sm:w-auto">
+              <div class="flex flex-col">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-primary mb-0.5">Step B</span>
+                <h3 class="font-bold text-slate-800 text-base">Select Top 1-2</h3>
+              </div>
+              <div class="h-8 w-px bg-slate-200 hidden sm:block"></div>
+              <div id="selection-status" class="flex items-center gap-3 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
+                <div class="text-sm font-medium text-slate-600">
+                  <span id="selected-count" class="text-slate-900 font-bold">0</span> / 2 items selected
+                </div>
+              </div>
+            </div>
+            <button onclick="App.navigate('90days')" class="bg-primary hover:bg-primary-dark text-white font-semibold py-2.5 px-6 rounded-md shadow-sm transition-all flex items-center justify-center gap-2 w-full sm:w-auto text-sm">
+              <span class="material-symbols-outlined text-[18px]">calendar_add_on</span>
+              Create 90-Day Plan
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== 90-DAY PLAN VIEW (Module 2 Part B) ========== -->
+      <div id="view-90days" class="view hidden max-w-[1280px] mx-auto pb-12">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-lg border border-slate-200 shadow-card mb-6">
+          <div class="flex items-start gap-4">
+            <div class="h-12 w-12 rounded bg-primary flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-white text-[28px]">calendar_month</span>
+            </div>
+            <div>
+              <h1 class="text-xl font-bold text-slate-900">90-Day Plan - Blueprint</h1>
+              <p class="text-slate-500 text-sm mt-1">Strategic roadmap definition and resource planning.</p>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <button onclick="App.save90DayPlan()" class="btn-secondary">
+              Save Draft
+            </button>
+            <button class="btn-primary">
+              <span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+              Export PDF
+            </button>
+          </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="card-base flex flex-col overflow-hidden mb-6">
+          <div class="px-5 py-3 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+            <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide flex items-center gap-2">
+              Implementation Timeline (12 Weeks)
+            </h3>
+          </div>
+          <div class="overflow-x-auto custom-scrollbar bg-white">
+            <div class="min-w-[1000px] p-5">
+              <div class="grid grid-cols-12 gap-0 mb-4 border-b border-slate-200 pb-2">
+                <div class="col-span-4 text-xs font-bold uppercase tracking-wider text-slate-500 pl-1">Month 1</div>
+                <div class="col-span-4 text-xs font-bold uppercase tracking-wider text-slate-500 pl-1 border-l border-slate-200">Month 2</div>
+                <div class="col-span-4 text-xs font-bold uppercase tracking-wider text-slate-500 pl-1 border-l border-slate-200">Month 3</div>
+              </div>
+              <div id="timeline-grid" class="grid grid-cols-12 gap-3">
+                <!-- Timeline weeks will be rendered here -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Goal and Details -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 card-base p-6 flex flex-col gap-5">
+            <div class="flex items-center gap-3 border-b border-slate-200 pb-4">
+              <div class="p-2 rounded bg-primary-light text-primary">
+                <span class="material-symbols-outlined text-[20px]">flag</span>
+              </div>
+              <div>
+                <h3 class="font-bold text-slate-900 text-base">90-Day Goal</h3>
+                <p class="text-xs text-slate-500">Define the primary success criteria for this period.</p>
+              </div>
+            </div>
+            <div class="space-y-4">
+              <div>
+                <label class="label-base">Core Objective</label>
+                <textarea id="plan-objective" class="input-base min-h-[100px] resize-y" placeholder="Enter the primary objective for the 90-day period."></textarea>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="label-base">KPI Target 1</label>
+                  <input id="plan-kpi1" type="text" class="input-base" placeholder="e.g. Reduce manual entry by 50%"/>
+                </div>
+                <div>
+                  <label class="label-base">KPI Target 2</label>
+                  <input id="plan-kpi2" type="text" class="input-base" placeholder="e.g. 100% User Adoption"/>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-base p-0 flex flex-col">
+            <div class="p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[20px] text-red-600">warning</span>
+                <h3 class="font-bold text-slate-800 text-sm uppercase">Risks & Blockers</h3>
+              </div>
+            </div>
+            <div id="risks-list" class="p-5 flex flex-col gap-3 bg-white flex-1 rounded-b-lg">
+              <!-- Risks will be loaded here -->
+            </div>
+            <div class="px-5 pb-5">
+              <button onclick="App.addRisk()" class="w-full py-2 flex items-center justify-center gap-2 text-xs font-bold text-slate-500 bg-slate-50 rounded border border-dashed border-slate-300 hover:bg-slate-100 transition-colors">
+                <span class="material-symbols-outlined text-[16px]">add</span>
+                Add Risk
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Details -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+          <div class="card-base p-6 flex flex-col gap-5">
+            <div class="flex items-center gap-2 border-b border-slate-200 pb-2">
+              <span class="material-symbols-outlined text-[20px] text-purple-600">group</span>
+              <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide">Structure & Roles</h3>
+            </div>
+            <div id="plan-roles" class="space-y-4">
+              <!-- Roles will be loaded here -->
+            </div>
+          </div>
+
+          <div class="card-base p-6 flex flex-col gap-5">
+            <div class="flex items-center gap-2 border-b border-slate-200 pb-2">
+              <span class="material-symbols-outlined text-[20px] text-blue-600">database</span>
+              <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide">Required Data</h3>
+            </div>
+            <div id="plan-data" class="flex flex-col gap-1">
+              <label class="flex items-center p-3 rounded hover:bg-slate-50 cursor-pointer border border-transparent hover:border-slate-200 transition-all group">
+                <input type="checkbox" class="w-4 h-4 text-primary rounded border-slate-300 focus:ring-primary"/>
+                <span class="ml-3 text-sm text-slate-700 font-medium group-hover:text-primary">Customer List (CSV)</span>
+              </label>
+              <label class="flex items-center p-3 rounded hover:bg-slate-50 cursor-pointer border border-transparent hover:border-slate-200 transition-all group">
+                <input type="checkbox" class="w-4 h-4 text-primary rounded border-slate-300 focus:ring-primary"/>
+                <span class="ml-3 text-sm text-slate-700 font-medium group-hover:text-primary">Product Catalog</span>
+              </label>
+              <label class="flex items-center p-3 rounded hover:bg-slate-50 cursor-pointer border border-transparent hover:border-slate-200 transition-all group">
+                <input type="checkbox" class="w-4 h-4 text-primary rounded border-slate-300 focus:ring-primary"/>
+                <span class="ml-3 text-sm text-slate-700 font-medium group-hover:text-primary">Sales History (2 yrs)</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="card-base p-6 flex flex-col gap-5">
+            <div class="flex items-center gap-2 border-b border-slate-200 pb-2">
+              <span class="material-symbols-outlined text-[20px] text-teal-600">forum</span>
+              <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide">Comm. Plan</h3>
+            </div>
+            <div class="space-y-4">
+              <div>
+                <label class="label-base">Meeting Frequency</label>
+                <select id="plan-meeting" class="input-base">
+                  <option>Weekly Sync (Every Mon)</option>
+                  <option>Bi-weekly Review</option>
+                  <option>Monthly Steering</option>
+                </select>
+              </div>
+              <div>
+                <label class="label-base">Key Stakeholders</label>
+                <input id="plan-stakeholders" type="text" class="input-base" placeholder="e.g. Sales Reps, Engineering"/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== RACI VIEW (Module 4) ========== -->
+      <div id="view-raci" class="view hidden max-w-[1400px] mx-auto pb-32">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-lg shadow-card border border-slate-200 mb-6">
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center gap-2 text-slate-500 text-xs font-semibold uppercase tracking-wide">
+              <span class="text-primary">Design Phase</span>
+              <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+              <span>Module 4</span>
+            </div>
+            <h1 class="text-2xl font-bold text-slate-900">Org & RACI Structure</h1>
+            <p class="text-slate-500 text-sm mt-1">Define the project structure and assign responsibilities for the implementation phase.</p>
+          </div>
+          <div class="flex gap-3">
+            <button onclick="App.saveRACIEntries()" class="btn-primary">
+              <span class="material-symbols-outlined text-[18px]">save</span>
+              Save Changes
+            </button>
+          </div>
+        </div>
+
+        <!-- Three Pillars -->
+        <section class="flex flex-col gap-4 mb-8">
+          <div class="flex items-center justify-between px-1">
+            <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <div class="w-1 h-5 bg-primary rounded-full"></div>
+              Organizational Structure (Three Pillars)
+            </h2>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- CoE -->
+            <div class="flex flex-col gap-4 rounded-lg border-t-4 border-indigo-500 bg-white p-5 shadow-card hover:shadow-card-hover transition-shadow">
+              <div class="flex items-start justify-between border-b border-slate-100 pb-3">
+                <div>
+                  <h3 class="font-bold text-slate-800 text-lg">CoE</h3>
+                  <p class="text-xs font-medium text-slate-500 uppercase tracking-wide mt-1">Strategic & Governance</p>
+                </div>
+                <div class="p-1.5 bg-indigo-50 text-indigo-600 rounded-md">
+                  <span class="material-symbols-outlined">crown</span>
+                </div>
+              </div>
+              <div id="pillar-coe" class="flex flex-col gap-3 min-h-[120px]">
+                <!-- CoE roles will be loaded here -->
+              </div>
+            </div>
+
+            <!-- Biz Data Network -->
+            <div class="flex flex-col gap-4 rounded-lg border-t-4 border-emerald-500 bg-white p-5 shadow-card hover:shadow-card-hover transition-shadow">
+              <div class="flex items-start justify-between border-b border-slate-100 pb-3">
+                <div>
+                  <h3 class="font-bold text-slate-800 text-lg">Biz Data Network</h3>
+                  <p class="text-xs font-medium text-slate-500 uppercase tracking-wide mt-1">Operational & Process</p>
+                </div>
+                <div class="p-1.5 bg-emerald-50 text-emerald-600 rounded-md">
+                  <span class="material-symbols-outlined">hub</span>
+                </div>
+              </div>
+              <div id="pillar-biz" class="flex flex-col gap-3 min-h-[120px]">
+                <!-- Biz roles will be loaded here -->
+              </div>
+            </div>
+
+            <!-- IT -->
+            <div class="flex flex-col gap-4 rounded-lg border-t-4 border-blue-500 bg-white p-5 shadow-card hover:shadow-card-hover transition-shadow">
+              <div class="flex items-start justify-between border-b border-slate-100 pb-3">
+                <div>
+                  <h3 class="font-bold text-slate-800 text-lg">IT</h3>
+                  <p class="text-xs font-medium text-slate-500 uppercase tracking-wide mt-1">Technical & Implementation</p>
+                </div>
+                <div class="p-1.5 bg-blue-50 text-blue-600 rounded-md">
+                  <span class="material-symbols-outlined">dns</span>
+                </div>
+              </div>
+              <div id="pillar-it" class="flex flex-col gap-3 min-h-[120px]">
+                <!-- IT roles will be loaded here -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- RACI Matrix -->
+        <section class="flex flex-col gap-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1">
+            <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <div class="w-1 h-5 bg-primary rounded-full"></div>
+              Responsibility Assignment Matrix (RACI)
+            </h2>
+            <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
+              <span class="text-[10px] text-slate-400 font-bold uppercase mr-1">Legend:</span>
+              <span class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100">R</span>
+              <span class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-700 border border-red-100">A</span>
+              <span class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-100">C</span>
+              <span class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">I</span>
+            </div>
+          </div>
+
+          <div class="rounded-lg border border-slate-200 bg-white shadow-card overflow-hidden">
+            <div class="flex justify-end p-3 border-b border-slate-200 bg-slate-50">
+              <button onclick="App.addRACIRow()" class="btn-secondary text-sm">
+                <span class="material-symbols-outlined text-[18px]">add</span>
+                Add Task
+              </button>
+            </div>
+            <div class="overflow-x-auto custom-scrollbar">
+              <table class="w-full text-left border-collapse min-w-[800px]">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200">
+                    <th class="p-4 font-bold text-xs uppercase tracking-wider text-slate-500 w-48">Pillar</th>
+                    <th class="p-4 font-bold text-xs uppercase tracking-wider text-slate-500 w-64">Task</th>
+                    <th class="p-4 font-bold text-xs uppercase tracking-wider text-slate-500 w-48">Assignee</th>
+                    <th class="p-4 font-bold text-xs uppercase tracking-wider text-slate-500 text-center w-24">RACI</th>
+                    <th class="p-4 font-bold text-xs uppercase tracking-wider text-slate-500 text-center w-20">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="raci-table-body" class="divide-y divide-slate-100">
+                  <!-- RACI entries will be loaded here dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Footer Actions -->
+        <div class="fixed bottom-0 left-0 md:left-64 right-0 bg-white border-t border-slate-200 p-4 px-8 shadow-sticky z-40">
+          <div class="max-w-[1400px] mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2 text-xs font-medium text-slate-500">
+              <span class="material-symbols-outlined text-[16px] text-emerald-500">cloud_done</span>
+              <span>Last saved 2 mins ago</span>
+            </div>
+            <div class="flex gap-3">
+              <button onclick="App.navigate('90days')" class="px-4 py-2 rounded-md border border-slate-300 text-slate-600 bg-white font-semibold hover:bg-slate-50 transition-colors text-sm">
+                Back
+              </button>
+              <button onclick="App.navigate('value')" class="px-5 py-2 bg-primary text-white rounded-md font-semibold hover:bg-primary-dark transition-colors shadow-lg shadow-blue-500/30 text-sm flex items-center gap-2">
+                <span>Next: Value Tracker</span>
+                <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== VALUE TRACKER VIEW (Module 7) ========== -->
+      <div id="view-value" class="view hidden max-w-[1400px] mx-auto pb-12">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 pb-6 mb-6">
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center gap-2 text-slate-500 text-xs font-medium mb-1">
+              <span>Workspace</span>
+              <span class="material-symbols-outlined text-[12px]">chevron_right</span>
+              <span id="value-project-name">Project</span>
+              <span class="material-symbols-outlined text-[12px]">chevron_right</span>
+              <span class="text-slate-800">Module 7</span>
+            </div>
+            <h1 class="text-slate-900 text-2xl sm:text-3xl font-bold tracking-tight">Value Tracker</h1>
+            <p class="text-slate-500 text-sm mt-1 max-w-3xl">
+              Track quantitative and qualitative effects, manage evidence, and facilitate investment decisions with customers.
+            </p>
+          </div>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="bg-white rounded-lg p-5 border border-slate-200 shadow-card flex flex-col relative overflow-hidden">
+            <div class="flex justify-between items-start mb-2">
+              <p class="stat-label">Total Savings</p>
+              <span class="material-symbols-outlined text-green-600 bg-green-50 p-1.5 rounded-md text-[20px]">payments</span>
+            </div>
+            <div class="flex items-baseline gap-3 mt-auto">
+              <p id="value-savings" class="stat-value">-</p>
+            </div>
+          </div>
+          <div class="bg-white rounded-lg p-5 border border-slate-200 shadow-card flex flex-col relative overflow-hidden">
+            <div class="flex justify-between items-start mb-2">
+              <p class="stat-label">Productivity Gain</p>
+              <span class="material-symbols-outlined text-blue-600 bg-blue-50 p-1.5 rounded-md text-[20px]">speed</span>
+            </div>
+            <div class="flex items-baseline gap-3 mt-auto">
+              <p id="value-productivity" class="stat-value">-</p>
+            </div>
+          </div>
+          <div class="bg-white rounded-lg p-5 border border-slate-200 shadow-card flex flex-col relative overflow-hidden">
+            <div class="flex justify-between items-start mb-2">
+              <p class="stat-label">ROI</p>
+              <span class="material-symbols-outlined text-purple-600 bg-purple-50 p-1.5 rounded-md text-[20px]">query_stats</span>
+            </div>
+            <div class="flex items-baseline gap-3 mt-auto">
+              <p id="value-roi" class="stat-value">-</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Value Cards Grid -->
+        <div id="value-cards" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <!-- Value cards will be loaded here dynamically -->
+        </div>
+      </div>
+
+      <!-- ========== CORE PROCESS GAP ANALYSIS VIEW (Module 3) ========== -->
+      <div id="view-coreprocess" class="view hidden max-w-[1400px] mx-auto pb-12">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-lg shadow-card border border-slate-200 mb-6">
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center gap-2 text-slate-500 text-xs font-semibold uppercase tracking-wide">
+              <span class="text-primary">Extended</span>
+              <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+              <span>Module 3</span>
+            </div>
+            <h1 class="text-2xl font-bold text-slate-900">6 Core Process Gap Analysis</h1>
+            <p class="text-slate-500 text-sm mt-1">Evaluate your organization's maturity across the 6 core processes and identify gaps for improvement.</p>
+          </div>
+          <div class="flex gap-3">
+            <button onclick="App.saveCoreProcess()" class="btn-primary">
+              <span class="material-symbols-outlined text-[18px]">save</span>
+              Save Assessment
+            </button>
+          </div>
+        </div>
+
+        <!-- Radar Chart Placeholder -->
+        <div class="bg-white rounded-lg border border-slate-200 shadow-card p-6 mb-6">
+          <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-[20px]">radar</span>
+            Maturity Overview
+          </h3>
+          <div id="radar-chart" class="h-64 flex items-center justify-center bg-slate-50 rounded-lg border border-dashed border-slate-300">
+            <div class="text-center">
+              <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">donut_large</span>
+              <p class="text-sm text-slate-400">Complete the assessment below to see your maturity profile</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6 Core Processes -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Agility -->
+          <div class="bg-white rounded-lg border border-slate-200 shadow-card overflow-hidden">
+            <div class="p-4 border-b border-slate-100 bg-gradient-to-r from-blue-50 to-white">
+              <div class="flex items-center gap-3">
+                <div class="p-2 bg-blue-100 text-blue-600 rounded-lg">
+                  <span class="material-symbols-outlined">bolt</span>
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-800">Agility</h3>
+                  <p class="text-xs text-slate-500">Speed of adaptation</p>
+                </div>
+              </div>
+            </div>
+            <div class="p-5 space-y-4">
+              <div>
+                <div class="flex justify-between items-center mb-2">
+                  <label class="text-xs font-semibold text-slate-600 uppercase">Score (1-5)</label>
+                  <span id="agility-score-display" class="text-lg font-bold text-blue-600">3</span>
+                </div>
+                <input type="range" id="agility-score" min="1" max="5" value="3" class="w-full" oninput="App.updateScoreDisplay('agility')"/>
+              </div>
+              <div>
+                <label class="label-base">Notes</label>
+                <textarea id="agility-comment" class="input-base min-h-[80px]" placeholder="Current state and improvement areas..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Skills -->
+          <div class="bg-white rounded-lg border border-slate-200 shadow-card overflow-hidden">
+            <div class="p-4 border-b border-slate-100 bg-gradient-to-r from-green-50 to-white">
+              <div class="flex items-center gap-3">
+                <div class="p-2 bg-green-100 text-green-600 rounded-lg">
+                  <span class="material-symbols-outlined">school</span>
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-800">Skills</h3>
+                  <p class="text-xs text-slate-500">Team capabilities</p>
+                </div>
+              </div>
+            </div>
+            <div class="p-5 space-y-4">
+              <div>
+                <div class="flex justify-between items-center mb-2">
+                  <label class="text-xs font-semibold text-slate-600 uppercase">Score (1-5)</label>
+                  <span id="skills-score-display" class="text-lg font-bold text-green-600">3</span>
+                </div>
+                <input type="range" id="skills-score" min="1" max="5" value="3" class="w-full" oninput="App.updateScoreDisplay('skills')"/>
+              </div>
+              <div>
+                <label class="label-base">Notes</label>
+                <textarea id="skills-comment" class="input-base min-h-[80px]" placeholder="Current state and improvement areas..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Data Quality -->
+          <div class="bg-white rounded-lg border border-slate-200 shadow-card overflow-hidden">
+            <div class="p-4 border-b border-slate-100 bg-gradient-to-r from-purple-50 to-white">
+              <div class="flex items-center gap-3">
+                <div class="p-2 bg-purple-100 text-purple-600 rounded-lg">
+                  <span class="material-symbols-outlined">database</span>
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-800">Data Quality</h3>
+                  <p class="text-xs text-slate-500">Data reliability</p>
+                </div>
+              </div>
+            </div>
+            <div class="p-5 space-y-4">
+              <div>
+                <div class="flex justify-between items-center mb-2">
+                  <label class="text-xs font-semibold text-slate-600 uppercase">Score (1-5)</label>
+                  <span id="dataQuality-score-display" class="text-lg font-bold text-purple-600">3</span>
+                </div>
+                <input type="range" id="dataQuality-score" min="1" max="5" value="3" class="w-full" oninput="App.updateScoreDisplay('dataQuality')"/>
+              </div>
+              <div>
+                <label class="label-base">Notes</label>
+                <textarea id="dataQuality-comment" class="input-base min-h-[80px]" placeholder="Current state and improvement areas..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trust -->
+          <div class="bg-white rounded-lg border border-slate-200 shadow-card overflow-hidden">
+            <div class="p-4 border-b border-slate-100 bg-gradient-to-r from-amber-50 to-white">
+              <div class="flex items-center gap-3">
+                <div class="p-2 bg-amber-100 text-amber-600 rounded-lg">
+                  <span class="material-symbols-outlined">verified_user</span>
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-800">Trust</h3>
+                  <p class="text-xs text-slate-500">Data governance</p>
+                </div>
+              </div>
+            </div>
+            <div class="p-5 space-y-4">
+              <div>
+                <div class="flex justify-between items-center mb-2">
+                  <label class="text-xs font-semibold text-slate-600 uppercase">Score (1-5)</label>
+                  <span id="trust-score-display" class="text-lg font-bold text-amber-600">3</span>
+                </div>
+                <input type="range" id="trust-score" min="1" max="5" value="3" class="w-full" oninput="App.updateScoreDisplay('trust')"/>
+              </div>
+              <div>
+                <label class="label-base">Notes</label>
+                <textarea id="trust-comment" class="input-base min-h-[80px]" placeholder="Current state and improvement areas..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Operational Efficiency -->
+          <div class="bg-white rounded-lg border border-slate-200 shadow-card overflow-hidden">
+            <div class="p-4 border-b border-slate-100 bg-gradient-to-r from-red-50 to-white">
+              <div class="flex items-center gap-3">
+                <div class="p-2 bg-red-100 text-red-600 rounded-lg">
+                  <span class="material-symbols-outlined">speed</span>
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-800">Operational Efficiency</h3>
+                  <p class="text-xs text-slate-500">Process optimization</p>
+                </div>
+              </div>
+            </div>
+            <div class="p-5 space-y-4">
+              <div>
+                <div class="flex justify-between items-center mb-2">
+                  <label class="text-xs font-semibold text-slate-600 uppercase">Score (1-5)</label>
+                  <span id="operationalEfficiency-score-display" class="text-lg font-bold text-red-600">3</span>
+                </div>
+                <input type="range" id="operationalEfficiency-score" min="1" max="5" value="3" class="w-full" oninput="App.updateScoreDisplay('operationalEfficiency')"/>
+              </div>
+              <div>
+                <label class="label-base">Notes</label>
+                <textarea id="operationalEfficiency-comment" class="input-base min-h-[80px]" placeholder="Current state and improvement areas..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Community -->
+          <div class="bg-white rounded-lg border border-slate-200 shadow-card overflow-hidden">
+            <div class="p-4 border-b border-slate-100 bg-gradient-to-r from-teal-50 to-white">
+              <div class="flex items-center gap-3">
+                <div class="p-2 bg-teal-100 text-teal-600 rounded-lg">
+                  <span class="material-symbols-outlined">groups</span>
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-800">Community</h3>
+                  <p class="text-xs text-slate-500">User engagement</p>
+                </div>
+              </div>
+            </div>
+            <div class="p-5 space-y-4">
+              <div>
+                <div class="flex justify-between items-center mb-2">
+                  <label class="text-xs font-semibold text-slate-600 uppercase">Score (1-5)</label>
+                  <span id="community-score-display" class="text-lg font-bold text-teal-600">3</span>
+                </div>
+                <input type="range" id="community-score" min="1" max="5" value="3" class="w-full" oninput="App.updateScoreDisplay('community')"/>
+              </div>
+              <div>
+                <label class="label-base">Notes</label>
+                <textarea id="community-comment" class="input-base min-h-[80px]" placeholder="Current state and improvement areas..."></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Roadmap Section -->
+        <div class="mt-8 bg-white rounded-lg border border-slate-200 shadow-card p-6">
+          <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-[20px]">route</span>
+            Generated Roadmap
+          </h3>
+          <div id="roadmap-output" class="space-y-4">
+            <p class="text-sm text-slate-500 italic">Complete the assessment and save to generate a prioritized roadmap.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== GOVERNANCE VIEW (Module 5) ========== -->
+      <div id="view-governance" class="view hidden max-w-[1400px] mx-auto pb-12">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-lg shadow-card border border-slate-200 mb-6">
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center gap-2 text-slate-500 text-xs font-semibold uppercase tracking-wide">
+              <span class="text-primary">Extended</span>
+              <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+              <span>Module 5</span>
+            </div>
+            <h1 class="text-2xl font-bold text-slate-900">Data Governance Kit</h1>
+            <p class="text-slate-500 text-sm mt-1">Define data ownership, governance models, and exception processes for trusted analytics.</p>
+          </div>
+          <div class="flex gap-3">
+            <button onclick="App.saveGovernanceEntries()" class="btn-primary">
+              <span class="material-symbols-outlined text-[18px]">save</span>
+              Save Changes
+            </button>
+          </div>
+        </div>
+
+        <!-- Governance Table -->
+        <div class="bg-white rounded-lg border border-slate-200 shadow-card overflow-hidden">
+          <div class="flex justify-between items-center p-4 border-b border-slate-200 bg-slate-50">
+            <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide">Governance Entries</h3>
+            <button onclick="App.addGovernanceRow()" class="btn-secondary text-sm">
+              <span class="material-symbols-outlined text-[18px]">add</span>
+              Add Entry
+            </button>
+          </div>
+          <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse min-w-[900px]">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200">
+                  <th class="p-4 font-bold text-xs uppercase tracking-wider text-slate-500 w-48">Target / Domain</th>
+                  <th class="p-4 font-bold text-xs uppercase tracking-wider text-slate-500 w-40">Model</th>
+                  <th class="p-4 font-bold text-xs uppercase tracking-wider text-slate-500 w-40">Owner</th>
+                  <th class="p-4 font-bold text-xs uppercase tracking-wider text-slate-500">Rules</th>
+                  <th class="p-4 font-bold text-xs uppercase tracking-wider text-slate-500">Exception Process</th>
+                  <th class="p-4 font-bold text-xs uppercase tracking-wider text-slate-500 text-center w-20">Action</th>
+                </tr>
+              </thead>
+              <tbody id="governance-table-body" class="divide-y divide-slate-100">
+                <!-- Governance entries will be loaded here dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Governance Categories -->
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div class="bg-white rounded-lg border border-slate-200 shadow-card p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="material-symbols-outlined text-blue-600 text-[20px]">person</span>
+              <h4 class="font-bold text-slate-800 text-sm">Ownership</h4>
+            </div>
+            <p class="text-xs text-slate-500">Data stewards and accountable parties</p>
+          </div>
+          <div class="bg-white rounded-lg border border-slate-200 shadow-card p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="material-symbols-outlined text-green-600 text-[20px]">verified</span>
+              <h4 class="font-bold text-slate-800 text-sm">Quality</h4>
+            </div>
+            <p class="text-xs text-slate-500">Standards and validation rules</p>
+          </div>
+          <div class="bg-white rounded-lg border border-slate-200 shadow-card p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="material-symbols-outlined text-purple-600 text-[20px]">schedule</span>
+              <h4 class="font-bold text-slate-800 text-sm">Lifecycle</h4>
+            </div>
+            <p class="text-xs text-slate-500">Retention and archival policies</p>
+          </div>
+          <div class="bg-white rounded-lg border border-slate-200 shadow-card p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="material-symbols-outlined text-red-600 text-[20px]">shield</span>
+              <h4 class="font-bold text-slate-800 text-sm">Protection</h4>
+            </div>
+            <p class="text-xs text-slate-500">Security and compliance</p>
+          </div>
+          <div class="bg-white rounded-lg border border-slate-200 shadow-card p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="material-symbols-outlined text-amber-600 text-[20px]">search</span>
+              <h4 class="font-bold text-slate-800 text-sm">Discovery</h4>
+            </div>
+            <p class="text-xs text-slate-500">Catalog and accessibility</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== OPERATIONS SUPPORT VIEW (Module 6) ========== -->
+      <div id="view-operations" class="view hidden max-w-[1400px] mx-auto pb-12">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-lg shadow-card border border-slate-200 mb-6">
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center gap-2 text-slate-500 text-xs font-semibold uppercase tracking-wide">
+              <span class="text-primary">Extended</span>
+              <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+              <span>Module 6</span>
+            </div>
+            <h1 class="text-2xl font-bold text-slate-900">Operations Support Design</h1>
+            <p class="text-slate-500 text-sm mt-1">Design tiered support structure and escalation paths for sustainable operations.</p>
+          </div>
+          <div class="flex gap-3">
+            <button onclick="App.saveOperationsSupport()" class="btn-primary">
+              <span class="material-symbols-outlined text-[18px]">save</span>
+              Save Changes
+            </button>
+          </div>
+        </div>
+
+        <!-- Support Tiers -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+          <!-- L1 Support -->
+          <div class="bg-white rounded-lg border-t-4 border-green-500 shadow-card overflow-hidden">
+            <div class="p-5">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="p-2 bg-green-50 text-green-600 rounded-lg">
+                  <span class="material-symbols-outlined">headset_mic</span>
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-800">L1 Support</h3>
+                  <p class="text-xs text-slate-500">First Contact</p>
+                </div>
+              </div>
+              <div>
+                <label class="label-base">Team / Contact</label>
+                <input id="l1-support" type="text" class="input-base" placeholder="e.g. Help Desk Team"/>
+              </div>
+            </div>
+          </div>
+
+          <!-- L2 Support -->
+          <div class="bg-white rounded-lg border-t-4 border-blue-500 shadow-card overflow-hidden">
+            <div class="p-5">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                  <span class="material-symbols-outlined">support</span>
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-800">L2 Support</h3>
+                  <p class="text-xs text-slate-500">Technical Support</p>
+                </div>
+              </div>
+              <div>
+                <label class="label-base">Team / Contact</label>
+                <input id="l2-support" type="text" class="input-base" placeholder="e.g. BI Admin Team"/>
+              </div>
+            </div>
+          </div>
+
+          <!-- L3 Support -->
+          <div class="bg-white rounded-lg border-t-4 border-purple-500 shadow-card overflow-hidden">
+            <div class="p-5">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="p-2 bg-purple-50 text-purple-600 rounded-lg">
+                  <span class="material-symbols-outlined">engineering</span>
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-800">L3 Support</h3>
+                  <p class="text-xs text-slate-500">Expert / Developer</p>
+                </div>
+              </div>
+              <div>
+                <label class="label-base">Team / Contact</label>
+                <input id="l3-support" type="text" class="input-base" placeholder="e.g. Data Engineering"/>
+              </div>
+            </div>
+          </div>
+
+          <!-- L4 Support -->
+          <div class="bg-white rounded-lg border-t-4 border-red-500 shadow-card overflow-hidden">
+            <div class="p-5">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="p-2 bg-red-50 text-red-600 rounded-lg">
+                  <span class="material-symbols-outlined">local_fire_department</span>
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-800">L4 Support</h3>
+                  <p class="text-xs text-slate-500">Vendor / External</p>
+                </div>
+              </div>
+              <div>
+                <label class="label-base">Team / Contact</label>
+                <input id="l4-support" type="text" class="input-base" placeholder="e.g. Vendor Support"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Configuration -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Escalation Criteria -->
+          <div class="bg-white rounded-lg border border-slate-200 shadow-card overflow-hidden">
+            <div class="p-4 border-b border-slate-100 bg-slate-50">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-amber-600 text-[20px]">arrow_upward</span>
+                <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide">Escalation Criteria</h3>
+              </div>
+            </div>
+            <div class="p-5">
+              <textarea id="escalation-criteria" class="input-base min-h-[150px]" placeholder="Define when and how issues should be escalated between support tiers...
+
+Example:
+- L1 to L2: Issue not resolved within 4 hours
+- L2 to L3: Requires code/config changes
+- L3 to L4: Platform-level issues"></textarea>
+            </div>
+          </div>
+
+          <!-- FAQ & Community -->
+          <div class="bg-white rounded-lg border border-slate-200 shadow-card overflow-hidden">
+            <div class="p-4 border-b border-slate-100 bg-slate-50">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-blue-600 text-[20px]">quiz</span>
+                <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide">Self-Service Resources</h3>
+              </div>
+            </div>
+            <div class="p-5 space-y-4">
+              <div>
+                <label class="label-base">FAQ / Knowledge Base Link</label>
+                <input id="faq-link" type="text" class="input-base" placeholder="https://..."/>
+              </div>
+              <div>
+                <label class="label-base">Community Operations</label>
+                <textarea id="community-ops" class="input-base min-h-[80px]" placeholder="Describe community channels, champions program, office hours..."></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ========== MODALS ========== -->
+
+<!-- New Project Modal -->
+<div id="modal-new-project" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+    <div class="flex items-center justify-between p-6 border-b border-slate-200">
+      <h3 class="text-lg font-bold text-slate-900">Create New Project</h3>
+      <button onclick="App.closeModal('modal-new-project')" class="text-slate-400 hover:text-slate-600">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="p-6">
+      <div class="mb-4">
+        <label class="label-base">Customer Name *</label>
+        <input id="new-project-name" type="text" class="input-base" placeholder="Company Name"/>
+      </div>
+    </div>
+    <div class="flex justify-end gap-3 p-6 border-t border-slate-200 bg-slate-50 rounded-b-lg">
+      <button onclick="App.closeModal('modal-new-project')" class="btn-secondary">Cancel</button>
+      <button onclick="App.createProject()" class="btn-primary">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Use Case Modal -->
+<div id="modal-new-usecase" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between p-6 border-b border-slate-200 sticky top-0 bg-white">
+      <h3 class="text-lg font-bold text-slate-900">Add Use Case</h3>
+      <button onclick="App.closeModal('modal-new-usecase')" class="text-slate-400 hover:text-slate-600">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="p-6 space-y-4">
+      <div>
+        <label class="label-base">Challenge *</label>
+        <textarea id="new-usecase-challenge" class="input-base min-h-[80px]" placeholder="Describe the problem to solve"></textarea>
+      </div>
+      <div>
+        <label class="label-base">Goal *</label>
+        <textarea id="new-usecase-goal" class="input-base min-h-[80px]" placeholder="What do you want to achieve"></textarea>
+      </div>
+      <div>
+        <label class="label-base">Expected Impact</label>
+        <textarea id="new-usecase-impact" class="input-base" placeholder="Expected outcomes"></textarea>
+      </div>
+      <div>
+        <label class="label-base">90-Day Goal</label>
+        <textarea id="new-usecase-90day" class="input-base" placeholder="Target for the first 90 days"></textarea>
+      </div>
+    </div>
+    <div class="flex justify-end gap-3 p-6 border-t border-slate-200 bg-slate-50 rounded-b-lg">
+      <button onclick="App.closeModal('modal-new-usecase')" class="btn-secondary">Cancel</button>
+      <button onclick="App.addUsecase()" class="btn-primary">Add</button>
+    </div>
+  </div>
+</div>
+
+<?!= include('Scripts'); ?>
+</body>
+</html>

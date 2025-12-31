@@ -1,56 +1,42 @@
 /**
  * UsecaseService.gs
- * ユースケース選定・90日計画（Module 2）のビジネスロジック層
+ * Use case selection and 90-day plan logic.
  */
 
-// ========================================
-// ユースケース管理
-// ========================================
-
-/**
- * ユースケースを追加（バリデーション付き）
- * @param {Object} usecaseData - ユースケースデータ
- * @param {string} userEmail - ユーザーメール
- * @return {string} 生成されたユースケースID
- */
 function addUsecaseWithValidation(usecaseData, userEmail) {
   requireProjectAccess(usecaseData.projectId, userEmail);
 
   var project = getProject(usecaseData.projectId);
   if (project.status === PROJECT_STATUS.ARCHIVED) {
-    throw new Error('アーカイブされたプロジェクトは編集できません');
+    throw new Error('Archived projects cannot be edited.');
   }
 
-  // バリデーション
   if (!usecaseData.challenge || usecaseData.challenge.trim().length === 0) {
-    throw new Error('課題は必須です');
+    throw new Error('Challenge is required.');
   }
 
   if (!usecaseData.goal || usecaseData.goal.trim().length === 0) {
-    throw new Error('狙い（ゴール）は必須です');
+    throw new Error('Goal is required.');
   }
 
   if (usecaseData.challenge.length > 1000) {
-    throw new Error('課題は1000文字以内で入力してください');
+    throw new Error('Challenge must be 1000 characters or less.');
   }
 
   if (usecaseData.goal.length > 500) {
-    throw new Error('狙いは500文字以内で入力してください');
+    throw new Error('Goal must be 500 characters or less.');
   }
 
-  // スコアの範囲チェック
-  var score = parseInt(usecaseData.score) || 50;
+  var score = parseInt(usecaseData.score, 10) || 50;
   if (score < 0 || score > 100) {
-    throw new Error('スコアは0〜100の範囲で入力してください');
+    throw new Error('Score must be between 0 and 100.');
   }
 
-  // 既存のユースケース数をチェック
   var existingUsecases = getUsecases(usecaseData.projectId);
   if (existingUsecases.length >= 20) {
-    throw new Error('ユースケースは最大20件までです');
+    throw new Error('A project can have at most 20 use cases.');
   }
 
-  // データを整形
   var cleanData = {
     projectId: usecaseData.projectId,
     challenge: usecaseData.challenge.trim(),
@@ -65,11 +51,6 @@ function addUsecaseWithValidation(usecaseData, userEmail) {
   return addUsecase(cleanData);
 }
 
-/**
- * ユースケースを更新
- * @param {Object} usecaseData - 更新データ
- * @param {string} userEmail - ユーザーメール
- */
 function updateUsecaseWithValidation(usecaseData, userEmail) {
   requireProjectAccess(usecaseData.projectId, userEmail);
 
@@ -79,16 +60,15 @@ function updateUsecaseWithValidation(usecaseData, userEmail) {
   });
 
   if (!existing) {
-    throw new Error('ユースケースが見つかりません');
+    throw new Error('Use case not found.');
   }
 
-  // バリデーション
   if (!usecaseData.challenge || usecaseData.challenge.trim().length === 0) {
-    throw new Error('課題は必須です');
+    throw new Error('Challenge is required.');
   }
 
   if (!usecaseData.goal || usecaseData.goal.trim().length === 0) {
-    throw new Error('狙い（ゴール）は必須です');
+    throw new Error('Goal is required.');
   }
 
   var rowData = [];
@@ -98,7 +78,7 @@ function updateUsecaseWithValidation(usecaseData, userEmail) {
   rowData[SCHEMA_USECASES.columns.GOAL] = usecaseData.goal.trim();
   rowData[SCHEMA_USECASES.columns.EXPECTED_IMPACT] = (usecaseData.expectedImpact || '').trim();
   rowData[SCHEMA_USECASES.columns.NINETY_DAY_GOAL] = (usecaseData.ninetyDayGoal || '').trim();
-  rowData[SCHEMA_USECASES.columns.SCORE] = parseInt(usecaseData.score) || existing.score;
+  rowData[SCHEMA_USECASES.columns.SCORE] = parseInt(usecaseData.score, 10) || existing.score;
   rowData[SCHEMA_USECASES.columns.PRIORITY] = usecaseData.priority || existing.priority;
   rowData[SCHEMA_USECASES.columns.UPDATED_DATE] = getCurrentTimestamp();
 
@@ -110,12 +90,6 @@ function updateUsecaseWithValidation(usecaseData, userEmail) {
   });
 }
 
-/**
- * ユースケースを削除
- * @param {string} projectId - プロジェクトID
- * @param {string} usecaseId - ユースケースID
- * @param {string} userEmail - ユーザーメール
- */
 function deleteUsecaseWithValidation(projectId, usecaseId, userEmail) {
   requireProjectAccess(projectId, userEmail);
 
@@ -125,10 +99,9 @@ function deleteUsecaseWithValidation(projectId, usecaseId, userEmail) {
   });
 
   if (!target) {
-    throw new Error('ユースケースが見つかりません');
+    throw new Error('Use case not found.');
   }
 
-  // 関連データ（90日計画、価値トラッキング）も削除
   var plan = getNinetyDayPlan(usecaseId);
   if (plan) {
     var planResult = findFirstRow(
@@ -150,7 +123,6 @@ function deleteUsecaseWithValidation(projectId, usecaseId, userEmail) {
     deleteRow(SCHEMA_VALUE.sheetName, valueResult.rowNumber);
   }
 
-  // ユースケース本体を削除
   deleteRow(SCHEMA_USECASES.sheetName, target._rowNumber);
 
   logAudit(userEmail, OPERATION_TYPES.DELETE, projectId, {
@@ -159,26 +131,15 @@ function deleteUsecaseWithValidation(projectId, usecaseId, userEmail) {
   });
 }
 
-// ========================================
-// 優先度スコアリング
-// ========================================
-
-/**
- * ユースケースの優先度を再計算
- * @param {string} projectId - プロジェクトID
- * @param {string} userEmail - ユーザーメール
- */
 function recalculatePriorities(projectId, userEmail) {
   requireProjectAccess(projectId, userEmail);
 
   var usecases = getUsecases(projectId);
 
-  // スコア順にソート
   usecases.sort(function(a, b) {
     return (b.score || 0) - (a.score || 0);
   });
 
-  // 優先度を更新
   usecases.forEach(function(uc, index) {
     var rowData = [];
     rowData[SCHEMA_USECASES.columns.PROJECT_ID] = uc.projectId;
@@ -200,61 +161,57 @@ function recalculatePriorities(projectId, userEmail) {
   });
 }
 
-/**
- * ユースケースのスコアリング基準を取得
- * @return {Object} スコアリング基準
- */
 function getScoringCriteria() {
   return {
     criteria: [
       {
-        name: 'ビジネスインパクト',
-        description: 'このユースケースが事業に与える影響の大きさ',
+        name: 'Business impact',
+        description: 'Expected business value and visibility.',
         weight: 30,
         levels: [
-          { score: 10, label: '低い' },
-          { score: 20, label: '中程度' },
-          { score: 30, label: '高い' }
+          { score: 10, label: 'Low' },
+          { score: 20, label: 'Medium' },
+          { score: 30, label: 'High' }
         ]
       },
       {
-        name: '実現可能性',
-        description: '90日以内に成果を出せる可能性',
+        name: 'Feasibility',
+        description: 'Likelihood of delivering results in 90 days.',
         weight: 25,
         levels: [
-          { score: 8, label: '困難' },
-          { score: 16, label: '可能' },
-          { score: 25, label: '容易' }
+          { score: 8, label: 'Hard' },
+          { score: 16, label: 'Possible' },
+          { score: 25, label: 'Easy' }
         ]
       },
       {
-        name: 'データ準備度',
-        description: '必要なデータが利用可能か',
+        name: 'Data readiness',
+        description: 'Availability and quality of data.',
         weight: 20,
         levels: [
-          { score: 5, label: '未整備' },
-          { score: 12, label: '部分的' },
-          { score: 20, label: '準備完了' }
+          { score: 5, label: 'Not ready' },
+          { score: 12, label: 'Partial' },
+          { score: 20, label: 'Ready' }
         ]
       },
       {
-        name: '経営の関心度',
-        description: '経営層がこのテーマに関心を持っているか',
+        name: 'Executive support',
+        description: 'Level of leadership sponsorship.',
         weight: 15,
         levels: [
-          { score: 5, label: '低い' },
-          { score: 10, label: '中程度' },
-          { score: 15, label: '高い' }
+          { score: 5, label: 'Low' },
+          { score: 10, label: 'Medium' },
+          { score: 15, label: 'High' }
         ]
       },
       {
-        name: 'ステークホルダーの巻き込み',
-        description: '関係者の協力が得られそうか',
+        name: 'Stakeholder alignment',
+        description: 'Ability to align key stakeholders.',
         weight: 10,
         levels: [
-          { score: 3, label: '困難' },
-          { score: 6, label: '可能' },
-          { score: 10, label: '積極的' }
+          { score: 3, label: 'Hard' },
+          { score: 6, label: 'Possible' },
+          { score: 10, label: 'Strong' }
         ]
       }
     ],
@@ -262,35 +219,23 @@ function getScoringCriteria() {
   };
 }
 
-// ========================================
-// 90日計画管理
-// ========================================
-
-/**
- * 90日計画を保存（バリデーション付き）
- * @param {Object} planData - 計画データ
- * @param {string} userEmail - ユーザーメール
- */
 function saveNinetyDayPlanWithValidation(planData, userEmail) {
   requireProjectAccess(planData.projectId, userEmail);
 
-  // ユースケースの存在確認
   var usecases = getUsecases(planData.projectId);
   var exists = usecases.some(function(uc) {
     return uc.usecaseId === planData.usecaseId;
   });
 
   if (!exists) {
-    throw new Error('指定されたユースケースが見つかりません');
+    throw new Error('Use case not found.');
   }
 
-  // 週次マイルストーンのバリデーション
   var milestones = planData.weeklyMilestones || [];
   if (milestones.length > 12) {
-    throw new Error('週次マイルストーンは最大12週分までです');
+    throw new Error('Weekly milestones must be 12 weeks or fewer.');
   }
 
-  // データを整形
   var cleanData = {
     projectId: planData.projectId,
     usecaseId: planData.usecaseId,
@@ -305,32 +250,23 @@ function saveNinetyDayPlanWithValidation(planData, userEmail) {
   saveNinetyDayPlan(cleanData);
 }
 
-/**
- * 90日計画のテンプレートを取得
- * @return {Object} 計画テンプレート
- */
 function getNinetyDayPlanTemplate() {
   return {
-    teamStructure: '【必須役割】\n- プロジェクトリーダー: 1名\n- データ分析担当: 1名\n- 業務担当: 1-2名\n\n【推奨体制】\n- CoE: 技術支援・品質管理\n- IT: インフラ・セキュリティ\n- ビジネス: ユーザー代表・要件定義',
-    requiredData: '【データソース】\n- 売上データ（期間: 過去2年分）\n- 顧客マスタ\n- 商品マスタ\n\n【取得方法】\n- 基幹システムからのエクスポート\n- API連携（可否を確認）',
-    risks: '【技術リスク】\n- データ品質の課題\n- システム連携の遅延\n\n【組織リスク】\n- キーパーソンの異動\n- 優先度の変更\n\n【対策】\n- 早期のPoCで技術検証\n- エグゼクティブスポンサーの確保',
-    communicationPlan: '【定例会議】\n- 週次進捗会議: 毎週金曜 30分\n- 月次報告: 毎月最終週\n\n【コミュニケーションチャネル】\n- チャット: 日常連絡\n- メール: 正式な依頼・報告',
+    teamStructure: 'Roles:\\n- Project lead\\n- Data analyst\\n- Business owner\\n\\nRecommended:\\n- CoE: quality and enablement\\n- IT: security and infrastructure\\n- Business: requirements and adoption',
+    requiredData: 'Data sources:\\n- Sales history\\n- Customer master\\n- Product catalog\\n\\nAccess methods:\\n- Export or API integration',
+    risks: 'Risks:\\n- Data quality issues\\n- Integration delays\\n- Stakeholder changes\\n\\nMitigations:\\n- Early PoC\\n- Weekly steering check-ins',
+    communicationPlan: 'Cadence:\\n- Weekly status\\n- Monthly executive review\\n\\nChannels:\\n- Chat for daily updates\\n- Email for approvals',
     weeklyMilestones: [
-      'Week 1-2: キックオフ、ゴール・スコープ合意',
-      'Week 3-4: データ接続、初期ダッシュボード作成',
-      'Week 5-6: ユーザーレビュー、フィードバック反映',
-      'Week 7-8: トレーニング、並行運用開始',
-      'Week 9-10: 改善・チューニング',
-      'Week 11-12: 成果測定、次フェーズ計画策定'
+      'Week 1-2: Kickoff, scope, success criteria',
+      'Week 3-4: Data access and first dashboard',
+      'Week 5-6: User review and iteration',
+      'Week 7-8: Training and rollout',
+      'Week 9-10: Optimization',
+      'Week 11-12: Value measurement and next plan'
     ]
   };
 }
 
-/**
- * 90日計画の進捗を計算
- * @param {string} usecaseId - ユースケースID
- * @return {Object} 進捗情報
- */
 function calculatePlanProgress(usecaseId) {
   var plan = getNinetyDayPlan(usecaseId);
 
@@ -366,15 +302,6 @@ function calculatePlanProgress(usecaseId) {
   return result;
 }
 
-// ========================================
-// ユースケース分析
-// ========================================
-
-/**
- * ユースケースのサマリーを取得
- * @param {string} projectId - プロジェクトID
- * @return {Object} サマリー情報
- */
 function getUsecaseSummary(projectId) {
   var usecases = getUsecases(projectId);
 
@@ -387,18 +314,15 @@ function getUsecaseSummary(projectId) {
     };
   }
 
-  // スコア順にソート
   var sorted = usecases.slice().sort(function(a, b) {
     return (b.score || 0) - (a.score || 0);
   });
 
-  // 平均スコア
   var totalScore = usecases.reduce(function(sum, uc) {
     return sum + (uc.score || 0);
   }, 0);
   var averageScore = Math.round(totalScore / usecases.length);
 
-  // 90日計画の作成数
   var plansCreated = 0;
   usecases.forEach(function(uc) {
     var plan = getNinetyDayPlan(uc.usecaseId);

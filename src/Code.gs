@@ -1,51 +1,46 @@
 /**
  * Code.gs
- * Web App のエントリーポイントとコントローラー層
+ * Web App entry point and API handlers.
  */
 
 /**
- * Web App の GET リクエストハンドラー
- * @param {Object} e - イベントオブジェクト
- * @return {HtmlOutput} HTML出力
+ * Web App GET handler.
+ * @param {Object} e
+ * @return {HtmlOutput}
  */
 function doGet(e) {
-  // ユーザー認証チェック
   var userEmail = getCurrentUserEmail();
   if (!userEmail) {
-    return HtmlService.createHtmlOutput('認証が必要です。Googleアカウントでログインしてください。');
+    return HtmlService.createHtmlOutput(
+      'Authentication required. Please sign in with your Google account.'
+    );
   }
 
-  // メインHTMLを返却
   var template = HtmlService.createTemplateFromFile('Index');
   template.userEmail = userEmail;
 
   return template.evaluate()
-    .setTitle('Tableau Blueprint ワークショップ')
+    .setTitle('Tableau Blueprint Workshop')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
 /**
- * HTMLファイル内でインクルードするためのヘルパー関数
- * @param {string} filename - ファイル名
- * @return {string} ファイルの内容
+ * Include helper for HTML templates.
+ * @param {string} filename
+ * @return {string}
  */
 function include(filename) {
   return HtmlService.createHtmlOutputFromFile(filename).getContent();
 }
 
 // ========================================
-// API: プロジェクト管理
+// API: Projects
 // ========================================
 
-/**
- * 新規プロジェクトを作成
- * @param {string} customerName - 顧客名
- * @return {Object} 作成されたプロジェクト情報
- */
 function apiCreateProject(customerName) {
   try {
     var userEmail = getCurrentUserEmail();
-    var project = createProject(customerName, userEmail);
+    var project = createProjectWithValidation(customerName, userEmail);
     return { success: true, data: project };
   } catch (error) {
     Logger.log('apiCreateProject error: ' + error.message);
@@ -53,10 +48,6 @@ function apiCreateProject(customerName) {
   }
 }
 
-/**
- * ユーザーのプロジェクト一覧を取得
- * @return {Object} プロジェクト一覧
- */
 function apiGetUserProjects() {
   try {
     var userEmail = getCurrentUserEmail();
@@ -68,17 +59,15 @@ function apiGetUserProjects() {
   }
 }
 
-/**
- * プロジェクト詳細を取得
- * @param {string} projectId - プロジェクトID
- * @return {Object} プロジェクト詳細
- */
 function apiGetProject(projectId) {
   try {
     var userEmail = getCurrentUserEmail();
     requireProjectAccess(projectId, userEmail);
 
     var project = getProject(projectId);
+    if (project) {
+      project.creatorEmail = project.createdBy;
+    }
     return { success: true, data: project };
   } catch (error) {
     Logger.log('apiGetProject error: ' + error.message);
@@ -86,19 +75,13 @@ function apiGetProject(projectId) {
   }
 }
 
-/**
- * プロジェクトの状態を更新
- * @param {string} projectId - プロジェクトID
- * @param {string} status - 新しい状態
- * @return {Object} 更新結果
- */
 function apiUpdateProjectStatus(projectId, status) {
   try {
     var userEmail = getCurrentUserEmail();
     requireProjectAccess(projectId, userEmail);
 
-    updateProjectStatus(projectId, status, userEmail);
-    return { success: true, message: 'プロジェクトの状態を更新しました' };
+    updateProjectStatusWithValidation(projectId, status, userEmail);
+    return { success: true, message: 'Project status updated.' };
   } catch (error) {
     Logger.log('apiUpdateProjectStatus error: ' + error.message);
     return { success: false, error: error.message };
@@ -106,34 +89,23 @@ function apiUpdateProjectStatus(projectId, status) {
 }
 
 // ========================================
-// API: Module 1 - ビジョン
+// API: Module 1 - Vision
 // ========================================
 
-/**
- * ビジョンを保存
- * @param {Object} visionData - ビジョンデータ
- * @return {Object} 保存結果
- */
 function apiSaveVision(visionData) {
   try {
     var userEmail = getCurrentUserEmail();
     requireProjectAccess(visionData.projectId, userEmail);
 
-    visionData.userEmail = userEmail;
-    saveVision(visionData);
+    saveVisionWithValidation(visionData, userEmail);
 
-    return { success: true, message: 'ビジョンを保存しました' };
+    return { success: true, message: 'Vision saved.' };
   } catch (error) {
     Logger.log('apiSaveVision error: ' + error.message);
     return { success: false, error: error.message };
   }
 }
 
-/**
- * ビジョンを取得
- * @param {string} projectId - プロジェクトID
- * @return {Object} ビジョンデータ
- */
 function apiGetVision(projectId) {
   try {
     var userEmail = getCurrentUserEmail();
@@ -148,22 +120,15 @@ function apiGetVision(projectId) {
 }
 
 // ========================================
-// API: Module 2 - ユースケース & 90日計画
+// API: Module 2 - Use Cases & 90-Day Plan
 // ========================================
 
-/**
- * ユースケースを追加
- * @param {Object} usecaseData - ユースケースデータ
- * @return {Object} 追加結果
- */
 function apiAddUsecase(usecaseData) {
   try {
     var userEmail = getCurrentUserEmail();
     requireProjectAccess(usecaseData.projectId, userEmail);
 
-    usecaseData.userEmail = userEmail;
-    var usecaseId = addUsecase(usecaseData);
-
+    var usecaseId = addUsecaseWithValidation(usecaseData, userEmail);
     return { success: true, data: { usecaseId: usecaseId } };
   } catch (error) {
     Logger.log('apiAddUsecase error: ' + error.message);
@@ -171,11 +136,6 @@ function apiAddUsecase(usecaseData) {
   }
 }
 
-/**
- * ユースケース一覧を取得
- * @param {string} projectId - プロジェクトID
- * @return {Object} ユースケース一覧
- */
 function apiGetUsecases(projectId) {
   try {
     var userEmail = getCurrentUserEmail();
@@ -189,32 +149,19 @@ function apiGetUsecases(projectId) {
   }
 }
 
-/**
- * 90日計画を保存
- * @param {Object} planData - 90日計画データ
- * @return {Object} 保存結果
- */
 function apiSaveNinetyDayPlan(planData) {
   try {
     var userEmail = getCurrentUserEmail();
     requireProjectAccess(planData.projectId, userEmail);
 
-    planData.userEmail = userEmail;
-    saveNinetyDayPlan(planData);
-
-    return { success: true, message: '90日計画を保存しました' };
+    saveNinetyDayPlanWithValidation(planData, userEmail);
+    return { success: true, message: '90-day plan saved.' };
   } catch (error) {
     Logger.log('apiSaveNinetyDayPlan error: ' + error.message);
     return { success: false, error: error.message };
   }
 }
 
-/**
- * 90日計画を取得
- * @param {string} usecaseId - ユースケースID
- * @param {string} projectId - プロジェクトID（権限チェック用）
- * @return {Object} 90日計画データ
- */
 function apiGetNinetyDayPlan(usecaseId, projectId) {
   try {
     var userEmail = getCurrentUserEmail();
@@ -229,34 +176,22 @@ function apiGetNinetyDayPlan(usecaseId, projectId) {
 }
 
 // ========================================
-// API: Module 4 - 体制・RACI
+// API: Module 4 - Org & RACI
 // ========================================
 
-/**
- * RACIエントリを保存
- * @param {string} projectId - プロジェクトID
- * @param {Array<Object>} raciEntries - RACIエントリ配列
- * @return {Object} 保存結果
- */
 function apiSaveRACIEntries(projectId, raciEntries) {
   try {
     var userEmail = getCurrentUserEmail();
     requireProjectAccess(projectId, userEmail);
 
-    saveRACIEntries(projectId, raciEntries, userEmail);
-
-    return { success: true, message: 'RACI設計を保存しました' };
+    saveRACIEntriesWithValidation(projectId, raciEntries, userEmail);
+    return { success: true, message: 'RACI entries saved.' };
   } catch (error) {
     Logger.log('apiSaveRACIEntries error: ' + error.message);
     return { success: false, error: error.message };
   }
 }
 
-/**
- * RACIエントリを取得
- * @param {string} projectId - プロジェクトID
- * @return {Object} RACIエントリ一覧
- */
 function apiGetRACIEntries(projectId) {
   try {
     var userEmail = getCurrentUserEmail();
@@ -271,34 +206,22 @@ function apiGetRACIEntries(projectId) {
 }
 
 // ========================================
-// API: Module 7 - 価値トラッキング
+// API: Module 7 - Value Tracking
 // ========================================
 
-/**
- * 価値トラッキングを保存
- * @param {Object} valueData - 価値データ
- * @return {Object} 保存結果
- */
 function apiSaveValue(valueData) {
   try {
     var userEmail = getCurrentUserEmail();
     requireProjectAccess(valueData.projectId, userEmail);
 
-    valueData.userEmail = userEmail;
-    saveValue(valueData);
-
-    return { success: true, message: '価値トラッキングを保存しました' };
+    saveValueWithValidation(valueData, userEmail);
+    return { success: true, message: 'Value tracking saved.' };
   } catch (error) {
     Logger.log('apiSaveValue error: ' + error.message);
     return { success: false, error: error.message };
   }
 }
 
-/**
- * 価値トラッキング一覧を取得
- * @param {string} projectId - プロジェクトID
- * @return {Object} 価値データ一覧
- */
 function apiGetValues(projectId) {
   try {
     var userEmail = getCurrentUserEmail();
@@ -313,21 +236,15 @@ function apiGetValues(projectId) {
 }
 
 // ========================================
-// API: ドキュメント生成
+// API: Document generation
 // ========================================
 
-/**
- * 稟議書案を生成
- * @param {string} projectId - プロジェクトID
- * @return {Object} 生成結果（ドキュメントURL含む）
- */
 function apiGenerateProposal(projectId) {
   try {
     var userEmail = getCurrentUserEmail();
     requireProjectAccess(projectId, userEmail);
 
     var docUrl = generateProposalDocument(projectId, userEmail);
-
     return { success: true, data: { documentUrl: docUrl } };
   } catch (error) {
     Logger.log('apiGenerateProposal error: ' + error.message);
@@ -336,13 +253,112 @@ function apiGenerateProposal(projectId) {
 }
 
 // ========================================
-// API: ユーティリティ
+// API: Module 3 - Core Process Gap Analysis
 // ========================================
 
-/**
- * シートを初期化（管理者用）
- * @return {Object} 初期化結果
- */
+function apiSaveCoreProcess(processData) {
+  try {
+    var userEmail = getCurrentUserEmail();
+    requireProjectAccess(processData.projectId, userEmail);
+
+    saveCoreProcess(processData, userEmail);
+    return { success: true, message: 'Core process data saved.' };
+  } catch (error) {
+    Logger.log('apiSaveCoreProcess error: ' + error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+function apiGetCoreProcess(projectId) {
+  try {
+    var userEmail = getCurrentUserEmail();
+    requireProjectAccess(projectId, userEmail);
+
+    var data = getCoreProcess(projectId);
+    return { success: true, data: data };
+  } catch (error) {
+    Logger.log('apiGetCoreProcess error: ' + error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+// ========================================
+// API: Module 5 - Governance
+// ========================================
+
+function apiSaveGovernanceEntries(projectId, governanceEntries) {
+  try {
+    var userEmail = getCurrentUserEmail();
+    requireProjectAccess(projectId, userEmail);
+
+    saveGovernanceEntries(projectId, governanceEntries, userEmail);
+    return { success: true, message: 'Governance entries saved.' };
+  } catch (error) {
+    Logger.log('apiSaveGovernanceEntries error: ' + error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+function apiGetGovernanceEntries(projectId) {
+  try {
+    var userEmail = getCurrentUserEmail();
+    requireProjectAccess(projectId, userEmail);
+
+    var entries = getGovernanceEntries(projectId);
+    return { success: true, data: entries };
+  } catch (error) {
+    Logger.log('apiGetGovernanceEntries error: ' + error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+function apiAddGovernanceEntry(governanceData) {
+  try {
+    var userEmail = getCurrentUserEmail();
+    requireProjectAccess(governanceData.projectId, userEmail);
+
+    addGovernanceEntry(governanceData, userEmail);
+    return { success: true, message: 'Governance entry added.' };
+  } catch (error) {
+    Logger.log('apiAddGovernanceEntry error: ' + error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+// ========================================
+// API: Module 6 - Operations Support
+// ========================================
+
+function apiSaveOperationsSupport(supportData) {
+  try {
+    var userEmail = getCurrentUserEmail();
+    requireProjectAccess(supportData.projectId, userEmail);
+
+    saveOperationsSupport(supportData, userEmail);
+    return { success: true, message: 'Operations support data saved.' };
+  } catch (error) {
+    Logger.log('apiSaveOperationsSupport error: ' + error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+function apiGetOperationsSupport(projectId) {
+  try {
+    var userEmail = getCurrentUserEmail();
+    requireProjectAccess(projectId, userEmail);
+
+    var data = getOperationsSupport(projectId);
+    return { success: true, data: data };
+  } catch (error) {
+    Logger.log('apiGetOperationsSupport error: ' + error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+// ========================================
+// API: Utilities
+// ========================================
+
 function apiInitializeSheets() {
   try {
     var result = initializeAllSheets();
@@ -353,10 +369,6 @@ function apiInitializeSheets() {
   }
 }
 
-/**
- * 現在のユーザー情報を取得
- * @return {Object} ユーザー情報
- */
 function apiGetCurrentUser() {
   try {
     var user = getCurrentUser();

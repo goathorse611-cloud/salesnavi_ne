@@ -1,34 +1,34 @@
 /**
  * Config.gs
- * アプリケーション全体の設定と定数を管理
+ * Central configuration and shared utilities.
  */
 
 // ========================================
-// スプレッドシート設定
+// Spreadsheet configuration
 // ========================================
 
 /**
- * スプレッドシートIDを取得
- * Script Properties の SPREADSHEET_ID から取得
+ * Returns the spreadsheet ID from Script Properties.
+ * Script Properties: SPREADSHEET_ID
  */
 function getSpreadsheetId() {
   var props = PropertiesService.getScriptProperties();
   var id = props.getProperty('SPREADSHEET_ID');
   if (!id) {
-    throw new Error('SPREADSHEET_ID が設定されていません。スクリプトプロパティに設定してください。');
+    throw new Error('SPREADSHEET_ID is not set in Script Properties.');
   }
   return id;
 }
 
 /**
- * スプレッドシートオブジェクトを取得
+ * Returns the Spreadsheet instance.
  */
 function getSpreadsheet() {
   return SpreadsheetApp.openById(getSpreadsheetId());
 }
 
 // ========================================
-// シート名定数
+// Sheet names
 // ========================================
 
 var SHEET_NAMES = {
@@ -37,6 +37,7 @@ var SHEET_NAMES = {
   USECASES: 'ユースケース',
   NINETY_DAY_PLAN: '90日計画',
   ORGANIZATION_RACI: '体制RACI',
+  CORE_PROCESS: 'コアプロセス',
   GOVERNANCE: '統制',
   OPERATIONS_SUPPORT: '運営支援',
   VALUE: '価値',
@@ -44,12 +45,9 @@ var SHEET_NAMES = {
 };
 
 // ========================================
-// データスキーマ定義
+// Schema definitions
 // ========================================
 
-/**
- * 1. プロジェクト シートのスキーマ
- */
 var SCHEMA_PROJECTS = {
   sheetName: SHEET_NAMES.PROJECTS,
   headers: [
@@ -59,8 +57,8 @@ var SCHEMA_PROJECTS = {
     '作成者メール',
     '編集者メール',
     '状態',
-    '最終更新日',
-    '最終更新者'
+    '更新日',
+    '更新者メール'
   ],
   columns: {
     PROJECT_ID: 0,
@@ -74,9 +72,6 @@ var SCHEMA_PROJECTS = {
   }
 };
 
-/**
- * 2. ビジョン シートのスキーマ
- */
 var SCHEMA_VISION = {
   sheetName: SHEET_NAMES.VISION,
   headers: [
@@ -85,7 +80,7 @@ var SCHEMA_VISION = {
     '意思決定ルール',
     '成功指標',
     '備考',
-    '最終更新日'
+    '更新日'
   ],
   columns: {
     PROJECT_ID: 0,
@@ -97,21 +92,18 @@ var SCHEMA_VISION = {
   }
 };
 
-/**
- * 3. ユースケース シートのスキーマ
- */
 var SCHEMA_USECASES = {
   sheetName: SHEET_NAMES.USECASES,
   headers: [
     'プロジェクトID',
     'ユースケースID',
     '課題',
-    '狙い',
+    '目標',
     '想定効果',
     '90日ゴール',
     'スコア',
     '優先度',
-    '最終更新日'
+    '更新日'
   ],
   columns: {
     PROJECT_ID: 0,
@@ -126,9 +118,6 @@ var SCHEMA_USECASES = {
   }
 };
 
-/**
- * 4. 90日計画 シートのスキーマ
- */
 var SCHEMA_NINETY_DAY_PLAN = {
   sheetName: SHEET_NAMES.NINETY_DAY_PLAN,
   headers: [
@@ -139,7 +128,7 @@ var SCHEMA_NINETY_DAY_PLAN = {
     'リスク',
     'コミュニケーション計画',
     '週次マイルストーン',
-    '最終更新日'
+    '更新日'
   ],
   columns: {
     PROJECT_ID: 0,
@@ -148,47 +137,41 @@ var SCHEMA_NINETY_DAY_PLAN = {
     REQUIRED_DATA: 3,
     RISKS: 4,
     COMMUNICATION_PLAN: 5,
-    WEEKLY_MILESTONES: 6, // JSON文字列
+    WEEKLY_MILESTONES: 6,
     UPDATED_DATE: 7
   }
 };
 
-/**
- * 5. 体制RACI シートのスキーマ
- */
 var SCHEMA_ORGANIZATION_RACI = {
   sheetName: SHEET_NAMES.ORGANIZATION_RACI,
   headers: [
     'プロジェクトID',
-    '3本柱区分',
+    '3本柱',
     'タスク',
     '担当者',
     'RACI',
-    '最終更新日'
+    '更新日'
   ],
   columns: {
     PROJECT_ID: 0,
-    PILLAR: 1, // CoE / ビジネスデータネットワーク / IT
+    PILLAR: 1,
     TASK: 2,
     ASSIGNEE: 3,
-    RACI: 4, // R / A / C / I
+    RACI: 4,
     UPDATED_DATE: 5
   }
 };
 
-/**
- * 6. 統制 シートのスキーマ
- */
 var SCHEMA_GOVERNANCE = {
   sheetName: SHEET_NAMES.GOVERNANCE,
   headers: [
     'プロジェクトID',
     '対象',
-    '統制モデル',
+    'モデル',
     '責任者',
     'ルール',
     '例外プロセス',
-    '最終更新日'
+    '更新日'
   ],
   columns: {
     PROJECT_ID: 0,
@@ -201,21 +184,18 @@ var SCHEMA_GOVERNANCE = {
   }
 };
 
-/**
- * 7. 運営支援 シートのスキーマ
- */
 var SCHEMA_OPERATIONS_SUPPORT = {
   sheetName: SHEET_NAMES.OPERATIONS_SUPPORT,
   headers: [
     'プロジェクトID',
-    '一次窓口',
-    '二次窓口',
-    '三次窓口',
-    '四次窓口',
+    'L1サポート',
+    'L2サポート',
+    'L3サポート',
+    'L4サポート',
     'FAQリンク',
-    'エスカレーション条件',
+    'エスカレーション基準',
     'コミュニティ運用',
-    '最終更新日'
+    '更新日'
   ],
   columns: {
     PROJECT_ID: 0,
@@ -230,9 +210,6 @@ var SCHEMA_OPERATIONS_SUPPORT = {
   }
 };
 
-/**
- * 8. 価値 シートのスキーマ
- */
 var SCHEMA_VALUE = {
   sheetName: SHEET_NAMES.VALUE,
   headers: [
@@ -242,22 +219,19 @@ var SCHEMA_VALUE = {
     '定性効果',
     '証跡',
     '次の投資判断',
-    '最終更新日'
+    '更新日'
   ],
   columns: {
     PROJECT_ID: 0,
     USECASE_ID: 1,
     QUANTITATIVE_IMPACT: 2,
     QUALITATIVE_IMPACT: 3,
-    EVIDENCE: 4, // Driveリンク
+    EVIDENCE: 4,
     NEXT_INVESTMENT: 5,
     UPDATED_DATE: 6
   }
 };
 
-/**
- * 9. 監査ログ シートのスキーマ
- */
 var SCHEMA_AUDIT_LOG = {
   sheetName: SHEET_NAMES.AUDIT_LOG,
   headers: [
@@ -272,26 +246,56 @@ var SCHEMA_AUDIT_LOG = {
     USER: 1,
     OPERATION: 2,
     PROJECT_ID: 3,
-    DETAILS: 4 // JSON文字列
+    DETAILS: 4
+  }
+};
+
+var SCHEMA_CORE_PROCESS = {
+  sheetName: SHEET_NAMES.CORE_PROCESS,
+  headers: [
+    'プロジェクトID',
+    'アジリティスコア',
+    'スキルスコア',
+    'データ品質スコア',
+    '信頼スコア',
+    '運用効率スコア',
+    'コミュニティスコア',
+    'アジリティコメント',
+    'スキルコメント',
+    'データ品質コメント',
+    '信頼コメント',
+    '運用効率コメント',
+    'コミュニティコメント',
+    '更新日'
+  ],
+  columns: {
+    PROJECT_ID: 0,
+    AGILITY_SCORE: 1,
+    SKILLS_SCORE: 2,
+    DATA_QUALITY_SCORE: 3,
+    TRUST_SCORE: 4,
+    OPERATIONAL_EFFICIENCY_SCORE: 5,
+    COMMUNITY_SCORE: 6,
+    AGILITY_COMMENT: 7,
+    SKILLS_COMMENT: 8,
+    DATA_QUALITY_COMMENT: 9,
+    TRUST_COMMENT: 10,
+    OPERATIONAL_EFFICIENCY_COMMENT: 11,
+    COMMUNITY_COMMENT: 12,
+    UPDATED_DATE: 13
   }
 };
 
 // ========================================
-// 列挙型定数
+// Enumerations
 // ========================================
 
-/**
- * プロジェクト状態
- */
 var PROJECT_STATUS = {
-  DRAFT: '下書き',
-  CONFIRMED: '確定',
-  ARCHIVED: 'アーカイブ'
+  DRAFT: 'Draft',
+  CONFIRMED: 'Confirmed',
+  ARCHIVED: 'Archived'
 };
 
-/**
- * RACI 区分
- */
 var RACI_TYPES = {
   RESPONSIBLE: 'R',
   ACCOUNTABLE: 'A',
@@ -299,18 +303,12 @@ var RACI_TYPES = {
   INFORMED: 'I'
 };
 
-/**
- * 3本柱組織
- */
 var THREE_PILLARS = {
   COE: 'CoE',
-  BUSINESS_DATA_NETWORK: 'ビジネスデータネットワーク',
+  BUSINESS_DATA_NETWORK: 'Biz Data Network',
   IT: 'IT'
 };
 
-/**
- * 操作種別
- */
 var OPERATION_TYPES = {
   CREATE: 'CREATE',
   UPDATE: 'UPDATE',
@@ -319,13 +317,9 @@ var OPERATION_TYPES = {
 };
 
 // ========================================
-// ID生成関数
+// ID helpers
 // ========================================
 
-/**
- * プロジェクトIDを生成
- * フォーマット: PRJ-YYYYMMDD-9999
- */
 function generateProjectId() {
   var now = new Date();
   var dateStr = Utilities.formatDate(now, Session.getScriptTimeZone(), 'yyyyMMdd');
@@ -333,10 +327,6 @@ function generateProjectId() {
   return 'PRJ-' + dateStr + '-' + randomNum;
 }
 
-/**
- * ユースケースIDを生成
- * フォーマット: UC-YYYYMMDD-999
- */
 function generateUsecaseId() {
   var now = new Date();
   var dateStr = Utilities.formatDate(now, Session.getScriptTimeZone(), 'yyyyMMdd');
@@ -345,26 +335,17 @@ function generateUsecaseId() {
 }
 
 // ========================================
-// ユーティリティ関数
+// Utilities
 // ========================================
 
-/**
- * 現在のユーザーメールアドレスを取得
- */
 function getCurrentUserEmail() {
   return Session.getActiveUser().getEmail();
 }
 
-/**
- * 現在の日時を取得
- */
 function getCurrentTimestamp() {
   return new Date();
 }
 
-/**
- * JSON文字列を安全にパース
- */
 function safeJsonParse(jsonString, defaultValue) {
   try {
     return JSON.parse(jsonString);
@@ -374,9 +355,6 @@ function safeJsonParse(jsonString, defaultValue) {
   }
 }
 
-/**
- * オブジェクトをJSON文字列に変換
- */
 function safeJsonStringify(obj) {
   try {
     return JSON.stringify(obj);

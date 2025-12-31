@@ -1,16 +1,12 @@
 /**
  * SpreadsheetRepository.gs
- * スプレッドシート（簡易DB）へのアクセスを担当するリポジトリ層
+ * Spreadsheet-backed storage helpers.
  */
 
 // ========================================
-// シート初期化
+// Sheet initialization
 // ========================================
 
-/**
- * すべてのシートを初期化
- * シートが存在しない場合は作成し、ヘッダー行を設定
- */
 function initializeAllSheets() {
   var ss = getSpreadsheet();
   var schemas = [
@@ -19,6 +15,7 @@ function initializeAllSheets() {
     SCHEMA_USECASES,
     SCHEMA_NINETY_DAY_PLAN,
     SCHEMA_ORGANIZATION_RACI,
+    SCHEMA_CORE_PROCESS,
     SCHEMA_GOVERNANCE,
     SCHEMA_OPERATIONS_SUPPORT,
     SCHEMA_VALUE,
@@ -29,112 +26,70 @@ function initializeAllSheets() {
     initializeSheet(ss, schema);
   });
 
-  Logger.log('すべてのシートを初期化しました');
-  return { success: true, message: 'すべてのシートを初期化しました' };
+  Logger.log('All sheets initialized.');
+  return { success: true, message: 'All sheets initialized.' };
 }
 
-/**
- * 個別シートを初期化
- * @param {Spreadsheet} ss - スプレッドシートオブジェクト
- * @param {Object} schema - シートスキーマ
- */
 function initializeSheet(ss, schema) {
   var sheet = ss.getSheetByName(schema.sheetName);
 
   if (!sheet) {
-    // シートが存在しない場合は作成
     sheet = ss.insertSheet(schema.sheetName);
-    Logger.log('シート「' + schema.sheetName + '」を作成しました');
+    Logger.log('Created sheet: ' + schema.sheetName);
   }
 
-  // ヘッダー行をチェック
   var headers = sheet.getRange(1, 1, 1, schema.headers.length).getValues()[0];
   var headersEmpty = headers.every(function(h) { return h === ''; });
 
   if (headersEmpty) {
-    // ヘッダー行を設定
     sheet.getRange(1, 1, 1, schema.headers.length).setValues([schema.headers]);
     sheet.getRange(1, 1, 1, schema.headers.length).setFontWeight('bold');
     sheet.setFrozenRows(1);
-    Logger.log('シート「' + schema.sheetName + '」にヘッダーを設定しました');
+    Logger.log('Headers set for sheet: ' + schema.sheetName);
   }
 }
 
-/**
- * シートオブジェクトを取得
- * @param {string} sheetName - シート名
- * @return {Sheet} シートオブジェクト
- */
 function getSheet(sheetName) {
   var ss = getSpreadsheet();
   var sheet = ss.getSheetByName(sheetName);
   if (!sheet) {
-    throw new Error('シート「' + sheetName + '」が見つかりません');
+    throw new Error('Sheet not found: ' + sheetName);
   }
   return sheet;
 }
 
 // ========================================
-// 汎用CRUD操作
+// Generic CRUD
 // ========================================
 
-/**
- * データを追加
- * @param {string} sheetName - シート名
- * @param {Array} rowData - 追加する行データ
- * @return {number} 追加された行番号
- */
 function appendRow(sheetName, rowData) {
   var sheet = getSheet(sheetName);
   sheet.appendRow(rowData);
   return sheet.getLastRow();
 }
 
-/**
- * データを更新
- * @param {string} sheetName - シート名
- * @param {number} rowNumber - 更新する行番号 (1-indexed)
- * @param {Array} rowData - 更新するデータ
- */
 function updateRow(sheetName, rowNumber, rowData) {
   var sheet = getSheet(sheetName);
   sheet.getRange(rowNumber, 1, 1, rowData.length).setValues([rowData]);
 }
 
-/**
- * データを削除
- * @param {string} sheetName - シート名
- * @param {number} rowNumber - 削除する行番号 (1-indexed)
- */
 function deleteRow(sheetName, rowNumber) {
   var sheet = getSheet(sheetName);
   sheet.deleteRow(rowNumber);
 }
 
-/**
- * すべてのデータを取得
- * @param {string} sheetName - シート名
- * @return {Array<Array>} すべてのデータ行 (ヘッダー除く)
- */
 function getAllRows(sheetName) {
   var sheet = getSheet(sheetName);
   var lastRow = sheet.getLastRow();
 
   if (lastRow <= 1) {
-    return []; // ヘッダーのみの場合は空配列
+    return [];
   }
 
   var lastCol = sheet.getLastColumn();
   return sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
 }
 
-/**
- * 条件に一致する行を検索
- * @param {string} sheetName - シート名
- * @param {number} columnIndex - 検索対象の列インデックス (0-indexed)
- * @param {*} value - 検索する値
- * @return {Array} { rowNumber: 行番号, data: データ配列 }
- */
 function findRows(sheetName, columnIndex, value) {
   var rows = getAllRows(sheetName);
   var results = [];
@@ -142,7 +97,7 @@ function findRows(sheetName, columnIndex, value) {
   rows.forEach(function(row, index) {
     if (row[columnIndex] === value) {
       results.push({
-        rowNumber: index + 2, // ヘッダー分+1、0-indexed→1-indexed
+        rowNumber: index + 2,
         data: row
       });
     }
@@ -151,28 +106,15 @@ function findRows(sheetName, columnIndex, value) {
   return results;
 }
 
-/**
- * 条件に一致する最初の行を取得
- * @param {string} sheetName - シート名
- * @param {number} columnIndex - 検索対象の列インデックス (0-indexed)
- * @param {*} value - 検索する値
- * @return {Object|null} { rowNumber: 行番号, data: データ配列 } または null
- */
 function findFirstRow(sheetName, columnIndex, value) {
   var results = findRows(sheetName, columnIndex, value);
   return results.length > 0 ? results[0] : null;
 }
 
 // ========================================
-// プロジェクト操作
+// Projects
 // ========================================
 
-/**
- * プロジェクトを作成
- * @param {string} customerName - 顧客名
- * @param {string} userEmail - 作成者メール
- * @return {Object} 作成されたプロジェクト情報
- */
 function createProject(customerName, userEmail) {
   var projectId = generateProjectId();
   var now = getCurrentTimestamp();
@@ -182,14 +124,13 @@ function createProject(customerName, userEmail) {
   rowData[SCHEMA_PROJECTS.columns.CUSTOMER_NAME] = customerName;
   rowData[SCHEMA_PROJECTS.columns.CREATED_DATE] = now;
   rowData[SCHEMA_PROJECTS.columns.CREATED_BY] = userEmail;
-  rowData[SCHEMA_PROJECTS.columns.EDITORS] = userEmail; // 初期は作成者のみ
+  rowData[SCHEMA_PROJECTS.columns.EDITORS] = userEmail;
   rowData[SCHEMA_PROJECTS.columns.STATUS] = PROJECT_STATUS.DRAFT;
   rowData[SCHEMA_PROJECTS.columns.UPDATED_DATE] = now;
   rowData[SCHEMA_PROJECTS.columns.UPDATED_BY] = userEmail;
 
   appendRow(SCHEMA_PROJECTS.sheetName, rowData);
 
-  // 監査ログ
   logAudit(userEmail, OPERATION_TYPES.CREATE, projectId, { customerName: customerName });
 
   return {
@@ -200,11 +141,6 @@ function createProject(customerName, userEmail) {
   };
 }
 
-/**
- * プロジェクトを取得
- * @param {string} projectId - プロジェクトID
- * @return {Object|null} プロジェクト情報
- */
 function getProject(projectId) {
   var result = findFirstRow(
     SCHEMA_PROJECTS.sheetName,
@@ -228,11 +164,6 @@ function getProject(projectId) {
   };
 }
 
-/**
- * ユーザーがアクセス可能なプロジェクト一覧を取得
- * @param {string} userEmail - ユーザーメール
- * @return {Array<Object>} プロジェクト一覧
- */
 function getUserProjects(userEmail) {
   var rows = getAllRows(SCHEMA_PROJECTS.sheetName);
   var projects = [];
@@ -241,7 +172,6 @@ function getUserProjects(userEmail) {
     var editors = row[SCHEMA_PROJECTS.columns.EDITORS] || '';
     var editorList = editors.split(',').map(function(e) { return e.trim(); });
 
-    // 作成者または編集者リストに含まれる場合のみ追加
     if (row[SCHEMA_PROJECTS.columns.CREATED_BY] === userEmail ||
         editorList.indexOf(userEmail) !== -1) {
       projects.push({
@@ -257,16 +187,10 @@ function getUserProjects(userEmail) {
   return projects;
 }
 
-/**
- * プロジェクトの状態を更新
- * @param {string} projectId - プロジェクトID
- * @param {string} status - 新しい状態
- * @param {string} userEmail - 更新者メール
- */
 function updateProjectStatus(projectId, status, userEmail) {
   var project = getProject(projectId);
   if (!project) {
-    throw new Error('プロジェクトが見つかりません: ' + projectId);
+    throw new Error('Project not found: ' + projectId);
   }
 
   var rowData = [];
@@ -281,7 +205,6 @@ function updateProjectStatus(projectId, status, userEmail) {
 
   updateRow(SCHEMA_PROJECTS.sheetName, project._rowNumber, rowData);
 
-  // 監査ログ
   logAudit(userEmail, OPERATION_TYPES.UPDATE, projectId, {
     field: 'status',
     oldValue: project.status,
@@ -290,13 +213,9 @@ function updateProjectStatus(projectId, status, userEmail) {
 }
 
 // ========================================
-// ビジョン操作
+// Vision
 // ========================================
 
-/**
- * ビジョンを保存
- * @param {Object} visionData - ビジョンデータ
- */
 function saveVision(visionData) {
   var existing = findFirstRow(
     SCHEMA_VISION.sheetName,
@@ -321,11 +240,6 @@ function saveVision(visionData) {
   }
 }
 
-/**
- * ビジョンを取得
- * @param {string} projectId - プロジェクトID
- * @return {Object|null} ビジョンデータ
- */
 function getVision(projectId) {
   var result = findFirstRow(
     SCHEMA_VISION.sheetName,
@@ -347,14 +261,9 @@ function getVision(projectId) {
 }
 
 // ========================================
-// ユースケース操作
+// Use cases
 // ========================================
 
-/**
- * ユースケースを追加
- * @param {Object} usecaseData - ユースケースデータ
- * @return {string} 生成されたユースケースID
- */
 function addUsecase(usecaseData) {
   var usecaseId = generateUsecaseId();
 
@@ -379,11 +288,6 @@ function addUsecase(usecaseData) {
   return usecaseId;
 }
 
-/**
- * プロジェクトのユースケース一覧を取得
- * @param {string} projectId - プロジェクトID
- * @return {Array<Object>} ユースケース一覧
- */
 function getUsecases(projectId) {
   var results = findRows(
     SCHEMA_USECASES.sheetName,
@@ -409,13 +313,9 @@ function getUsecases(projectId) {
 }
 
 // ========================================
-// 90日計画操作
+// 90-day plan
 // ========================================
 
-/**
- * 90日計画を保存
- * @param {Object} planData - 90日計画データ
- */
 function saveNinetyDayPlan(planData) {
   var existing = findFirstRow(
     SCHEMA_NINETY_DAY_PLAN.sheetName,
@@ -448,11 +348,6 @@ function saveNinetyDayPlan(planData) {
   }
 }
 
-/**
- * 90日計画を取得
- * @param {string} usecaseId - ユースケースID
- * @return {Object|null} 90日計画データ
- */
 function getNinetyDayPlan(usecaseId) {
   var result = findFirstRow(
     SCHEMA_NINETY_DAY_PLAN.sheetName,
@@ -476,29 +371,20 @@ function getNinetyDayPlan(usecaseId) {
 }
 
 // ========================================
-// 体制RACI操作
+// RACI
 // ========================================
 
-/**
- * RACIエントリを保存（一括）
- * @param {string} projectId - プロジェクトID
- * @param {Array<Object>} raciEntries - RACIエントリ配列
- * @param {string} userEmail - 更新者メール
- */
 function saveRACIEntries(projectId, raciEntries, userEmail) {
-  // 既存のエントリを削除
   var existingRows = findRows(
     SCHEMA_ORGANIZATION_RACI.sheetName,
     SCHEMA_ORGANIZATION_RACI.columns.PROJECT_ID,
     projectId
   );
 
-  // 逆順で削除（行番号がずれないように）
   existingRows.reverse().forEach(function(row) {
     deleteRow(SCHEMA_ORGANIZATION_RACI.sheetName, row.rowNumber);
   });
 
-  // 新しいエントリを追加
   raciEntries.forEach(function(entry) {
     var rowData = [];
     rowData[SCHEMA_ORGANIZATION_RACI.columns.PROJECT_ID] = projectId;
@@ -517,11 +403,6 @@ function saveRACIEntries(projectId, raciEntries, userEmail) {
   });
 }
 
-/**
- * RACIエントリを取得
- * @param {string} projectId - プロジェクトID
- * @return {Array<Object>} RACIエントリ一覧
- */
 function getRACIEntries(projectId) {
   var results = findRows(
     SCHEMA_ORGANIZATION_RACI.sheetName,
@@ -542,13 +423,9 @@ function getRACIEntries(projectId) {
 }
 
 // ========================================
-// 価値トラッキング操作
+// Value tracking
 // ========================================
 
-/**
- * 価値トラッキングを保存
- * @param {Object} valueData - 価値データ
- */
 function saveValue(valueData) {
   var existing = findFirstRow(
     SCHEMA_VALUE.sheetName,
@@ -580,11 +457,6 @@ function saveValue(valueData) {
   }
 }
 
-/**
- * 価値トラッキングを取得
- * @param {string} projectId - プロジェクトID
- * @return {Array<Object>} 価値データ一覧
- */
 function getValues(projectId) {
   var results = findRows(
     SCHEMA_VALUE.sheetName,
@@ -606,16 +478,9 @@ function getValues(projectId) {
 }
 
 // ========================================
-// 監査ログ操作
+// Audit logs
 // ========================================
 
-/**
- * 監査ログを記録
- * @param {string} userEmail - 操作ユーザー
- * @param {string} operation - 操作種別
- * @param {string} projectId - プロジェクトID
- * @param {Object} details - 詳細情報
- */
 function logAudit(userEmail, operation, projectId, details) {
   var rowData = [];
   rowData[SCHEMA_AUDIT_LOG.columns.TIMESTAMP] = getCurrentTimestamp();
@@ -627,11 +492,6 @@ function logAudit(userEmail, operation, projectId, details) {
   appendRow(SCHEMA_AUDIT_LOG.sheetName, rowData);
 }
 
-/**
- * 監査ログを取得
- * @param {string} projectId - プロジェクトID
- * @return {Array<Object>} 監査ログ一覧
- */
 function getAuditLogs(projectId) {
   var results = findRows(
     SCHEMA_AUDIT_LOG.sheetName,
@@ -652,29 +512,20 @@ function getAuditLogs(projectId) {
 }
 
 // ========================================
-// 統制操作 (Module 5)
+// Governance (Module 5)
 // ========================================
 
-/**
- * 統制エントリを保存（一括）
- * @param {string} projectId - プロジェクトID
- * @param {Array<Object>} governanceEntries - 統制エントリ配列
- * @param {string} userEmail - 更新者メール
- */
 function saveGovernanceEntries(projectId, governanceEntries, userEmail) {
-  // 既存のエントリを削除
   var existingRows = findRows(
     SCHEMA_GOVERNANCE.sheetName,
     SCHEMA_GOVERNANCE.columns.PROJECT_ID,
     projectId
   );
 
-  // 逆順で削除（行番号がずれないように）
   existingRows.reverse().forEach(function(row) {
     deleteRow(SCHEMA_GOVERNANCE.sheetName, row.rowNumber);
   });
 
-  // 新しいエントリを追加
   governanceEntries.forEach(function(entry) {
     var rowData = [];
     rowData[SCHEMA_GOVERNANCE.columns.PROJECT_ID] = projectId;
@@ -694,11 +545,6 @@ function saveGovernanceEntries(projectId, governanceEntries, userEmail) {
   });
 }
 
-/**
- * 統制エントリを取得
- * @param {string} projectId - プロジェクトID
- * @return {Array<Object>} 統制エントリ一覧
- */
 function getGovernanceEntries(projectId) {
   var results = findRows(
     SCHEMA_GOVERNANCE.sheetName,
@@ -719,11 +565,6 @@ function getGovernanceEntries(projectId) {
   });
 }
 
-/**
- * 統制エントリを1件追加
- * @param {Object} governanceData - 統制データ
- * @param {string} userEmail - ユーザーメール
- */
 function addGovernanceEntry(governanceData, userEmail) {
   var rowData = [];
   rowData[SCHEMA_GOVERNANCE.columns.PROJECT_ID] = governanceData.projectId;
@@ -743,14 +584,9 @@ function addGovernanceEntry(governanceData, userEmail) {
 }
 
 // ========================================
-// 運営支援操作 (Module 6)
+// Operations support (Module 6)
 // ========================================
 
-/**
- * 運営支援設定を保存
- * @param {Object} supportData - 運営支援データ
- * @param {string} userEmail - ユーザーメール
- */
 function saveOperationsSupport(supportData, userEmail) {
   var existing = findFirstRow(
     SCHEMA_OPERATIONS_SUPPORT.sheetName,
@@ -778,11 +614,6 @@ function saveOperationsSupport(supportData, userEmail) {
   }
 }
 
-/**
- * 運営支援設定を取得
- * @param {string} projectId - プロジェクトID
- * @return {Object|null} 運営支援データ
- */
 function getOperationsSupport(projectId) {
   var result = findFirstRow(
     SCHEMA_OPERATIONS_SUPPORT.sheetName,
@@ -807,14 +638,9 @@ function getOperationsSupport(projectId) {
 }
 
 // ========================================
-// ユースケース追加操作
+// Usecase lookup
 // ========================================
 
-/**
- * ユースケースを取得（単一）
- * @param {string} usecaseId - ユースケースID
- * @return {Object|null} ユースケース情報
- */
 function getUsecaseById(usecaseId) {
   var result = findFirstRow(
     SCHEMA_USECASES.sheetName,
@@ -836,5 +662,69 @@ function getUsecaseById(usecaseId) {
     priority: data[SCHEMA_USECASES.columns.PRIORITY],
     updatedDate: data[SCHEMA_USECASES.columns.UPDATED_DATE],
     _rowNumber: result.rowNumber
+  };
+}
+
+// ========================================
+// Core Process (Module 3)
+// ========================================
+
+function saveCoreProcess(processData, userEmail) {
+  var existing = findFirstRow(
+    SCHEMA_CORE_PROCESS.sheetName,
+    SCHEMA_CORE_PROCESS.columns.PROJECT_ID,
+    processData.projectId
+  );
+
+  var rowData = [];
+  rowData[SCHEMA_CORE_PROCESS.columns.PROJECT_ID] = processData.projectId;
+  rowData[SCHEMA_CORE_PROCESS.columns.AGILITY_SCORE] = processData.agilityScore || 0;
+  rowData[SCHEMA_CORE_PROCESS.columns.SKILLS_SCORE] = processData.skillsScore || 0;
+  rowData[SCHEMA_CORE_PROCESS.columns.DATA_QUALITY_SCORE] = processData.dataQualityScore || 0;
+  rowData[SCHEMA_CORE_PROCESS.columns.TRUST_SCORE] = processData.trustScore || 0;
+  rowData[SCHEMA_CORE_PROCESS.columns.OPERATIONAL_EFFICIENCY_SCORE] = processData.operationalEfficiencyScore || 0;
+  rowData[SCHEMA_CORE_PROCESS.columns.COMMUNITY_SCORE] = processData.communityScore || 0;
+  rowData[SCHEMA_CORE_PROCESS.columns.AGILITY_COMMENT] = processData.agilityComment || '';
+  rowData[SCHEMA_CORE_PROCESS.columns.SKILLS_COMMENT] = processData.skillsComment || '';
+  rowData[SCHEMA_CORE_PROCESS.columns.DATA_QUALITY_COMMENT] = processData.dataQualityComment || '';
+  rowData[SCHEMA_CORE_PROCESS.columns.TRUST_COMMENT] = processData.trustComment || '';
+  rowData[SCHEMA_CORE_PROCESS.columns.OPERATIONAL_EFFICIENCY_COMMENT] = processData.operationalEfficiencyComment || '';
+  rowData[SCHEMA_CORE_PROCESS.columns.COMMUNITY_COMMENT] = processData.communityComment || '';
+  rowData[SCHEMA_CORE_PROCESS.columns.UPDATED_DATE] = getCurrentTimestamp();
+
+  if (existing) {
+    updateRow(SCHEMA_CORE_PROCESS.sheetName, existing.rowNumber, rowData);
+    logAudit(userEmail, OPERATION_TYPES.UPDATE, processData.projectId, { module: 'core-process' });
+  } else {
+    appendRow(SCHEMA_CORE_PROCESS.sheetName, rowData);
+    logAudit(userEmail, OPERATION_TYPES.CREATE, processData.projectId, { module: 'core-process' });
+  }
+}
+
+function getCoreProcess(projectId) {
+  var result = findFirstRow(
+    SCHEMA_CORE_PROCESS.sheetName,
+    SCHEMA_CORE_PROCESS.columns.PROJECT_ID,
+    projectId
+  );
+
+  if (!result) return null;
+
+  var data = result.data;
+  return {
+    projectId: data[SCHEMA_CORE_PROCESS.columns.PROJECT_ID],
+    agilityScore: data[SCHEMA_CORE_PROCESS.columns.AGILITY_SCORE] || 0,
+    skillsScore: data[SCHEMA_CORE_PROCESS.columns.SKILLS_SCORE] || 0,
+    dataQualityScore: data[SCHEMA_CORE_PROCESS.columns.DATA_QUALITY_SCORE] || 0,
+    trustScore: data[SCHEMA_CORE_PROCESS.columns.TRUST_SCORE] || 0,
+    operationalEfficiencyScore: data[SCHEMA_CORE_PROCESS.columns.OPERATIONAL_EFFICIENCY_SCORE] || 0,
+    communityScore: data[SCHEMA_CORE_PROCESS.columns.COMMUNITY_SCORE] || 0,
+    agilityComment: data[SCHEMA_CORE_PROCESS.columns.AGILITY_COMMENT],
+    skillsComment: data[SCHEMA_CORE_PROCESS.columns.SKILLS_COMMENT],
+    dataQualityComment: data[SCHEMA_CORE_PROCESS.columns.DATA_QUALITY_COMMENT],
+    trustComment: data[SCHEMA_CORE_PROCESS.columns.TRUST_COMMENT],
+    operationalEfficiencyComment: data[SCHEMA_CORE_PROCESS.columns.OPERATIONAL_EFFICIENCY_COMMENT],
+    communityComment: data[SCHEMA_CORE_PROCESS.columns.COMMUNITY_COMMENT],
+    updatedDate: data[SCHEMA_CORE_PROCESS.columns.UPDATED_DATE]
   };
 }

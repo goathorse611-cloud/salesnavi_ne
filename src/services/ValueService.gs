@@ -1,58 +1,46 @@
 /**
  * ValueService.gs
- * 価値実現トラッカー（Module 7）のビジネスロジック層
+ * Value tracking logic.
  */
 
-// ========================================
-// 価値トラッキング管理
-// ========================================
-
-/**
- * 価値トラッキングを保存（バリデーション付き）
- * @param {Object} valueData - 価値データ
- * @param {string} userEmail - ユーザーメール
- */
 function saveValueWithValidation(valueData, userEmail) {
   requireProjectAccess(valueData.projectId, userEmail);
 
   var project = getProject(valueData.projectId);
   if (project.status === PROJECT_STATUS.ARCHIVED) {
-    throw new Error('アーカイブされたプロジェクトは編集できません');
+    throw new Error('Archived projects cannot be edited.');
   }
 
-  // ユースケースの存在確認
   var usecases = getUsecases(valueData.projectId);
   var exists = usecases.some(function(uc) {
     return uc.usecaseId === valueData.usecaseId;
   });
 
   if (!exists) {
-    throw new Error('指定されたユースケースが見つかりません');
+    throw new Error('Use case not found.');
   }
 
-  // バリデーション
   if (valueData.quantitativeImpact && valueData.quantitativeImpact.length > 2000) {
-    throw new Error('定量効果は2000文字以内で入力してください');
+    throw new Error('Quantitative impact must be 2000 characters or less.');
   }
 
   if (valueData.qualitativeImpact && valueData.qualitativeImpact.length > 2000) {
-    throw new Error('定性効果は2000文字以内で入力してください');
+    throw new Error('Qualitative impact must be 2000 characters or less.');
   }
 
   if (valueData.evidence && valueData.evidence.length > 500) {
-    throw new Error('証跡URLは500文字以内で入力してください');
+    throw new Error('Evidence URL must be 500 characters or less.');
   }
 
-  // 証跡URLの形式チェック（任意）
   if (valueData.evidence && valueData.evidence.trim().length > 0) {
     var url = valueData.evidence.trim();
-    if (url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0 && url.indexOf('drive.google.com') === -1) {
-      // 警告のみ、エラーにはしない
-      Logger.log('証跡URL形式が不正な可能性: ' + url);
+    if (url.indexOf('http://') !== 0 &&
+        url.indexOf('https://') !== 0 &&
+        url.indexOf('drive.google.com') === -1) {
+      Logger.log('Evidence URL may be invalid: ' + url);
     }
   }
 
-  // データを整形
   var cleanData = {
     projectId: valueData.projectId,
     usecaseId: valueData.usecaseId,
@@ -66,11 +54,6 @@ function saveValueWithValidation(valueData, userEmail) {
   saveValue(cleanData);
 }
 
-/**
- * 全ユースケースの価値トラッキング状況を取得
- * @param {string} projectId - プロジェクトID
- * @return {Array<Object>} ユースケースごとの価値データ
- */
 function getValueTrackingStatus(projectId) {
   var usecases = getUsecases(projectId);
   var values = getValues(projectId);
@@ -94,11 +77,6 @@ function getValueTrackingStatus(projectId) {
   });
 }
 
-/**
- * 価値データの完成度を計算
- * @param {Object} value - 価値データ
- * @return {number} 完成度パーセント
- */
 function calculateValueCompleteness(value) {
   if (!value) return 0;
 
@@ -111,15 +89,6 @@ function calculateValueCompleteness(value) {
   return score;
 }
 
-// ========================================
-// 価値分析・レポート
-// ========================================
-
-/**
- * プロジェクト全体の価値サマリーを取得
- * @param {string} projectId - プロジェクトID
- * @return {Object} 価値サマリー
- */
 function getValueSummary(projectId) {
   var usecases = getUsecases(projectId);
   var values = getValues(projectId);
@@ -160,7 +129,6 @@ function getValueSummary(projectId) {
       result.hasEvidence++;
     }
 
-    // 定量効果を収集
     if (val.quantitativeImpact && val.quantitativeImpact.length > 0) {
       result.quantitativeEffects.push({
         usecaseId: val.usecaseId,
@@ -168,7 +136,6 @@ function getValueSummary(projectId) {
       });
     }
 
-    // 定性効果を収集
     if (val.qualitativeImpact && val.qualitativeImpact.length > 0) {
       result.qualitativeEffects.push({
         usecaseId: val.usecaseId,
@@ -176,14 +143,13 @@ function getValueSummary(projectId) {
       });
     }
 
-    // 投資判断を分類
     if (val.nextInvestment) {
       var decision = val.nextInvestment.toLowerCase();
-      if (decision.indexOf('継続') !== -1) {
+      if (decision.indexOf('continue') !== -1) {
         result.investmentDecisions.continue++;
-      } else if (decision.indexOf('拡大') !== -1 || decision.indexOf('拡張') !== -1) {
+      } else if (decision.indexOf('expand') !== -1) {
         result.investmentDecisions.expand++;
-      } else if (decision.indexOf('縮小') !== -1 || decision.indexOf('終了') !== -1) {
+      } else if (decision.indexOf('reduce') !== -1) {
         result.investmentDecisions.reduce++;
       } else {
         result.investmentDecisions.undecided++;
@@ -200,12 +166,6 @@ function getValueSummary(projectId) {
   return result;
 }
 
-/**
- * 投資判断の推奨を生成
- * @param {string} projectId - プロジェクトID
- * @param {string} usecaseId - ユースケースID
- * @return {Object} 推奨情報
- */
 function generateInvestmentRecommendation(projectId, usecaseId) {
   var usecases = getUsecases(projectId);
   var usecase = usecases.find(function(uc) {
@@ -213,7 +173,7 @@ function generateInvestmentRecommendation(projectId, usecaseId) {
   });
 
   if (!usecase) {
-    throw new Error('ユースケースが見つかりません');
+    throw new Error('Use case not found.');
   }
 
   var values = getValues(projectId);
@@ -229,145 +189,123 @@ function generateInvestmentRecommendation(projectId, usecaseId) {
     nextSteps: []
   };
 
-  // 価値データがない場合
   if (!value || calculateValueCompleteness(value) < 50) {
     result.recommendation = 'needs_tracking';
-    result.reasons.push('価値トラッキングデータが不十分です');
-    result.nextSteps.push('定量効果と定性効果を記録してください');
-    result.nextSteps.push('証跡（スクリーンショット、レポート等）を添付してください');
+    result.reasons.push('Value tracking data is incomplete.');
+    result.nextSteps.push('Record quantitative and qualitative impacts.');
+    result.nextSteps.push('Attach evidence (screenshots or reports).');
     return result;
   }
 
-  // 定量効果の分析
   var quantitative = value.quantitativeImpact || '';
-  var hasPositiveNumbers = /[0-9]+%/.test(quantitative) || /向上|改善|削減|増加/.test(quantitative);
+  var hasPositiveNumbers = /[0-9]+%/.test(quantitative) || /increase|improve|reduce|gain/i.test(quantitative);
 
-  // 証跡の有無
   var hasEvidence = value.evidence && value.evidence.length > 0;
 
-  // 推奨を生成
   if (hasPositiveNumbers && hasEvidence) {
     result.recommendation = 'expand';
-    result.reasons.push('定量的な効果が確認されています');
-    result.reasons.push('証跡が記録されています');
-    result.nextSteps.push('他部門への横展開を検討');
-    result.nextSteps.push('効果をさらに拡大する追加投資を検討');
+    result.reasons.push('Quantitative impact is evident.');
+    result.reasons.push('Evidence is recorded.');
+    result.nextSteps.push('Consider scaling to other teams.');
+    result.nextSteps.push('Plan additional investment.');
   } else if (hasPositiveNumbers) {
     result.recommendation = 'continue';
-    result.reasons.push('定量的な効果が確認されています');
-    result.reasons.push('証跡の追加が推奨されます');
-    result.nextSteps.push('証跡を収集して記録');
-    result.nextSteps.push('効果の持続性を確認');
+    result.reasons.push('Quantitative impact is visible.');
+    result.reasons.push('Additional evidence is recommended.');
+    result.nextSteps.push('Capture evidence artifacts.');
+    result.nextSteps.push('Verify sustainability of impact.');
   } else {
     result.recommendation = 'review';
-    result.reasons.push('効果の定量化が必要です');
-    result.nextSteps.push('KPIを設定して測定開始');
-    result.nextSteps.push('90日後に再評価');
+    result.reasons.push('Quantitative impact is unclear.');
+    result.nextSteps.push('Define KPIs and measure results.');
+    result.nextSteps.push('Re-evaluate after 90 days.');
   }
 
   return result;
 }
 
-// ========================================
-// 価値テンプレート
-// ========================================
-
-/**
- * 価値トラッキングのテンプレートを取得
- * @return {Object} テンプレート
- */
 function getValueTrackingTemplates() {
   return {
     quantitativeTemplates: [
       {
-        category: '時間削減',
+        category: 'Time savings',
         examples: [
-          'レポート作成時間: XX時間/月 → XX時間/月（XX%削減）',
-          'データ収集時間: XX日 → XX時間（XX%削減）',
-          '意思決定サイクル: XX日 → XX日（XX%短縮）'
+          'Reporting time reduced from XX hrs to XX hrs.',
+          'Data preparation time reduced by XX%.',
+          'Decision cycle reduced by XX%.'
         ]
       },
       {
-        category: 'コスト削減',
+        category: 'Cost reduction',
         examples: [
-          '運用コスト: 年間XX万円削減',
-          '外注費: XX万円/月 → XX万円/月',
-          '人件費（工数換算）: XX人月削減'
+          'Annual operating cost reduced by $XX.',
+          'Vendor spend reduced by $XX per month.',
+          'Labor hours reduced by XX person-days.'
         ]
       },
       {
-        category: '売上・収益',
+        category: 'Revenue impact',
         examples: [
-          '売上向上: 前年比XX%増',
-          '機会損失削減: 推定XX万円/月',
-          '新規案件獲得: XX件/四半期'
+          'Revenue increased by XX% YoY.',
+          'Lost opportunities reduced by $XX.',
+          'New deals won: XX per quarter.'
         ]
       },
       {
-        category: '品質・精度',
+        category: 'Quality',
         examples: [
-          'データ精度: XX% → XX%',
-          'エラー率: XX% → XX%（XX%削減）',
-          '予測精度: XX%向上'
+          'Data accuracy improved from XX% to XX%.',
+          'Error rate reduced by XX%.',
+          'Forecast accuracy improved by XX%.'
         ]
       }
     ],
     qualitativeTemplates: [
       {
-        category: '業務改善',
+        category: 'Process improvement',
         examples: [
-          '意思決定の迅速化・根拠の明確化',
-          '部門間の情報共有促進',
-          'ダッシュボードによるリアルタイム状況把握'
+          'Faster cross-team alignment.',
+          'Clearer decision rationale.',
+          'Real-time operational visibility.'
         ]
       },
       {
-        category: '組織・文化',
+        category: 'Culture',
         examples: [
-          'データドリブン文化の醸成',
-          '社員のデータリテラシー向上',
-          '経営層のデータ活用への理解深化'
+          'More data-driven culture.',
+          'Higher analytics literacy.',
+          'Stronger executive engagement.'
         ]
       },
       {
-        category: '顧客体験',
+        category: 'Customer experience',
         examples: [
-          '顧客対応品質の向上',
-          'パーソナライズされた提案の実現',
-          '顧客満足度の向上'
+          'Improved response quality.',
+          'More personalized proposals.',
+          'Higher satisfaction scores.'
         ]
       }
     ],
     investmentDecisionOptions: [
       {
-        value: '継続',
-        description: '現状維持で価値が持続している',
-        nextAction: '定期的な効果測定を継続'
+        value: 'Continue',
+        description: 'Maintain current scope.',
+        nextAction: 'Continue measuring value.'
       },
       {
-        value: '拡大',
-        description: '効果が確認され、さらなる投資価値がある',
-        nextAction: '他部門への展開、機能拡張を検討'
+        value: 'Expand',
+        description: 'Scale to more teams or use cases.',
+        nextAction: 'Plan broader rollout.'
       },
       {
-        value: '縮小',
-        description: '期待した効果が得られていない',
-        nextAction: '原因分析、スコープ見直しを実施'
-      },
-      {
-        value: '終了',
-        description: '目的達成または効果なし',
-        nextAction: '振り返りを実施し、学びを記録'
+        value: 'Reduce',
+        description: 'Reduce scope based on outcomes.',
+        nextAction: 'Refocus on highest impact.'
       }
     ]
   };
 }
 
-/**
- * 価値完成度チェック
- * @param {string} projectId - プロジェクトID
- * @return {Object} 完成度情報
- */
 function checkValueCompleteness(projectId) {
   var status = getValueTrackingStatus(projectId);
 
@@ -381,7 +319,7 @@ function checkValueCompleteness(projectId) {
   };
 
   if (status.length === 0) {
-    result.suggestions.push('先にユースケースを作成してください');
+    result.suggestions.push('Create use cases before tracking value.');
     return result;
   }
 
@@ -403,7 +341,6 @@ function checkValueCompleteness(projectId) {
   result.hasEvidence = evidenceCount > 0;
   result.hasInvestmentDecisions = decisionCount > 0;
 
-  // 完成度計算
   var score = 0;
   if (result.hasAnyValue) score += 25;
   if (result.hasAllUsecasesTracked) score += 25;
@@ -412,18 +349,17 @@ function checkValueCompleteness(projectId) {
 
   result.completenessPercent = score;
 
-  // 提案
   if (!result.hasAnyValue) {
-    result.suggestions.push('少なくとも1つのユースケースの価値を記録してください');
+    result.suggestions.push('Record value for at least one use case.');
   }
   if (!result.hasAllUsecasesTracked) {
-    result.suggestions.push('すべてのユースケースの価値を記録すると、稟議書の説得力が上がります');
+    result.suggestions.push('Track value for all use cases for stronger proposals.');
   }
   if (!result.hasEvidence) {
-    result.suggestions.push('証跡（Driveリンク、スクリーンショット等）を追加してください');
+    result.suggestions.push('Add evidence links or artifacts.');
   }
   if (!result.hasInvestmentDecisions) {
-    result.suggestions.push('次の投資判断を記録してください');
+    result.suggestions.push('Record the next investment decision.');
   }
 
   return result;
