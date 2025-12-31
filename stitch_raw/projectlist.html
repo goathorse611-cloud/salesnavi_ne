@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html class="light" lang="ja"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>プロジェクト一覧 - ブループリント ワークショップ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&amp;family=Inter:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "primary": "#0176D3",
+        "primary-dark": "#005FB2",
+        "background-light": "#f3f5f8",
+        "background-dark": "#101822",
+        "surface-light": "#ffffff",
+        "surface-dark": "#1a2432",
+        "slate-750": "#2d3748",
+      },
+      fontFamily: {
+        "display": ["Inter", "Noto Sans JP", "sans-serif"],
+        "sans": ["Inter", "Noto Sans JP", "sans-serif"]
+      },
+      borderRadius: {
+        "DEFAULT": "0.375rem",
+        "md": "0.375rem",
+        "lg": "0.5rem",
+        "xl": "0.75rem",
+        "2xl": "1rem"
+      },
+      boxShadow: {
+        'subtle': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+        'card': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+      }
+    },
+  },
+}
+</script>
+<style>
+body {
+  font-family: 'Inter', 'Noto Sans JP', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-size: 20px;
+}
+.material-symbols-outlined.fill {
+  font-variation-settings: 'FILL' 1;
+}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+</style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-700 dark:text-slate-200 font-sans transition-colors duration-200">
+<div class="flex h-screen w-full overflow-hidden">
+
+<div class="w-64 bg-surface-light dark:bg-surface-dark border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col h-full hidden md:flex z-20">
+  <div class="h-16 flex items-center px-6 border-b border-slate-100 dark:border-slate-800">
+    <div class="flex items-center gap-3">
+      <div class="bg-center bg-no-repeat bg-cover rounded bg-primary/10 size-8 shadow-none flex items-center justify-center text-primary" data-alt="Logo placeholder">
+        <span class="material-symbols-outlined fill" style="font-size: 20px;">layers</span>
+      </div>
+      <h1 class="text-slate-900 dark:text-white text-base font-bold tracking-tight">Blueprint</h1>
+    </div>
+  </div>
+  <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+    <p class="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 mt-2">Main</p>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary transition-colors group" href="#">
+      <span class="material-symbols-outlined text-slate-400 group-hover:text-primary">home</span>
+      <span class="text-sm font-medium">ホーム</span>
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md bg-blue-50 dark:bg-blue-900/20 text-primary transition-colors" href="#">
+      <span class="material-symbols-outlined fill">folder</span>
+      <span class="text-sm font-bold">プロジェクト</span>
+    </a>
+    <div class="my-4 border-t border-slate-100 dark:border-slate-800"></div>
+    <p class="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Workspace</p>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary transition-colors group" href="#">
+      <span class="material-symbols-outlined text-slate-400 group-hover:text-primary">search</span>
+      <span class="text-sm font-medium">ヒアリング</span>
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary transition-colors group" href="#">
+      <span class="material-symbols-outlined text-slate-400 group-hover:text-primary">lightbulb</span>
+      <span class="text-sm font-medium">提案作成</span>
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary transition-colors group" href="#">
+      <span class="material-symbols-outlined text-slate-400 group-hover:text-primary">attach_money</span>
+      <span class="text-sm font-medium">価格設定</span>
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary transition-colors group" href="#">
+      <span class="material-symbols-outlined text-slate-400 group-hover:text-primary">description</span>
+      <span class="text-sm font-medium">提案書</span>
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-md text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary transition-colors group" href="#">
+      <span class="material-symbols-outlined text-slate-400 group-hover:text-primary">content_copy</span>
+      <span class="text-sm font-medium">契約書</span>
+    </a>
+  </div>
+  <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+    <div class="flex items-center gap-3">
+      <div class="bg-center bg-no-repeat bg-cover rounded-full size-9 ring-2 ring-white dark:ring-slate-700" data-alt="User profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBypTdE14uQgZophhzqYZsX34lx-RCqR-D-DsA4U9ScEepiPEus184MOnPiUYhgrpF9koZNnzGrIyCxAIgWHKpSedOQ9T_FWTTQbYtY6GWUNPSUjbPm_kB9gwExAOyZEWbnz1ORooXp7HNSCAvaYZlznYP6N_fQPkFho-Oe82TePjlqO2TmlFNE36f3claRVvxsqh24w15YXZwCdxYkD8eB4PRpOe-mBsNZaSsWHBoiFt274LwieK0JlD5WfV3UA4XkOMZjs9KoI0E");'></div>
+      <div class="flex flex-col overflow-hidden">
+        <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">山崎 賢人</p>
+        <p class="text-xs text-slate-500 truncate">セールスリード</p>
+      </div>
+      <button class="ml-auto text-slate-400 hover:text-primary">
+        <span class="material-symbols-outlined" style="font-size: 18px;">settings</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="flex-1 flex flex-col h-full overflow-hidden bg-background-light dark:bg-background-dark relative">
+  <header class="h-16 flex items-center justify-between px-6 bg-surface-light dark:bg-surface-dark border-b border-slate-200 dark:border-slate-800 shadow-sm z-10 flex-shrink-0">
+    <div class="flex items-center gap-4">
+      <button class="md:hidden text-slate-500 hover:text-primary">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+      <div class="flex items-center gap-2 text-sm">
+        <span class="text-slate-500 hidden sm:block">ワークスペース</span>
+        <span class="material-symbols-outlined text-slate-300 text-xs hidden sm:block">chevron_right</span>
+        <h2 class="text-slate-900 dark:text-white font-semibold">プロジェクト一覧</h2>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="hidden lg:flex items-center relative mr-2">
+        <span class="material-symbols-outlined absolute left-3 text-slate-400" style="font-size: 18px;">search</span>
+        <input class="h-9 pl-9 pr-4 rounded bg-slate-100 dark:bg-slate-800 border-none text-sm text-slate-700 dark:text-white focus:ring-1 focus:ring-primary w-64 placeholder-slate-400" placeholder="検索..." type="text"/>
+      </div>
+      <button class="flex items-center justify-center size-9 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors relative">
+        <span class="material-symbols-outlined">notifications</span>
+        <span class="absolute top-2 right-2 size-2 bg-red-500 border-2 border-white rounded-full"></span>
+      </button>
+      <button class="flex items-center justify-center size-9 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors">
+        <span class="material-symbols-outlined">help</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="flex-1 overflow-y-auto p-6 md:p-8 scroll-smooth">
+    <div class="max-w-7xl mx-auto flex flex-col gap-6">
+
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">プロジェクト</h1>
+          <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">すべての進行中案件とステータスを管理します</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button class="hidden sm:flex items-center justify-center gap-2 h-9 px-4 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-sm font-medium hover:bg-slate-50 transition-colors">
+            <span class="material-symbols-outlined" style="font-size: 18px;">download</span>
+            <span>エクスポート</span>
+          </button>
+          <button class="flex items-center justify-center gap-2 h-9 px-4 rounded bg-primary hover:bg-primary-dark text-white text-sm font-bold shadow-sm transition-all active:scale-95">
+            <span class="material-symbols-outlined" style="font-size: 18px;">add</span>
+            <span>新規作成</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-surface-light dark:bg-surface-dark p-1 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col lg:flex-row gap-2 items-center justify-between">
+        <div class="flex p-1 gap-1 bg-slate-100/50 dark:bg-slate-800/50 rounded overflow-x-auto w-full lg:w-auto">
+          <button class="px-4 py-1.5 rounded bg-white dark:bg-slate-700 text-primary shadow-sm text-sm font-semibold whitespace-nowrap">すべて</button>
+          <button class="px-4 py-1.5 rounded hover:bg-white/50 dark:hover:bg-slate-700/50 text-slate-600 dark:text-slate-400 text-sm font-medium whitespace-nowrap transition-colors">下書き</button>
+          <button class="px-4 py-1.5 rounded hover:bg-white/50 dark:hover:bg-slate-700/50 text-slate-600 dark:text-slate-400 text-sm font-medium whitespace-nowrap transition-colors">確定</button>
+          <button class="px-4 py-1.5 rounded hover:bg-white/50 dark:hover:bg-slate-700/50 text-slate-600 dark:text-slate-400 text-sm font-medium whitespace-nowrap transition-colors">アーカイブ</button>
+        </div>
+        <div class="flex items-center gap-2 w-full lg:w-auto px-2 lg:px-0 pb-2 lg:pb-0">
+          <div class="relative w-full lg:w-64">
+            <span class="material-symbols-outlined absolute left-3 top-2 text-slate-400" style="font-size: 18px;">search</span>
+            <input class="w-full h-9 pl-9 pr-3 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-primary focus:ring-1 focus:ring-primary text-sm placeholder-slate-400" placeholder="顧客名で検索..." type="text"/>
+          </div>
+          <button class="size-9 flex items-center justify-center rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:text-primary hover:border-primary transition-colors">
+            <span class="material-symbols-outlined" style="font-size: 18px;">filter_list</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-3">
+        <div class="hidden md:grid grid-cols-12 gap-4 px-5 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+          <div class="col-span-4 flex items-center gap-1 cursor-pointer hover:text-primary">
+            プロジェクト名
+            <span class="material-symbols-outlined" style="font-size: 14px;">arrow_downward</span>
+          </div>
+          <div class="col-span-2">顧客名</div>
+          <div class="col-span-2">最終更新</div>
+          <div class="col-span-2">完了度 (1-7)</div>
+          <div class="col-span-1">状態</div>
+          <div class="col-span-1 text-right"></div>
+        </div>
+
+        <div class="group bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-800 rounded-lg p-4 hover:border-primary/30 hover:shadow-md transition-all cursor-pointer relative">
+          <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-l-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+            <div class="col-span-4 flex items-center gap-3">
+              <div class="size-9 rounded bg-blue-50 dark:bg-blue-900/30 text-primary flex items-center justify-center flex-shrink-0 border border-blue-100 dark:border-blue-900">
+                <span class="material-symbols-outlined" style="font-size: 20px;">description</span>
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-primary group-hover:underline decoration-primary underline-offset-2">Q4 戦略ワークショップ</h3>
+                <p class="text-xs text-slate-500 md:hidden mt-1">Acme Corp • 2時間前</p>
+              </div>
+            </div>
+            <div class="col-span-2 hidden md:flex items-center gap-2">
+              <div class="size-5 rounded bg-cover bg-center shadow-sm border border-slate-100" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBrgp7UolXvzjMSw7Gx7CJtifqOHpatKUEGRpOX6LSe-OMHUt8JDzwUt6vs3Nl-6kfl6te91s3MY7B93ZPcExWdHu7pZN5oNPj0CYZPVheL7My9wP6E4fjF7xvL_S3WeY9TRjYIkl7XGsM7lbBYGMR4NYZTBVtaIUKe04dDz3s5HnTn0DAhlM5_gbE41bnkEvukxbo5nU_FdnkI77BsVVrCk-D-2qNnM8GAjAfYJCHGr6vnpLyMnVLpe9s1G69TeUEy_Juz_DtwHio");'></div>
+              <span class="text-sm text-slate-700 dark:text-slate-300 font-medium">Acme Corp</span>
+            </div>
+            <div class="col-span-2 hidden md:block text-sm text-slate-600">
+              2時間前
+            </div>
+            <div class="col-span-2 hidden md:flex items-center gap-3 pr-4">
+              <div class="flex-1 bg-slate-100 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-primary h-1.5 rounded-full" style="width: 28%"></div>
+              </div>
+              <span class="text-xs font-bold text-slate-600 dark:text-slate-300 w-6 text-right">2/7</span>
+            </div>
+            <div class="col-span-1 hidden md:flex">
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                下書き
+              </span>
+            </div>
+            <div class="col-span-1 flex justify-end">
+              <button class="size-8 flex items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
+                <span class="material-symbols-outlined" style="font-size: 20px;">more_horiz</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="group bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-800 rounded-lg p-4 hover:border-primary/30 hover:shadow-md transition-all cursor-pointer relative">
+          <div class="absolute left-0 top-0 bottom-0 w-1 bg-green-500 rounded-l-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+            <div class="col-span-4 flex items-center gap-3">
+              <div class="size-9 rounded bg-green-50 dark:bg-green-900/30 text-green-600 flex items-center justify-center flex-shrink-0 border border-green-100 dark:border-green-900">
+                <span class="material-symbols-outlined" style="font-size: 20px;">check_circle</span>
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-primary group-hover:underline decoration-primary underline-offset-2">クラウド移行フェーズ1</h3>
+                <p class="text-xs text-slate-500 md:hidden mt-1">Nebula Systems • 昨日</p>
+              </div>
+            </div>
+            <div class="col-span-2 hidden md:flex items-center gap-2">
+              <div class="size-5 rounded bg-cover bg-center shadow-sm border border-slate-100" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuANsohSUGO_aHaGnHl8r0Zss0Sggmc8plYOmM0GknPKqAPxNNeXFqTyQFZOVSxN_wIMNzIQEgT_nLqm8ScIq3tL8j8kvRN-tbAeqAW6GT7lI-mc1Rn-ZR185tTHJ35EzINhOBb1jtoc_B0vEs9IoYD0Ham1QRq43LnfQGy2e22VP-0gvt3_7hWv2TC0GpVG2lHfqMWrDFRZHlK5QqSGSMHrjdVcxqaAKZyR15Sz0pBxqw6Z28v5gHoU0GOqsCVWblORrWjoHE0ctN0");'></div>
+              <span class="text-sm text-slate-700 dark:text-slate-300 font-medium">Nebula Systems</span>
+            </div>
+            <div class="col-span-2 hidden md:block text-sm text-slate-600">
+              昨日
+            </div>
+            <div class="col-span-2 hidden md:flex items-center gap-3 pr-4">
+              <div class="flex-1 bg-slate-100 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-green-500 h-1.5 rounded-full" style="width: 100%"></div>
+              </div>
+              <span class="text-xs font-bold text-slate-600 dark:text-slate-300 w-6 text-right">7/7</span>
+            </div>
+            <div class="col-span-1 hidden md:flex">
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                確定
+              </span>
+            </div>
+            <div class="col-span-1 flex justify-end">
+              <button class="size-8 flex items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
+                <span class="material-symbols-outlined" style="font-size: 20px;">more_horiz</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="group bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-800 rounded-lg p-4 hover:border-primary/30 hover:shadow-md transition-all cursor-pointer relative">
+          <div class="absolute left-0 top-0 bottom-0 w-1 bg-orange-500 rounded-l-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+            <div class="col-span-4 flex items-center gap-3">
+              <div class="size-9 rounded bg-orange-50 dark:bg-orange-900/30 text-orange-600 flex items-center justify-center flex-shrink-0 border border-orange-100 dark:border-orange-900">
+                <span class="material-symbols-outlined" style="font-size: 20px;">rate_review</span>
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-primary group-hover:underline decoration-primary underline-offset-2">グローバル展開提案</h3>
+                <p class="text-xs text-slate-500 md:hidden mt-1">TechFlow Inc • 3日前</p>
+              </div>
+            </div>
+            <div class="col-span-2 hidden md:flex items-center gap-2">
+              <div class="size-5 rounded bg-cover bg-center shadow-sm border border-slate-100" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCA_I0G_YD3ezDQkUbVUZGPP4TayBqrX8fC0KVbfUYWCglZZZwScQHGW8k3LtSjlMCHehaDnHnmG7f5jA68wXtwhnHCNmVdq9xyIw9ptk5N_3T3WQpoAstOfe2PrIGWIa9K7K1dRqZic5OpwO_1u9IlNTDwk0UYy1seQGYsoinJ64kyevLwHZLBrRcffu3l27GT45GcAikcoXRc9ThXYuGPe8NIAZPikWEUb6KnLEqSDSbasSTwVZFppl-uSFctlcT4aZZ1gcmnDKQ");'></div>
+              <span class="text-sm text-slate-700 dark:text-slate-300 font-medium">TechFlow Inc</span>
+            </div>
+            <div class="col-span-2 hidden md:block text-sm text-slate-600">
+              3日前
+            </div>
+            <div class="col-span-2 hidden md:flex items-center gap-3 pr-4">
+              <div class="flex-1 bg-slate-100 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-orange-500 h-1.5 rounded-full" style="width: 71%"></div>
+              </div>
+              <span class="text-xs font-bold text-slate-600 dark:text-slate-300 w-6 text-right">5/7</span>
+            </div>
+            <div class="col-span-1 hidden md:flex">
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                下書き
+              </span>
+            </div>
+            <div class="col-span-1 flex justify-end">
+              <button class="size-8 flex items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
+                <span class="material-symbols-outlined" style="font-size: 20px;">more_horiz</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="group bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-800 rounded-lg p-4 hover:border-primary/30 hover:shadow-md transition-all cursor-pointer relative">
+          <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-l-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+            <div class="col-span-4 flex items-center gap-3">
+              <div class="size-9 rounded bg-blue-50 dark:bg-blue-900/30 text-primary flex items-center justify-center flex-shrink-0 border border-blue-100 dark:border-blue-900">
+                <span class="material-symbols-outlined" style="font-size: 20px;">description</span>
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-primary group-hover:underline decoration-primary underline-offset-2">営業イネーブルメント Q1</h3>
+                <p class="text-xs text-slate-500 md:hidden mt-1">社内 • 5日前</p>
+              </div>
+            </div>
+            <div class="col-span-2 hidden md:flex items-center gap-2">
+              <div class="size-5 rounded bg-primary/10 text-primary flex items-center justify-center text-[9px] font-bold border border-primary/20">社内</div>
+              <span class="text-sm text-slate-700 dark:text-slate-300 font-medium">社内案件</span>
+            </div>
+            <div class="col-span-2 hidden md:block text-sm text-slate-600">
+              5日前
+            </div>
+            <div class="col-span-2 hidden md:flex items-center gap-3 pr-4">
+              <div class="flex-1 bg-slate-100 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-primary h-1.5 rounded-full" style="width: 14%"></div>
+              </div>
+              <span class="text-xs font-bold text-slate-600 dark:text-slate-300 w-6 text-right">1/7</span>
+            </div>
+            <div class="col-span-1 hidden md:flex">
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                下書き
+              </span>
+            </div>
+            <div class="col-span-1 flex justify-end">
+              <button class="size-8 flex items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
+                <span class="material-symbols-outlined" style="font-size: 20px;">more_horiz</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="flex items-center justify-between py-2 border-t border-slate-200 dark:border-slate-800 mt-4">
+        <p class="text-xs text-slate-500 font-medium">12件中 1-4件を表示</p>
+        <div class="flex gap-2">
+          <button class="flex items-center justify-center size-8 rounded border border-slate-200 dark:border-slate-700 text-slate-400 hover:bg-white hover:border-slate-300 hover:text-slate-600 disabled:opacity-50 transition-all bg-white dark:bg-slate-800 shadow-sm">
+            <span class="material-symbols-outlined" style="font-size: 16px;">chevron_left</span>
+          </button>
+          <button class="flex items-center justify-center size-8 rounded border border-slate-200 dark:border-slate-700 text-slate-600 hover:bg-white hover:border-slate-300 hover:text-slate-800 transition-all bg-white dark:bg-slate-800 shadow-sm">
+            <span class="material-symbols-outlined" style="font-size: 16px;">chevron_right</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+</div>
+</body></html>

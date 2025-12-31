@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html class="light" lang="ja"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ホーム - Blueprint ワークショップ</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+JP:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "primary": "#0176d3","primary-dark": "#005fb8",
+        "background-body": "#f3f4f6",
+        "surface": "#ffffff",
+        "border-subtle": "#e5e7eb",
+        "text-main": "#032d60",
+        "text-body": "#3e3e3c",
+        "text-muted": "#747474",
+      },
+      fontFamily: {
+        "sans": ["Inter", "Noto Sans JP", "sans-serif"]
+      },
+      boxShadow: {
+        "card": "0 2px 4px 0 rgba(0,0,0,0.05)",
+        "card-hover": "0 4px 12px 0 rgba(0,0,0,0.1)",
+      }
+    },
+  },
+}
+</script>
+<style>
+body { font-family: 'Inter', 'Noto Sans JP', sans-serif; }
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  display: inline-block;
+  vertical-align: middle;
+}
+.filled-icon { font-variation-settings: 'FILL' 1; }
+</style>
+</head>
+<body class="bg-background-body text-text-body antialiased min-h-screen flex flex-col">
+
+<header class="bg-surface border-b border-border-subtle h-16 sticky top-0 z-50 shadow-sm flex items-center justify-between px-6">
+  <div class="flex items-center gap-8">
+    <div class="flex items-center gap-2">
+      <div class="size-8 flex items-center justify-center bg-primary rounded text-white">
+        <span class="material-symbols-outlined text-2xl">architecture</span>
+      </div>
+      <h1 class="text-lg font-bold text-text-main tracking-tight">Blueprint</h1>
+    </div>
+    <div class="hidden md:flex relative group">
+      <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400 group-focus-within:text-primary text-[20px]">search</span>
+      <input class="h-9 w-64 bg-gray-100 border-none rounded-md pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary focus:bg-white transition-all placeholder-gray-500" placeholder="検索..."/>
+    </div>
+  </div>
+  <div class="flex items-center gap-3">
+    <button class="hidden sm:flex h-9 items-center gap-1.5 px-4 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-md shadow-sm transition-colors">
+      <span class="material-symbols-outlined text-[18px]">add</span>
+      <span>新規プロジェクト</span>
+    </button>
+    <button class="size-9 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition-colors relative">
+      <span class="material-symbols-outlined text-[22px]">notifications</span>
+      <span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white"></span>
+    </button>
+    <div class="size-9 rounded-full bg-gray-200 border border-gray-300 bg-cover bg-center cursor-pointer ml-1" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA6waHPupUHwH-HMgUXUzzx4NjagFJrfHDz6OM58-4-tI4kdyUAMHfVNbJ7xu94VaxVRF09bBBzWtfXtvIcQiPWqK1jJmOPf1WRY9t4Fyy8kJODrOQ-cK7sjEFllWwR3YATt5dtO1S-Gz0-kIk0Dlma2inW5LV64wzgRCs0ATqIYTWRfjEBWVtvDlWsefdXTewob_tIjXIdlIoaX9oXl36ZgXKKBq8fRy96en16fSwLiW0ek7ydCqjnW7LR4YmxddyYsMBR7ixCEBg");'></div>
+  </div>
+</header>
+
+<main class="flex-1 w-full max-w-7xl mx-auto px-6 py-8">
+  <div class="mb-10">
+    <div class="flex items-end justify-between mb-6">
+      <div>
+        <h2 class="text-xl font-bold text-text-main">ワークショップを開始</h2>
+        <p class="text-sm text-text-muted mt-1">目的に合わせてフェーズを選択してください</p>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div class="group bg-surface rounded-lg border border-border-subtle p-5 shadow-card hover:shadow-card-hover hover:border-primary/50 transition-all duration-200 flex flex-col h-full relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity pointer-events-none">
+          <span class="text-8xl font-black text-primary">1</span>
+        </div>
+        <div class="flex items-center justify-between mb-4 relative z-10">
+          <div class="flex items-center justify-center size-10 rounded-md bg-blue-50 text-primary border border-blue-100">
+            <span class="material-symbols-outlined filled-icon">flag</span>
+          </div>
+          <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-gray-100 text-gray-600 border border-gray-200 uppercase tracking-wide">Step 1</span>
+        </div>
+        <h3 class="text-base font-bold text-text-main mb-2 relative z-10">北極星を決める</h3>
+        <p class="text-sm text-text-muted mb-6 leading-relaxed flex-1 relative z-10">
+          プロジェクトの方向性と、全員が目指すべき長期的なゴールを設定・合意します。
+        </p>
+        <button class="w-full h-9 flex items-center justify-center rounded-md bg-primary hover:bg-primary-dark text-white text-sm font-semibold shadow-sm transition-colors relative z-10">
+          セッションを開始
+        </button>
+      </div>
+      <div class="group bg-surface rounded-lg border border-border-subtle p-5 shadow-card hover:shadow-card-hover hover:border-primary/50 transition-all duration-200 flex flex-col h-full relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity pointer-events-none">
+          <span class="text-8xl font-black text-primary">2</span>
+        </div>
+        <div class="flex items-center justify-between mb-4 relative z-10">
+          <div class="flex items-center justify-center size-10 rounded-md bg-blue-50 text-primary border border-blue-100">
+            <span class="material-symbols-outlined filled-icon">calendar_month</span>
+          </div>
+          <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-gray-100 text-gray-600 border border-gray-200 uppercase tracking-wide">Step 2</span>
+        </div>
+        <h3 class="text-base font-bold text-text-main mb-2 relative z-10">90日計画を作る</h3>
+        <p class="text-sm text-text-muted mb-6 leading-relaxed flex-1 relative z-10">
+          直近の四半期における具体的なアクションプランとマイルストーンを策定します。
+        </p>
+        <button class="w-full h-9 flex items-center justify-center rounded-md bg-white border border-gray-300 hover:border-primary hover:text-primary text-gray-700 text-sm font-semibold shadow-sm transition-colors relative z-10">
+          計画を作成
+        </button>
+      </div>
+      <div class="group bg-surface rounded-lg border border-border-subtle p-5 shadow-card hover:shadow-card-hover hover:border-primary/50 transition-all duration-200 flex flex-col h-full relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity pointer-events-none">
+          <span class="text-8xl font-black text-primary">4</span>
+        </div>
+        <div class="flex items-center justify-between mb-4 relative z-10">
+          <div class="flex items-center justify-center size-10 rounded-md bg-blue-50 text-primary border border-blue-100">
+            <span class="material-symbols-outlined filled-icon">diversity_3</span>
+          </div>
+          <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-gray-100 text-gray-600 border border-gray-200 uppercase tracking-wide">Step 4</span>
+        </div>
+        <h3 class="text-base font-bold text-text-main mb-2 relative z-10">体制と責任を確定する</h3>
+        <p class="text-sm text-text-muted mb-6 leading-relaxed flex-1 relative z-10">
+          推進チーム体制と、各メンバーの責任範囲を明確化します。
+        </p>
+        <button class="w-full h-9 flex items-center justify-center rounded-md bg-white border border-gray-300 hover:border-primary hover:text-primary text-gray-700 text-sm font-semibold shadow-sm transition-colors relative z-10">
+          体制図を編集
+        </button>
+      </div>
+      <div class="group bg-surface rounded-lg border border-border-subtle p-5 shadow-card hover:shadow-card-hover hover:border-primary/50 transition-all duration-200 flex flex-col h-full relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity pointer-events-none">
+          <span class="text-8xl font-black text-primary">7</span>
+        </div>
+        <div class="flex items-center justify-between mb-4 relative z-10">
+          <div class="flex items-center justify-center size-10 rounded-md bg-blue-50 text-primary border border-blue-100">
+            <span class="material-symbols-outlined filled-icon">verified_user</span>
+          </div>
+          <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-gray-100 text-gray-600 border border-gray-200 uppercase tracking-wide">Step 7</span>
+        </div>
+        <h3 class="text-base font-bold text-text-main mb-2 relative z-10">成果を稟議に変換する</h3>
+        <p class="text-sm text-text-muted mb-6 leading-relaxed flex-1 relative z-10">
+          決定内容をもとに、正式な承認用ドキュメントを生成します。
+        </p>
+        <button class="w-full h-9 flex items-center justify-center rounded-md bg-white border border-gray-300 hover:border-primary hover:text-primary text-gray-700 text-sm font-semibold shadow-sm transition-colors relative z-10">
+          ドキュメント生成
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-4">
+    <div class="flex items-center justify-between px-1">
+      <h2 class="text-lg font-bold text-text-main">最近開いたプロジェクト</h2>
+      <a class="text-sm font-medium text-primary hover:text-primary-dark hover:underline" href="#">すべて見る</a>
+    </div>
+    <div class="bg-surface rounded-lg border border-border-subtle shadow-card overflow-hidden">
+      <div class="grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50 border-b border-border-subtle text-xs font-bold text-gray-500 uppercase tracking-wider">
+        <div class="col-span-6 md:col-span-5">プロジェクト名</div>
+        <div class="col-span-3 md:col-span-3">最終更新</div>
+        <div class="col-span-3 md:col-span-2">ステータス</div>
+        <div class="hidden md:block md:col-span-2 text-right">アクション</div>
+      </div>
+      <div class="divide-y divide-gray-100">
+        <div class="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors cursor-pointer group">
+          <div class="col-span-6 md:col-span-5 flex items-center gap-3">
+            <div class="size-8 rounded bg-blue-100 text-primary flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-lg">folder</span>
+            </div>
+            <div class="font-bold text-text-main truncate text-sm">株式会社アルファ - DX推進基盤</div>
+          </div>
+          <div class="col-span-3 md:col-span-3 text-sm text-text-muted">
+            2時間前
+          </div>
+          <div class="col-span-3 md:col-span-2">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
+              <span class="size-1.5 rounded-full bg-gray-400"></span>
+              下書き
+            </span>
+          </div>
+          <div class="hidden md:block md:col-span-2 text-right opacity-0 group-hover:opacity-100 transition-opacity">
+            <button class="text-gray-400 hover:text-primary transition-colors p-1 rounded hover:bg-blue-50">
+              <span class="material-symbols-outlined text-lg">edit</span>
+            </button>
+          </div>
+        </div>
+        <div class="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors cursor-pointer group">
+          <div class="col-span-6 md:col-span-5 flex items-center gap-3">
+            <div class="size-8 rounded bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-lg">folder</span>
+            </div>
+            <div class="font-bold text-text-main truncate text-sm">Q3 営業戦略策定ワークショップ</div>
+          </div>
+          <div class="col-span-3 md:col-span-3 text-sm text-text-muted">
+            昨日
+          </div>
+          <div class="col-span-3 md:col-span-2">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+              <span class="size-1.5 rounded-full bg-green-500"></span>
+              確定
+            </span>
+          </div>
+          <div class="hidden md:block md:col-span-2 text-right opacity-0 group-hover:opacity-100 transition-opacity">
+            <button class="text-gray-400 hover:text-primary transition-colors p-1 rounded hover:bg-blue-50">
+              <span class="material-symbols-outlined text-lg">edit</span>
+            </button>
+          </div>
+        </div>
+        <div class="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors cursor-pointer group">
+          <div class="col-span-6 md:col-span-5 flex items-center gap-3">
+            <div class="size-8 rounded bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-lg">folder</span>
+            </div>
+            <div class="font-bold text-text-main truncate text-sm">Beta社 新規導入支援</div>
+          </div>
+          <div class="col-span-3 md:col-span-3 text-sm text-text-muted">
+            3日前
+          </div>
+          <div class="col-span-3 md:col-span-2">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
+              <span class="size-1.5 rounded-full bg-gray-400"></span>
+              下書き
+            </span>
+          </div>
+          <div class="hidden md:block md:col-span-2 text-right opacity-0 group-hover:opacity-100 transition-opacity">
+            <button class="text-gray-400 hover:text-primary transition-colors p-1 rounded hover:bg-blue-50">
+              <span class="material-symbols-outlined text-lg">edit</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+</body></html>

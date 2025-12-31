@@ -1,0 +1,22 @@
+<!-- Home View - Blueprint ワークショップ -->
+<div class="mb-10">
+  <div class="flex items-end justify-between mb-6">
+    <div>
+      <h2 class="text-xl font-bold text-text-main">ワークショップを開始</h2>
+      <p class="text-sm text-text-muted mt-1">目的に合わせてフェーズを選択してください</p>
+    </div>
+  </div>
+  <div id="workshop-cards" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+    <!-- Workshop cards will be rendered by ClientJS -->
+  </div>
+</div>
+
+<div class="flex flex-col gap-4">
+  <div class="flex items-center justify-between px-1">
+    <h2 class="text-lg font-bold text-text-main">最近開いたプロジェクト</h2>
+    <a class="text-sm font-medium text-primary hover:text-primary-dark hover:underline cursor-pointer" data-action="navigate" data-view="projectlist">すべて見る</a>
+  </div>
+  <div id="recent-projects" class="bg-surface rounded-lg border border-border-subtle shadow-card overflow-hidden">
+    <!-- Recent projects will be rendered by ClientJS -->
+  </div>
+</div>

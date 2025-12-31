@@ -1,0 +1,181 @@
+<!-- Vision Maker View (Module 1) - Blueprint ワークショップ -->
+<div class="flex flex-col lg:flex-row gap-6 h-full">
+
+  <!-- Left Panel: Form -->
+  <div class="flex-1 flex flex-col gap-5 max-w-3xl pb-24">
+    <!-- Objective Banner -->
+    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 flex gap-4 items-start shadow-sm">
+      <div class="bg-white p-2 rounded-lg shadow-sm text-primary mt-1">
+        <span class="material-symbols-outlined text-[20px] block">lightbulb</span>
+      </div>
+      <div>
+        <h4 class="text-sm font-bold text-blue-900 mb-1">ワークショップ目的</h4>
+        <p class="text-sm text-blue-800 leading-relaxed opacity-90">
+          プロジェクトのコアビジョン、意思決定ルール、成功指標を定義します。これはすべてのステークホルダーのための「北極星」となります。
+        </p>
+      </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="bg-white rounded-xl border border-border-color shadow-card p-6 lg:p-8 space-y-8">
+
+      <!-- Vision Statement -->
+      <div class="group relative">
+        <div class="flex justify-between items-center mb-3">
+          <label class="text-[13px] font-bold text-slate-700 uppercase tracking-wide flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+            ビジョン本文 (Vision Statement)
+          </label>
+          <span id="vision-char-count" class="text-[11px] font-semibold text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100">0/200</span>
+        </div>
+        <div class="relative">
+          <textarea id="vision-statement" data-field="visionStatement" class="w-full rounded-lg border-slate-300 bg-slate-50/30 p-4 text-base text-slate-800 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary min-h-[140px] resize-y transition-all placeholder:text-slate-400" placeholder="例: 2026年までにアジアのすべてのリモートチームにシームレスなコラボレーションツールを提供する。"></textarea>
+        </div>
+        <p class="mt-2 text-xs text-slate-500 flex items-center gap-1">
+          <span class="material-symbols-outlined text-[14px]">info</span>
+          明確かつ簡潔に最終目標を記述してください。専門用語は避けましょう。
+        </p>
+      </div>
+
+      <hr class="border-slate-100"/>
+
+      <!-- Decision Rules -->
+      <div class="group">
+        <div class="flex justify-between items-center mb-3">
+          <label class="text-[13px] font-bold text-slate-700 uppercase tracking-wide flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+            意思決定ルール (Decision Rules)
+          </label>
+          <span id="rules-char-count" class="text-[11px] font-semibold text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100">0/300</span>
+        </div>
+        <textarea id="decision-rules" data-field="decisionRules" class="w-full rounded-lg border-slate-300 bg-slate-50/30 p-4 text-sm text-slate-800 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary min-h-[120px] resize-y transition-all placeholder:text-slate-400" placeholder="1. 短期的な利益より顧客満足を優先する。&#10;2. モバイルファーストのデザインアプローチ。"></textarea>
+      </div>
+
+      <hr class="border-slate-100"/>
+
+      <!-- Success Metrics -->
+      <div class="group">
+        <div class="flex justify-between items-center mb-3">
+          <label class="text-[13px] font-bold text-slate-700 uppercase tracking-wide flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+            成功指標 (Success Metrics)
+          </label>
+          <span id="metrics-char-count" class="text-[11px] font-semibold text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100">0/150</span>
+        </div>
+        <textarea id="success-metrics" data-field="successMetrics" class="w-full rounded-lg border-slate-300 bg-slate-50/30 p-4 text-sm text-slate-800 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary min-h-[120px] resize-y transition-all placeholder:text-slate-400" placeholder="- ARR $10M を達成&#10;- NPS > 50 を維持"></textarea>
+      </div>
+
+      <!-- Notes -->
+      <div class="bg-slate-50 rounded-lg p-4 border border-slate-100">
+        <label class="text-xs font-bold text-slate-500 mb-2 block uppercase">備考 (Notes)</label>
+        <input id="notes" data-field="notes" class="w-full rounded-md border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-slate-400" placeholder="追加のコンテキストや制約事項..." type="text"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Panel: Live Preview -->
+  <div class="hidden lg:block lg:w-[45%] relative">
+    <div class="sticky top-0 pb-10">
+      <div class="flex items-center justify-between mb-4 px-1">
+        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+          <span class="material-symbols-outlined text-[16px]">preview</span>
+          1枚プレビュー (Live Preview)
+        </h3>
+        <div class="flex gap-2">
+          <button class="p-1.5 rounded hover:bg-white hover:shadow-sm text-slate-500 transition-all" title="Refresh">
+            <span class="material-symbols-outlined text-[18px]">refresh</span>
+          </button>
+          <button class="p-1.5 rounded hover:bg-white hover:shadow-sm text-slate-500 transition-all" title="Full Screen">
+            <span class="material-symbols-outlined text-[18px]">open_in_full</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Preview Document -->
+      <div class="bg-white text-slate-900 rounded-sm shadow-floating border border-slate-200 overflow-hidden relative" style="aspect-ratio: 210/297;">
+        <div class="h-3 w-full bg-gradient-to-r from-primary to-blue-500"></div>
+        <div class="p-10 h-full flex flex-col">
+          <div class="flex justify-between items-start mb-8 border-b border-slate-100 pb-6">
+            <div>
+              <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-1">Confidential</p>
+              <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 mb-1">PROJECT NORTH STAR</h1>
+              <p class="text-sm text-slate-500 font-medium">Strategic Vision Document v1.0</p>
+            </div>
+            <div class="h-12 w-12 bg-blue-50 rounded-lg flex items-center justify-center text-primary">
+              <span class="material-symbols-outlined text-3xl">token</span>
+            </div>
+          </div>
+
+          <div class="mb-10">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                <span class="material-symbols-outlined text-[18px]">flag</span>
+              </div>
+              <h4 class="text-xs font-bold uppercase tracking-widest text-slate-500">Vision Statement</h4>
+            </div>
+            <div class="p-6 bg-slate-50 rounded-r-lg border-l-4 border-primary">
+              <p id="preview-vision" class="text-lg font-serif font-medium leading-relaxed italic text-slate-800">
+                "ここにビジョン本文が表示されます..."
+              </p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-8 mb-8">
+            <div>
+              <div class="flex items-center gap-2 mb-4">
+                <span class="material-symbols-outlined text-slate-400 text-[20px]">gavel</span>
+                <h4 class="text-xs font-bold uppercase tracking-widest text-slate-500">Decision Rules</h4>
+              </div>
+              <ul id="preview-rules" class="list-none space-y-3 text-sm text-slate-700">
+                <li class="flex gap-2 items-start">
+                  <span class="material-symbols-outlined text-primary text-[16px] mt-0.5">check_circle</span>
+                  <span>ルールがここに表示されます...</span>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <div class="flex items-center gap-2 mb-4">
+                <span class="material-symbols-outlined text-slate-400 text-[20px]">monitoring</span>
+                <h4 class="text-xs font-bold uppercase tracking-widest text-slate-500">Success Metrics</h4>
+              </div>
+              <div id="preview-metrics" class="space-y-3">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <span class="text-sm text-slate-600">指標</span>
+                  <span class="text-sm font-bold text-primary">値</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-auto rounded-lg overflow-hidden h-24 relative">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent z-10 flex items-end p-4">
+              <div class="flex justify-between w-full items-center">
+                <p class="text-white text-[10px] font-medium opacity-90">Generated via Blueprint ワークショップ</p>
+                <p id="preview-ref" class="text-white text-[10px] font-mono opacity-70">REF-00000</p>
+              </div>
+            </div>
+            <div class="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Footer Actions -->
+<div class="fixed bottom-0 left-0 right-0 md:left-64 border-t border-border-color bg-white p-4 px-8 flex justify-between items-center z-30 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.05)]">
+  <div class="hidden sm:flex items-center gap-2">
+    <span class="material-symbols-outlined text-green-500 text-[20px]">cloud_done</span>
+    <span class="text-sm text-slate-500 font-medium">All changes saved</span>
+  </div>
+  <div class="flex gap-3 w-full sm:w-auto">
+    <button class="flex-1 sm:flex-none px-5 py-2.5 rounded-md border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50 hover:border-slate-400 transition-colors" data-action="save-module">
+      保存 (Save)
+    </button>
+    <button class="flex-1 sm:flex-none px-6 py-2.5 rounded-md bg-primary text-white font-semibold text-sm hover:bg-primary-hover transition-colors shadow-sm flex items-center justify-center gap-2" data-action="complete-module">
+      <span class="material-symbols-outlined text-[18px]">check</span>
+      このモジュールを完了
+    </button>
+  </div>
+</div>

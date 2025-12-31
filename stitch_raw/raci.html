@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Org &amp; RACI - Blueprint Workshop</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "primary": "#0176d3",
+        "primary-dark": "#014486",
+        "primary-light": "#eef4ff",
+        "slate-surface": "#f3f4f6",
+        "border-subtle": "#e5e7eb",
+      },
+      fontFamily: {
+        "display": ["Inter", "sans-serif"]
+      },
+      boxShadow: {
+        "card": "0 2px 4px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.03)",
+        "card-hover": "0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025)",
+        "elevation": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
+      },
+      borderRadius: {
+        "card": "0.5rem",
+      }
+    },
+  },
+}
+</script>
+<style>
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+}
+.icon-fill {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+.custom-scrollbar::-webkit-scrollbar { height: 10px; width: 10px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 5px; border: 2px solid #f1f5f9; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+body { font-feature-settings: "cv11", "ss01"; }
+</style>
+</head>
+<body class="bg-slate-surface text-slate-700 font-display antialiased overflow-hidden">
+<div class="flex h-screen w-full overflow-hidden">
+
+<aside class="flex w-64 flex-col border-r border-slate-200 bg-white shadow-[1px_0_4px_rgba(0,0,0,0.02)] z-30 hidden lg:flex">
+  <div class="flex h-full flex-col justify-between p-3">
+    <div class="flex flex-col gap-6">
+      <div class="flex items-center gap-3 px-3 py-3 mt-1">
+        <div class="bg-primary text-white rounded-md h-9 w-9 shrink-0 flex items-center justify-center shadow-md shadow-blue-200">
+          <span class="material-symbols-outlined text-[20px]">layers</span>
+        </div>
+        <div class="flex flex-col">
+          <h1 class="text-slate-800 text-sm font-bold leading-tight">Blueprint<span class="text-primary">.io</span></h1>
+          <p class="text-slate-400 text-[10px] font-medium uppercase tracking-wider">Enterprise Workshop</p>
+        </div>
+      </div>
+      <div class="flex flex-col gap-0.5">
+        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-4 mb-2 mt-2">Design Phase</div>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-md text-slate-600 hover:bg-slate-50 transition-all group" href="#">
+          <span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors text-[20px]">home</span>
+          <span class="text-sm font-medium">Overview</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-md text-slate-600 hover:bg-slate-50 transition-all group" href="#">
+          <span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors text-[20px]">search</span>
+          <span class="text-sm font-medium">Discovery</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-md text-slate-600 hover:bg-slate-50 transition-all group" href="#">
+          <span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors text-[20px]">lightbulb</span>
+          <span class="text-sm font-medium">Solutioning</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-md bg-primary-light text-primary border-l-4 border-primary ml-[-1px]" href="#">
+          <span class="material-symbols-outlined icon-fill text-[20px]">group</span>
+          <span class="text-sm font-bold">Org &amp; RACI</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2 rounded-md text-slate-600 hover:bg-slate-50 transition-all group" href="#">
+          <span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors text-[20px]">map</span>
+          <span class="text-sm font-medium">Roadmap</span>
+        </a>
+      </div>
+    </div>
+    <div class="mt-auto">
+      <div class="bg-slate-50 rounded-lg p-3 border border-slate-100 flex items-center gap-3 mb-2">
+        <div class="h-9 w-9 rounded-full bg-slate-200 bg-center bg-cover border-2 border-white shadow-sm" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBKsHVzmAOdMEAU-P0Mgzbj8agAljoNAdWmUOwJ8TLT3KJnVTVipzBN-UgHYja5ztbf8JP5Gsqfbe6ij1-1e0K_iFsd_RW0FpkFvligsSgfD0IBpoNUuPX7_UklwBrzdBDShIb6ih3er26mTU17sV3VszWe_tNlepFkXYzwBRRkAzOO3j0_D2kU1yEEEQUxf0g2jWsXzNXg-qgbEE7KCf62ggPZHI5zk1M044otdRkb-mQP1pwV1yJSOSC-w0wVWPphmTcOyhBVs7I');"></div>
+        <div class="flex flex-col overflow-hidden">
+          <p class="text-sm font-bold text-slate-800 truncate">Jane Cooper</p>
+          <p class="text-xs text-slate-500 truncate">Sales Engineer</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<main class="flex-1 flex flex-col h-full overflow-hidden bg-slate-surface relative">
+  <div class="lg:hidden flex items-center justify-between p-4 bg-white border-b border-slate-200">
+    <div class="flex items-center gap-2">
+      <span class="material-symbols-outlined text-primary">menu</span>
+      <span class="font-bold text-slate-800">Org &amp; RACI</span>
+    </div>
+    <div class="h-8 w-8 rounded-full bg-slate-200 bg-center bg-cover" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCZ-quo1ONV5nj_Moi1kXMRTwjkLDkxCygLy9ICUwJGMVdGjYQpl44RFAlqaE8CU6s32jO36OVh0eKp_cvHWrMeO1t8SgJDP0d6d0M2TmYxZBw-dMWKfucQW675x0Kjyi0leGCbIyRUjF0vYwzDFrVyNk8IZXBs8oRivDR7T0uDFAXRnumL0SXpFtRl-JyYqEWmETVCULtNWxnPvovhnEwKD_M0J47nirzzvXzYdVO4K4aVwnkT4vf1mk6X5XPtoChLiaiwGzgfuD4');"></div>
+  </div>
+
+  <div class="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8 pb-32">
+    <div class="max-w-[1400px] mx-auto flex flex-col gap-8">
+
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-card shadow-card border border-slate-200">
+        <div class="flex flex-col gap-1">
+          <div class="flex items-center gap-2 text-slate-500 text-xs font-semibold uppercase tracking-wide">
+            <span class="text-primary">Design Phase</span>
+            <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+            <span>Module 4</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <h1 class="text-2xl font-bold text-slate-900">Org &amp; RACI Structure</h1>
+            <span class="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded border border-slate-200">Draft</span>
+          </div>
+          <p class="text-slate-500 text-sm mt-1">Define the project structure and assign responsibilities for the implementation phase.</p>
+        </div>
+        <div class="flex gap-3">
+          <button class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-md text-slate-700 text-sm font-semibold hover:bg-slate-50 hover:border-slate-400 transition-all shadow-sm">
+            <span class="material-symbols-outlined text-[18px]">download</span>
+            <span>Export</span>
+          </button>
+          <button class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-md text-sm font-semibold hover:bg-primary-dark transition-all shadow-sm">
+            <span class="material-symbols-outlined text-[18px]">save</span>
+            <span>Save Changes</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-amber-50 border-l-4 border-amber-500 rounded-r-md p-4 flex items-start gap-4 shadow-sm">
+        <div class="text-amber-500 mt-0.5">
+          <span class="material-symbols-outlined">warning</span>
+        </div>
+        <div class="flex flex-col gap-1 flex-1">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-slate-800 text-sm">Action Required: Undefined Responsibilities</h3>
+            <button class="text-slate-400 hover:text-slate-600 transition-colors">
+              <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+          </div>
+          <p class="text-slate-600 text-sm">2 Tasks are missing an Accountable (A) person. Accountability is required for project approval.</p>
+          <div class="flex gap-2 mt-2">
+            <a class="inline-flex items-center px-2 py-1 rounded bg-white border border-amber-200 text-xs font-semibold text-amber-700 shadow-sm hover:bg-amber-50 transition-colors" href="#task-104">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>
+              Task #104
+            </a>
+            <a class="inline-flex items-center px-2 py-1 rounded bg-white border border-amber-200 text-xs font-semibold text-amber-700 shadow-sm hover:bg-amber-50 transition-colors" href="#task-109">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>
+              Task #109
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <section class="flex flex-col gap-4">
+        <div class="flex items-center justify-between px-1">
+          <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+            <div class="w-1 h-5 bg-primary rounded-full"></div>
+            Organizational Structure (Three Pillars)
+          </h2>
+          <button class="text-sm font-semibold text-primary hover:text-primary-dark hover:underline flex items-center gap-1">
+            <span class="material-symbols-outlined text-[18px]">settings</span>
+            Manage Roles
+          </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="flex flex-col gap-4 rounded-card border-t-4 border-indigo-500 bg-white p-5 shadow-card hover:shadow-card-hover transition-shadow">
+            <div class="flex items-start justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 class="font-bold text-slate-800 text-lg">CoE</h3>
+                <p class="text-xs font-medium text-slate-500 uppercase tracking-wide mt-1">Strategic &amp; Governance</p>
+              </div>
+              <div class="p-1.5 bg-indigo-50 text-indigo-600 rounded-md">
+                <span class="material-symbols-outlined">crown</span>
+              </div>
+            </div>
+            <div class="flex flex-col gap-3 min-h-[120px]">
+              <div class="group relative bg-white border border-slate-200 rounded-md p-3 hover:border-primary cursor-pointer shadow-sm transition-all">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">LEAD</span>
+                  <span class="material-symbols-outlined text-slate-300 group-hover:text-primary text-[16px]">drag_indicator</span>
+                </div>
+                <p class="font-bold text-slate-700 text-sm">Project Manager</p>
+                <div class="flex items-center gap-2 mt-3 pt-3 border-t border-slate-50">
+                  <div class="h-6 w-6 rounded-full bg-slate-200 bg-center bg-cover border border-white shadow-sm" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBxy73E2cFib2wjiLM7zJZnFWuHwoadjlGaMwOzZLH-JgjxGebPBVmInUkQWOY2hh-BtmzR2Tiy-JWER_jq0cveoQpChOYh6Wy6O7WkBxaPK25f5n2KglrtmIlhi2m3yZoGGBvUf9tQRO6ffhHg_AHvP-95g16H2nZD4oWKl1O-EYgO8LO4aRjBhR9_2GH9LmIn3-JA49tUoOCtE1g9bMPZyzYbVSqee6bZICfTVuXIXLL5XUD6rEGScey1yFOvUi16yj_jyumCO1U');"></div>
+                  <span class="text-xs font-medium text-slate-600">Sarah Jenkins</span>
+                </div>
+              </div>
+              <div class="group relative bg-white border border-slate-200 rounded-md p-3 hover:border-primary cursor-pointer shadow-sm transition-all">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">SUPPORT</span>
+                  <span class="material-symbols-outlined text-slate-300 group-hover:text-primary text-[16px]">drag_indicator</span>
+                </div>
+                <p class="font-bold text-slate-700 text-sm">Executive Sponsor</p>
+                <div class="flex items-center gap-2 mt-3 pt-3 border-t border-slate-50">
+                  <div class="h-6 w-6 rounded-full bg-slate-200 bg-center bg-cover border border-white shadow-sm" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAxLRquu6k4-t2wYpwbPLjSt35ZXyRZWhqG6LwrLLVZm86f-99YuEzw4YdI0Z9iZMJJlvmiknKVN3LdhKtca7rZd4o8agTqRQ3SpUbAtuBDLFZAuHY24hnK7sxp09t2SrILJ703Qs4T9hOnL-lz05zZdVstDH0_SqdVeA0WbHHdvwiTNwLymbbmn1i2MOw_Aj34ydDnkFlwjg9PFCWgyPJ0GUnNKgE7oq73Bm9hfKuENHaMn5UrSeYpqB0wEbJFFT_sLvSlkNF28yQ');"></div>
+                  <span class="text-xs font-medium text-slate-600">Mike Ross</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-4 rounded-card border-t-4 border-emerald-500 bg-white p-5 shadow-card hover:shadow-card-hover transition-shadow relative">
+            <div class="hidden md:block absolute top-12 -left-3 w-3 h-[2px] bg-slate-300"></div>
+            <div class="hidden md:block absolute top-12 -right-3 w-3 h-[2px] bg-slate-300"></div>
+            <div class="flex items-start justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 class="font-bold text-slate-800 text-lg">Biz Data Network</h3>
+                <p class="text-xs font-medium text-slate-500 uppercase tracking-wide mt-1">Operational &amp; Process</p>
+              </div>
+              <div class="p-1.5 bg-emerald-50 text-emerald-600 rounded-md">
+                <span class="material-symbols-outlined">hub</span>
+              </div>
+            </div>
+            <div class="flex flex-col gap-3 min-h-[120px]">
+              <div class="group relative bg-white border border-slate-200 rounded-md p-3 hover:border-primary cursor-pointer shadow-sm transition-all">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">OWNER</span>
+                  <span class="material-symbols-outlined text-slate-300 group-hover:text-primary text-[16px]">drag_indicator</span>
+                </div>
+                <p class="font-bold text-slate-700 text-sm">Data Steward</p>
+                <div class="flex items-center gap-2 mt-3 pt-3 border-t border-slate-50">
+                  <div class="h-6 w-6 rounded-full bg-slate-200 bg-center bg-cover border border-white shadow-sm" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDyrwOqsUdoOqjSOgMyvLfftakyJ5VZ4-3f_zHrpid-0LFQuaFgF2HFzuvQ1dusmphBBdLKc2GsSyeB_HfTFiIP200Oi31m944f6EX4HesRAPhEBq60fiuHpyZMiXPpx9GHupl_DeWZAmyJLngNBSiHT7aTJdC7GIctfJayDCZnEkMlENAv41iht7Z1N5aYloB_lUHyUutPAq6ZpvPW9zxE9dioo_b58kIZ1C13tG9jauPUm87ZDEb7Aiv-DB6L_qdWUOS7wZNT6Q8');"></div>
+                  <span class="text-xs font-medium text-slate-600">Alicia Key</span>
+                </div>
+              </div>
+              <div class="group relative bg-white border border-slate-200 rounded-md p-3 hover:border-primary cursor-pointer shadow-sm transition-all">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">ANALYST</span>
+                  <span class="material-symbols-outlined text-slate-300 group-hover:text-primary text-[16px]">drag_indicator</span>
+                </div>
+                <p class="font-bold text-slate-700 text-sm">Business Analyst</p>
+                <div class="flex items-center gap-2 mt-3 pt-3 border-t border-slate-50">
+                  <div class="h-6 w-6 rounded-full bg-slate-200 bg-center bg-cover border border-white shadow-sm" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB2e18u9l0SdwUQ2uQFB-tc41UYvbndgM4Nz_rhi7d4nz1LYeDYQ-8i7hkBpWuwlmnBH1FpF-u8s1KSYU-0NWXebfUkTdlcQaEmBH4BtUhIRND_DRfESXY5p7VisGJ0vQWHhvXnDZrFCPPW2yOxg3iqhLCTeQtwyHiIHYOl1HHHMQFB03HoYwvA0PaVTm7GpzaMrdb9GccCO_pgq1OVwdrDWfEx_0dPSAqYDurzFs-dyUVpZsOzcjBixh4XWgj_v_RDoo48m4vwnNM');"></div>
+                  <span class="text-xs font-medium text-slate-600">John Doe</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-4 rounded-card border-t-4 border-blue-500 bg-white p-5 shadow-card hover:shadow-card-hover transition-shadow">
+            <div class="flex items-start justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 class="font-bold text-slate-800 text-lg">IT</h3>
+                <p class="text-xs font-medium text-slate-500 uppercase tracking-wide mt-1">Technical &amp; Imp.</p>
+              </div>
+              <div class="p-1.5 bg-blue-50 text-blue-600 rounded-md">
+                <span class="material-symbols-outlined">dns</span>
+              </div>
+            </div>
+            <div class="flex flex-col gap-3 min-h-[120px]">
+              <div class="group relative bg-white border border-slate-200 rounded-md p-3 hover:border-primary cursor-pointer shadow-sm transition-all">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">TECH LEAD</span>
+                  <span class="material-symbols-outlined text-slate-300 group-hover:text-primary text-[16px]">drag_indicator</span>
+                </div>
+                <p class="font-bold text-slate-700 text-sm">System Architect</p>
+                <div class="flex items-center gap-2 mt-3 pt-3 border-t border-slate-50">
+                  <div class="h-6 w-6 rounded-full bg-slate-200 bg-center bg-cover border border-white shadow-sm" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB-M_eN0KrIWaIj_sM-_m2D2owu-h0YAb_XrZTZpMKw22yIJtHvOBjVl9cpxVdZ1Fi5B1oUtaWnEC3fA1gOPpPeaZNcBz9EYZMSVG43_ZXOXj5_yUwe3R79bMs4zQwCyt7f7VhSspmf21wVM5CWfdVwC7EiiN-TXns7WlEbHp-05du8StU4A-5dc0QI2ZvAdQjnlmTXltCJeWh75qT2FCAHTQhEdmFbz5ua8FskHthxh4JzutedknZgZnbSrJsLzqNwKlA2fj3SL98');"></div>
+                  <span class="text-xs font-medium text-slate-600">David Chang</span>
+                </div>
+              </div>
+            </div>
+            <button class="mt-auto w-full py-2 border border-dashed border-slate-300 rounded-md text-slate-500 text-xs font-bold hover:bg-slate-50 hover:text-primary hover:border-primary transition-colors flex justify-center items-center gap-1 uppercase tracking-wide">
+              <span class="material-symbols-outlined text-[16px]">add</span>
+              Add Role
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="flex flex-col gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1">
+          <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+            <div class="w-1 h-5 bg-primary rounded-full"></div>
+            Responsibility Assignment Matrix (RACI)
+          </h2>
+          <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
+            <span class="text-[10px] text-slate-400 font-bold uppercase mr-1">Legend:</span>
+            <span class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> R
+            </span>
+            <span class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-700 border border-red-100">
+              <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> A
+            </span>
+            <span class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-100">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> C
+            </span>
+            <span class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> I
+            </span>
+          </div>
+        </div>
+
+        <div class="rounded-card border border-slate-200 bg-white shadow-card overflow-hidden flex flex-col">
+          <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse min-w-[900px]">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200">
+                  <th class="sticky left-0 z-20 bg-slate-50 p-4 font-bold text-xs uppercase tracking-wider text-slate-500 w-72 border-r border-slate-200 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.05)]">Task / Milestone</th>
+                  <th class="p-4 font-bold text-xs uppercase tracking-wider text-slate-500 text-center min-w-[140px]">Project Manager</th>
+                  <th class="p-4 font-bold text-xs uppercase tracking-wider text-slate-500 text-center min-w-[140px]">Exec Sponsor</th>
+                  <th class="p-4 font-bold text-xs uppercase tracking-wider text-slate-500 text-center min-w-[140px]">Data Steward</th>
+                  <th class="p-4 font-bold text-xs uppercase tracking-wider text-slate-500 text-center min-w-[140px]">Business Analyst</th>
+                  <th class="p-4 font-bold text-xs uppercase tracking-wider text-slate-500 text-center min-w-[140px]">System Architect</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr class="hover:bg-slate-50 transition-colors group">
+                  <td class="sticky left-0 z-10 bg-white group-hover:bg-slate-50 p-4 font-semibold text-sm text-slate-800 border-r border-slate-200 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.05)]">
+                    <div class="flex flex-col">
+                      <span>Define KPI Definitions</span>
+                      <span class="text-[11px] text-slate-400 font-normal mt-0.5">Task #101</span>
+                    </div>
+                  </td>
+                  <td class="p-3 text-center">
+                    <button class="w-8 h-8 rounded-md bg-slate-100 text-slate-500 font-bold text-xs hover:bg-slate-200 hover:text-slate-700 transition-colors focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none">
+                      I
+                    </button>
+                  </td>
+                  <td class="p-3 text-center">
+                    <button class="w-8 h-8 rounded-md bg-red-100 text-red-700 font-bold text-xs hover:bg-red-200 transition-colors border border-red-200 focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none">
+                      A
+                    </button>
+                  </td>
+                  <td class="p-3 text-center">
+                    <button class="w-8 h-8 rounded-md bg-blue-100 text-blue-700 font-bold text-xs hover:bg-blue-200 transition-colors border border-blue-200 focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none">
+                      R
+                    </button>
+                  </td>
+                  <td class="p-3 text-center">
+                    <button class="w-8 h-8 rounded-md bg-blue-100 text-blue-700 font-bold text-xs hover:bg-blue-200 transition-colors border border-blue-200 focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none">
+                      R
+                    </button>
+                  </td>
+                  <td class="p-3 text-center">
+                    <button class="w-8 h-8 rounded-md bg-amber-100 text-amber-700 font-bold text-xs hover:bg-amber-200 transition-colors border border-amber-200 focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none">
+                      C
+                    </button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-slate-50 transition-colors group" id="task-104">
+                  <td class="sticky left-0 z-10 bg-white group-hover:bg-slate-50 p-4 font-semibold text-sm text-slate-800 border-r border-slate-200 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.05)] border-l-4 border-l-transparent target:border-l-amber-500 target:bg-amber-50">
+                    <div class="flex flex-col">
+                      <span>Data Migration Plan</span>
+                      <span class="text-[11px] text-slate-400 font-normal mt-0.5">Task #104</span>
+                    </div>
+                  </td>
+                  <td class="p-3 text-center">
+                    <button class="w-8 h-8 rounded-md bg-blue-100 text-blue-700 font-bold text-xs hover:bg-blue-200 transition-colors border border-blue-200 focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none">
+                      R
+                    </button>
+                  </td>
+                  <td class="p-3 text-center">
+                    <div class="relative inline-block group/select">
+                      <button class="flex items-center gap-1 px-2 py-1.5 rounded-md bg-white border border-dashed border-amber-300 text-amber-600 text-xs font-medium hover:border-amber-500 hover:text-amber-700 transition-colors animate-pulse">
+                        <span>Select</span>
+                        <span class="material-symbols-outlined text-[14px]">arrow_drop_down</span>
+                      </button>
+                    </div>
+                  </td>
+                  <td class="p-3 text-center">
+                    <button class="w-8 h-8 rounded-md bg-amber-100 text-amber-700 font-bold text-xs hover:bg-amber-200 transition-colors border border-amber-200 focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none">
+                      C
+                    </button>
+                  </td>
+                  <td class="p-3 text-center">
+                    <button class="w-8 h-8 rounded-md bg-slate-100 text-slate-500 font-bold text-xs hover:bg-slate-200 hover:text-slate-700 transition-colors focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none">
+                      I
+                    </button>
+                  </td>
+                  <td class="p-3 text-center">
+                    <button class="w-8 h-8 rounded-md bg-blue-100 text-blue-700 font-bold text-xs hover:bg-blue-200 transition-colors border border-blue-200 focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none">
+                      R
+                    </button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-slate-50 transition-colors group" id="task-109">
+                  <td class="sticky left-0 z-10 bg-white group-hover:bg-slate-50 p-4 font-semibold text-sm text-slate-800 border-r border-slate-200 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.05)] border-l-4 border-l-transparent target:border-l-amber-500 target:bg-amber-50">
+                    <div class="flex flex-col">
+                      <span>UAT Sign-off</span>
+                      <span class="text-[11px] text-slate-400 font-normal mt-0.5">Task #109</span>
+                    </div>
+                  </td>
+                  <td class="p-3 text-center">
+                    <button class="w-8 h-8 rounded-md bg-slate-100 text-slate-500 font-bold text-xs hover:bg-slate-200 hover:text-slate-700 transition-colors focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none">
+                      I
+                    </button>
+                  </td>
+                  <td class="p-3 text-center">
+                    <button class="flex items-center gap-1 px-2 py-1.5 rounded-md bg-white border border-dashed border-amber-300 text-amber-600 text-xs font-medium hover:border-amber-500 hover:text-amber-700 transition-colors animate-pulse mx-auto">
+                      <span>Select</span>
+                      <span class="material-symbols-outlined text-[14px]">arrow_drop_down</span>
+                    </button>
+                  </td>
+                  <td class="p-3 text-center">
+                    <button class="w-8 h-8 rounded-md bg-blue-100 text-blue-700 font-bold text-xs hover:bg-blue-200 transition-colors border border-blue-200 focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none">
+                      R
+                    </button>
+                  </td>
+                  <td class="p-3 text-center">
+                    <button class="w-8 h-8 rounded-md bg-blue-100 text-blue-700 font-bold text-xs hover:bg-blue-200 transition-colors border border-blue-200 focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none">
+                      R
+                    </button>
+                  </td>
+                  <td class="p-3 text-center">
+                    <button class="w-8 h-8 rounded-md bg-amber-100 text-amber-700 font-bold text-xs hover:bg-amber-200 transition-colors border border-amber-200 focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none">
+                      C
+                    </button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-slate-50 transition-colors group">
+                  <td class="sticky left-0 z-10 bg-white group-hover:bg-slate-50 p-4 font-semibold text-sm text-slate-800 border-r border-slate-200 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.05)]">
+                    <div class="flex flex-col">
+                      <span>Go-Live Approval</span>
+                      <span class="text-[11px] text-slate-400 font-normal mt-0.5">Task #112</span>
+                    </div>
+                  </td>
+                  <td class="p-3 text-center">
+                    <button class="w-8 h-8 rounded-md bg-amber-100 text-amber-700 font-bold text-xs hover:bg-amber-200 transition-colors border border-amber-200 focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none">
+                      C
+                    </button>
+                  </td>
+                  <td class="p-3 text-center">
+                    <button class="w-8 h-8 rounded-md bg-red-100 text-red-700 font-bold text-xs hover:bg-red-200 transition-colors border border-red-200 focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none">
+                      A
+                    </button>
+                  </td>
+                  <td class="p-3 text-center">
+                    <button class="w-8 h-8 rounded-md bg-amber-100 text-amber-700 font-bold text-xs hover:bg-amber-200 transition-colors border border-amber-200 focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none">
+                      C
+                    </button>
+                  </td>
+                  <td class="p-3 text-center">
+                    <button class="w-8 h-8 rounded-md bg-slate-100 text-slate-500 font-bold text-xs hover:bg-slate-200 hover:text-slate-700 transition-colors focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none">
+                      I
+                    </button>
+                  </td>
+                  <td class="p-3 text-center">
+                    <button class="w-8 h-8 rounded-md bg-blue-100 text-blue-700 font-bold text-xs hover:bg-blue-200 transition-colors border border-blue-200 focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:outline-none">
+                      R
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="bg-slate-50 border-t border-slate-200 p-3 flex justify-between items-center">
+            <span class="text-xs font-medium text-slate-500">Showing 4 of 24 tasks</span>
+            <div class="flex gap-2">
+              <button class="h-8 w-8 flex items-center justify-center rounded-md border border-slate-300 bg-white text-slate-500 hover:bg-slate-50 disabled:opacity-50 transition-colors">
+                <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+              </button>
+              <button class="h-8 w-8 flex items-center justify-center rounded-md border border-slate-300 bg-white text-slate-500 hover:bg-slate-50 transition-colors">
+                <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 lg:px-8 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)] z-40">
+    <div class="max-w-[1400px] mx-auto flex justify-between items-center">
+      <div class="flex items-center gap-2 text-xs font-medium text-slate-500">
+        <span class="material-symbols-outlined text-[16px] text-emerald-500">cloud_done</span>
+        <span>Last saved 2 mins ago</span>
+      </div>
+      <div class="flex gap-3">
+        <button class="px-4 py-2 rounded-md border border-slate-300 text-slate-600 bg-white font-semibold hover:bg-slate-50 transition-colors text-sm">
+          Back
+        </button>
+        <button class="px-5 py-2 bg-primary text-white rounded-md font-semibold hover:bg-primary-dark transition-colors shadow-lg shadow-blue-500/30 text-sm flex items-center gap-2">
+          <span>Next Step: Roadmap</span>
+          <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</main>
+
+</div>
+</body></html>

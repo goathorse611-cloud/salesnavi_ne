@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Module 2: Use Case Selection</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+JP:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "primary": "#0176D3","primary-dark": "#014486",
+        "secondary": "#5ebf6e",
+        "neutral-surface": "#F3F4F6","border-color": "#E5E7EB",
+      },
+      fontFamily: {
+        "display": ["Inter", "Noto Sans JP", "sans-serif"],
+        "body": ["Inter", "Noto Sans JP", "sans-serif"],
+      },
+      boxShadow: {
+        "card": "0 2px 4px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1)",
+        "sticky": "0 -4px 10px rgba(0, 0, 0, 0.05)",
+      }
+    },
+  },
+}
+</script>
+<style>
+input[type=range] { -webkit-appearance: none; background: transparent; }
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 18px; width: 18px;
+  border-radius: 50%;
+  background: #0176D3;
+  cursor: pointer;
+  margin-top: -7px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  border: 2px solid white;
+}
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%; height: 4px;
+  cursor: pointer;
+  background: #E5E7EB;
+  border-radius: 2px;
+}
+input[type=range]:focus { outline: none; }
+.range-4::-webkit-slider-runnable-track { background: linear-gradient(to right, #0176D3 80%, #E5E7EB 80%); }
+.range-5::-webkit-slider-runnable-track { background: linear-gradient(to right, #0176D3 100%, #E5E7EB 100%); }
+.range-3::-webkit-slider-runnable-track { background: linear-gradient(to right, #0176D3 60%, #E5E7EB 60%); }
+.range-2::-webkit-slider-runnable-track { background: linear-gradient(to right, #0176D3 40%, #E5E7EB 40%); }
+.range-1::-webkit-slider-runnable-track { background: linear-gradient(to right, #0176D3 20%, #E5E7EB 20%); }
+.custom-scrollbar::-webkit-scrollbar { height: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+</style>
+</head>
+<body class="bg-neutral-surface text-slate-700 font-display min-h-screen flex flex-col relative pb-32 antialiased">
+
+<header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+  <div class="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="flex items-center justify-center size-9 bg-[#0176D3] rounded text-white shadow-sm">
+        <span class="material-symbols-outlined text-[20px]">cloud</span>
+      </div>
+      <div>
+        <h2 class="text-base font-bold text-slate-800 leading-none">Blueprint</h2>
+        <span class="text-[10px] text-slate-500 font-medium tracking-wide uppercase">Workshop Edition</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-6">
+      <nav class="hidden md:flex items-center gap-1">
+        <a class="text-slate-600 hover:text-[#0176D3] hover:bg-slate-50 px-3 py-2 rounded text-sm font-medium transition-colors" href="#">Modules</a>
+        <a class="text-slate-600 hover:text-[#0176D3] hover:bg-slate-50 px-3 py-2 rounded text-sm font-medium transition-colors" href="#">Reports</a>
+        <a class="text-slate-600 hover:text-[#0176D3] hover:bg-slate-50 px-3 py-2 rounded text-sm font-medium transition-colors" href="#">Settings</a>
+      </nav>
+      <div class="flex items-center gap-3 pl-4 border-l border-slate-200">
+        <div class="text-right hidden sm:block">
+          <p class="text-xs font-semibold text-slate-800">Akira Tanaka</p>
+          <p class="text-[10px] text-slate-500">Sales Lead</p>
+        </div>
+        <div class="size-8 rounded-full border border-slate-200 bg-cover bg-center shadow-sm" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBmCkUi2axDwv_q1ye9LX8Rny34gKUZfqO4TN8AvJYyt34Ez1uzNZs8ypmCE3jbg3A2nQn4yzxTl_kJngx66gtkzijy70LDuYWU7Mjxz_UtU8zRv1NqxFkP6NvmgQ7waSPI6eY8pGDb_UW3ZeTie8FJEK2FVUPiPqU0obiBFebF0HfMkOREaZthVctuiOtbSQXO7I5y7rFccf7ZFvcJL35XCvwPiwdL9t5XkfmJyvIw8Zkrb9QRQb66bFGJkZCGh9qtLp67KyzFXho");'></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="max-w-[1440px] mx-auto w-full px-6 pt-6 pb-2">
+  <div class="flex items-center gap-2 text-xs font-medium">
+    <a class="text-[#0176D3] hover:underline" href="#">Blueprint Workshop</a>
+    <span class="text-slate-400 material-symbols-outlined text-[12px]">chevron_right</span>
+    <span class="text-slate-500">Module 2: Use Case Selection</span>
+  </div>
+</div>
+
+<div class="max-w-[1440px] mx-auto w-full px-6 flex flex-col lg:flex-row gap-6 mt-4">
+  <main class="flex-1 flex flex-col gap-5">
+    <div class="flex flex-col gap-1 bg-white p-6 rounded-lg shadow-card border border-slate-200">
+      <div class="flex items-center gap-3 mb-1">
+        <span class="px-2 py-0.5 rounded bg-blue-50 text-[#0176D3] text-[11px] font-bold uppercase tracking-wide border border-blue-100">Step A</span>
+        <h1 class="text-2xl font-bold text-slate-800 tracking-tight">ユースケース選定</h1>
+      </div>
+      <p class="text-slate-500 text-sm leading-relaxed max-w-3xl">
+        候補のユースケースをスコアリングし、ビジネスインパクトと実現可能性に基づいて上位1〜2件を選定します。選定されたケースは自動的に90日計画ボードへ移行されます。
+      </p>
+    </div>
+
+    <div class="w-full bg-white rounded-lg shadow-card border border-slate-200 overflow-hidden">
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full min-w-[900px]">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200">
+              <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[28%]">
+                Candidate Use Case
+              </th>
+              <th class="px-4 py-3 text-left w-[15%]">
+                <div class="flex flex-col">
+                  <span class="text-xs font-bold text-slate-700">インパクト</span>
+                  <span class="text-[10px] text-slate-400 font-normal">Impact (1-5)</span>
+                </div>
+              </th>
+              <th class="px-4 py-3 text-left w-[15%]">
+                <div class="flex flex-col">
+                  <span class="text-xs font-bold text-slate-700">実現性(90日)</span>
+                  <span class="text-[10px] text-slate-400 font-normal">Feasibility (1-5)</span>
+                </div>
+              </th>
+              <th class="px-4 py-3 text-left w-[15%]">
+                <div class="flex flex-col">
+                  <span class="text-xs font-bold text-slate-700">能力構築</span>
+                  <span class="text-[10px] text-slate-400 font-normal">Capability (1-5)</span>
+                </div>
+              </th>
+              <th class="px-4 py-3 text-center text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[10%] border-l border-slate-100">
+                Total
+              </th>
+              <th class="px-4 py-3 text-center text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[8%]">
+                Rank
+              </th>
+              <th class="px-6 py-3 text-center text-[11px] font-bold text-slate-500 uppercase tracking-wider w-[9%] bg-blue-50/30">
+                Select
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr class="bg-blue-50/20 hover:bg-slate-50 transition-colors group">
+              <td class="px-6 py-4">
+                <div class="flex items-start gap-3">
+                  <div class="size-8 rounded bg-[#0176D3]/10 text-[#0176D3] flex items-center justify-center shrink-0 mt-0.5">
+                    <span class="material-symbols-outlined text-lg">support_agent</span>
+                  </div>
+                  <div>
+                    <p class="font-bold text-slate-800 text-sm">AI Customer Support</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Automated ticket resolution</p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-4 align-middle">
+                <div class="flex items-center gap-3">
+                  <span class="text-sm font-semibold text-slate-700 w-3">4</span>
+                  <input class="w-full range-4" max="5" min="1" type="range" value="4"/>
+                </div>
+              </td>
+              <td class="px-4 py-4 align-middle">
+                <div class="flex items-center gap-3">
+                  <span class="text-sm font-semibold text-slate-700 w-3">3</span>
+                  <input class="w-full range-3" max="5" min="1" type="range" value="3"/>
+                </div>
+              </td>
+              <td class="px-4 py-4 align-middle">
+                <div class="flex items-center gap-3">
+                  <span class="text-sm font-semibold text-slate-700 w-3">5</span>
+                  <input class="w-full range-5" max="5" min="1" type="range" value="5"/>
+                </div>
+              </td>
+              <td class="px-4 py-4 text-center border-l border-slate-100 bg-slate-50/30">
+                <span class="text-lg font-black text-slate-800">12</span>
+              </td>
+              <td class="px-4 py-4 text-center">
+                <span class="inline-flex items-center justify-center size-6 rounded-full text-xs font-bold bg-[#FFB75D] text-white shadow-sm">
+                  1
+                </span>
+              </td>
+              <td class="px-6 py-4 text-center bg-blue-50/30 border-l border-blue-100">
+                <input checked="" class="size-5 rounded border-slate-300 text-[#0176D3] focus:ring-[#0176D3]/20 cursor-pointer transition-all" type="checkbox"/>
+              </td>
+            </tr>
+            <tr class="hover:bg-slate-50 transition-colors group">
+              <td class="px-6 py-4">
+                <div class="flex items-start gap-3">
+                  <div class="size-8 rounded bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <span class="material-symbols-outlined text-lg">build_circle</span>
+                  </div>
+                  <div>
+                    <p class="font-bold text-slate-800 text-sm">Predictive Maintenance</p>
+                    <p class="text-xs text-slate-500 mt-0.5">IoT sensor analysis</p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-4 align-middle">
+                <div class="flex items-center gap-3">
+                  <span class="text-sm font-semibold text-slate-700 w-3">5</span>
+                  <input class="w-full range-5" max="5" min="1" type="range" value="5"/>
+                </div>
+              </td>
+              <td class="px-4 py-4 align-middle">
+                <div class="flex items-center gap-3">
+                  <span class="text-sm font-semibold text-slate-700 w-3">2</span>
+                  <input class="w-full range-2" max="5" min="1" type="range" value="2"/>
+                </div>
+              </td>
+              <td class="px-4 py-4 align-middle">
+                <div class="flex items-center gap-3">
+                  <span class="text-sm font-semibold text-slate-700 w-3">4</span>
+                  <input class="w-full range-4" max="5" min="1" type="range" value="4"/>
+                </div>
+              </td>
+              <td class="px-4 py-4 text-center border-l border-slate-100 bg-slate-50/30">
+                <span class="text-lg font-black text-slate-800">11</span>
+              </td>
+              <td class="px-4 py-4 text-center">
+                <span class="inline-flex items-center justify-center size-6 rounded-full text-xs font-bold bg-slate-200 text-slate-600">
+                  2
+                </span>
+              </td>
+              <td class="px-6 py-4 text-center bg-blue-50/30 border-l border-blue-100">
+                <input class="size-5 rounded border-slate-300 text-[#0176D3] focus:ring-[#0176D3]/20 cursor-pointer transition-all" type="checkbox"/>
+              </td>
+            </tr>
+            <tr class="hover:bg-slate-50 transition-colors group">
+              <td class="px-6 py-4">
+                <div class="flex items-start gap-3">
+                  <div class="size-8 rounded bg-teal-50 text-teal-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <span class="material-symbols-outlined text-lg">trending_up</span>
+                  </div>
+                  <div>
+                    <p class="font-bold text-slate-800 text-sm">Sales Forecasting</p>
+                    <p class="text-xs text-slate-500 mt-0.5">AI revenue projection</p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-4 align-middle">
+                <div class="flex items-center gap-3">
+                  <span class="text-sm font-semibold text-slate-700 w-3">3</span>
+                  <input class="w-full range-3" max="5" min="1" type="range" value="3"/>
+                </div>
+              </td>
+              <td class="px-4 py-4 align-middle">
+                <div class="flex items-center gap-3">
+                  <span class="text-sm font-semibold text-slate-700 w-3">5</span>
+                  <input class="w-full range-5" max="5" min="1" type="range" value="5"/>
+                </div>
+              </td>
+              <td class="px-4 py-4 align-middle">
+                <div class="flex items-center gap-3">
+                  <span class="text-sm font-semibold text-slate-700 w-3">2</span>
+                  <input class="w-full range-2" max="5" min="1" type="range" value="2"/>
+                </div>
+              </td>
+              <td class="px-4 py-4 text-center border-l border-slate-100 bg-slate-50/30">
+                <span class="text-lg font-black text-slate-800">10</span>
+              </td>
+              <td class="px-4 py-4 text-center">
+                <span class="inline-flex items-center justify-center size-6 rounded-full text-xs font-bold bg-slate-100 text-slate-400">
+                  3
+                </span>
+              </td>
+              <td class="px-6 py-4 text-center bg-blue-50/30 border-l border-blue-100">
+                <input class="size-5 rounded border-slate-300 text-[#0176D3] focus:ring-[#0176D3]/20 cursor-pointer transition-all" type="checkbox"/>
+              </td>
+            </tr>
+            <tr class="hover:bg-slate-50 transition-colors group">
+              <td class="px-6 py-4">
+                <div class="flex items-start gap-3">
+                  <div class="size-8 rounded bg-orange-50 text-orange-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <span class="material-symbols-outlined text-lg">inventory_2</span>
+                  </div>
+                  <div>
+                    <p class="font-bold text-slate-800 text-sm">Inventory Optimization</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Supply chain logic</p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-4 align-middle">
+                <div class="flex items-center gap-3">
+                  <span class="text-sm font-semibold text-slate-700 w-3">2</span>
+                  <input class="w-full range-2" max="5" min="1" type="range" value="2"/>
+                </div>
+              </td>
+              <td class="px-4 py-4 align-middle">
+                <div class="flex items-center gap-3">
+                  <span class="text-sm font-semibold text-slate-700 w-3">4</span>
+                  <input class="w-full range-4" max="5" min="1" type="range" value="4"/>
+                </div>
+              </td>
+              <td class="px-4 py-4 align-middle">
+                <div class="flex items-center gap-3">
+                  <span class="text-sm font-semibold text-slate-700 w-3">3</span>
+                  <input class="w-full range-3" max="5" min="1" type="range" value="3"/>
+                </div>
+              </td>
+              <td class="px-4 py-4 text-center border-l border-slate-100 bg-slate-50/30">
+                <span class="text-lg font-black text-slate-800">9</span>
+              </td>
+              <td class="px-4 py-4 text-center">
+                <span class="inline-flex items-center justify-center size-6 rounded-full text-xs font-bold bg-slate-100 text-slate-400">
+                  4
+                </span>
+              </td>
+              <td class="px-6 py-4 text-center bg-blue-50/30 border-l border-blue-100">
+                <input class="size-5 rounded border-slate-300 text-[#0176D3] focus:ring-[#0176D3]/20 cursor-pointer transition-all" type="checkbox"/>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="bg-slate-50 px-6 py-3 border-t border-slate-200 flex justify-between items-center">
+        <span class="text-xs text-slate-500">Showing 4 of 4 candidates</span>
+        <div class="flex gap-2">
+          <button class="text-slate-500 hover:text-[#0176D3] disabled:opacity-50">
+            <span class="material-symbols-outlined text-lg">chevron_left</span>
+          </button>
+          <button class="text-slate-500 hover:text-[#0176D3] disabled:opacity-50">
+            <span class="material-symbols-outlined text-lg">chevron_right</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <aside class="w-full lg:w-80 shrink-0 flex flex-col gap-6">
+    <div class="bg-white rounded-lg shadow-card border border-slate-200 sticky top-24">
+      <div class="p-5 border-b border-slate-100 bg-slate-50 rounded-t-lg">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[#0176D3]">menu_book</span>
+          <h3 class="font-bold text-slate-800 text-sm">評価基準ガイド</h3>
+        </div>
+      </div>
+      <div class="p-5 flex flex-col gap-6">
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide">1. インパクト</h4>
+            <span class="text-[10px] bg-blue-50 text-[#0176D3] px-2 py-0.5 rounded-full font-bold border border-blue-100">40% Weight</span>
+          </div>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            売上拡大やコスト削減のポテンシャル。ビジネスにどれだけの価値をもたらすかを1-5で評価します。
+          </p>
+        </div>
+        <div class="w-full h-px bg-slate-100"></div>
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide">2. 90日実現性</h4>
+            <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold border border-slate-200">30% Weight</span>
+          </div>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            技術的・組織的な準備状況。3ヶ月以内に成果を出せる現実性があるかを評価します。
+          </p>
+        </div>
+        <div class="w-full h-px bg-slate-100"></div>
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide">3. 能力構築</h4>
+            <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold border border-slate-200">30% Weight</span>
+          </div>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            将来のスキル獲得への貢献度。このプロジェクトを通じてチームが成長できるかを評価します。
+          </p>
+        </div>
+        <div class="mt-2 p-3 bg-blue-50 rounded border border-blue-100 flex gap-3 items-start">
+          <span class="material-symbols-outlined text-[#0176D3] text-lg shrink-0 mt-0.5">info</span>
+          <p class="text-xs text-slate-700">
+            <strong>Tip:</strong> スコアはチームで議論しながら入力してください。合計スコアは自動計算されます。
+          </p>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<div class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-sticky z-40">
+  <div class="max-w-[1440px] mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-6 w-full sm:w-auto">
+      <div class="flex flex-col">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-[#0176D3] mb-0.5">Step B</span>
+        <h3 class="font-bold text-slate-800 text-base">上位1〜2件を選択</h3>
+      </div>
+      <div class="h-8 w-px bg-slate-200 hidden sm:block"></div>
+      <div class="flex items-center gap-3 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
+        <div class="flex -space-x-2">
+          <div class="size-6 rounded-full bg-[#0176D3] text-white flex items-center justify-center text-[10px] font-bold shadow-sm ring-2 ring-white">AI</div>
+        </div>
+        <div class="text-sm font-medium text-slate-600">
+          <span class="text-slate-900 font-bold">1</span> / 2 items selected
+        </div>
+      </div>
+    </div>
+    <div class="flex items-center gap-4 w-full sm:w-auto justify-end">
+      <p class="text-xs text-slate-500 hidden lg:block italic">
+        Selected use cases will be drafted into the 90-day execution plan.
+      </p>
+      <button class="bg-[#0176D3] hover:bg-[#014486] text-white font-semibold py-2.5 px-6 rounded-md shadow-sm transition-all flex items-center justify-center gap-2 w-full sm:w-auto text-sm border border-transparent">
+        <span class="material-symbols-outlined text-[18px]">calendar_add_on</span>
+        90日計画を作成
+      </button>
+    </div>
+  </div>
+</div>
+
+</body></html>
