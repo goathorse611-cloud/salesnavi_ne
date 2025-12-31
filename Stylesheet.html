@@ -1,0 +1,109 @@
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "primary": "#0176d3",
+        "primary-dark": "#005fb8",
+        "background-body": "#f3f4f6",
+        "surface": "#ffffff",
+        "border-subtle": "#e5e7eb",
+        "text-main": "#032d60",
+        "text-body": "#3e3e3c",
+        "text-muted": "#747474",
+      },
+      fontFamily: {
+        "sans": ["Inter", "Noto Sans JP", "sans-serif"]
+      },
+      boxShadow: {
+        "card": "0 2px 4px 0 rgba(0,0,0,0.05)",
+        "card-hover": "0 4px 12px 0 rgba(0,0,0,0.1)",
+      }
+    },
+  },
+}
+</script>
+
+<style>
+  body {
+    font-family: 'Inter', 'Noto Sans JP', sans-serif;
+  }
+
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  .filled-icon {
+    font-variation-settings: 'FILL' 1;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
+  /* Active navigation link */
+  .nav-link.active {
+    background-color: #ebf6fe;
+    color: #0176d3;
+    font-weight: 600;
+  }
+
+  .nav-link.active .material-symbols-outlined {
+    color: #0176d3;
+  }
+
+  /* Toast animations */
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideOutRight {
+    from {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+  }
+
+  .toast-enter {
+    animation: slideInRight 0.3s ease-out;
+  }
+
+  .toast-exit {
+    animation: slideOutRight 0.3s ease-in;
+  }
+</style>

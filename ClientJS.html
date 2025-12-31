@@ -1,0 +1,710 @@
+<script>
+// ================================================================================
+// Blueprint Workshop - Client-Side JavaScript
+// ================================================================================
+
+const App = {
+  currentProject: null,
+  currentModule: null,
+  currentUser: null,
+
+  /**
+   * Initialize application
+   */
+  init: function() {
+    console.log('Initializing Blueprint Workshop App...');
+
+    // Load current user
+    this.loadCurrentUser();
+
+    // Setup navigation
+    this.setupNavigation();
+
+    // Setup mobile menu
+    this.setupMobileMenu();
+
+    // Load initial route
+    this.loadRoute(this.getHashRoute() || 'home');
+
+    // Listen to hash changes
+    window.addEventListener('hashchange', () => {
+      this.loadRoute(this.getHashRoute());
+    });
+  },
+
+  /**
+   * Load current user info
+   */
+  loadCurrentUser: function() {
+    google.script.run
+      .withSuccessHandler((result) => {
+        this.currentUser = result.email;
+        document.getElementById('user-email').textContent = result.email;
+
+        // Set initials
+        const parts = result.email.split('@')[0].split('.');
+        const initials = parts.map(p => p[0].toUpperCase()).join('').substring(0, 2);
+        document.getElementById('user-initials').textContent = initials;
+      })
+      .withFailureHandler((error) => {
+        console.error('Failed to load user:', error);
+        this.showToast('ユーザー情報の取得に失敗しました', 'error');
+      })
+      .getCurrentUser();
+  },
+
+  /**
+   * Setup navigation link handlers
+   */
+  setupNavigation: function() {
+    document.querySelectorAll('[data-route]').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const route = link.getAttribute('data-route');
+        window.location.hash = route;
+      });
+    });
+  },
+
+  /**
+   * Setup mobile menu toggle
+   */
+  setupMobileMenu: function() {
+    const btn = document.getElementById('mobile-menu-btn');
+    const sidebar = document.getElementById('sidebar');
+
+    if (btn && sidebar) {
+      btn.addEventListener('click', () => {
+        sidebar.classList.toggle('hidden');
+        sidebar.classList.toggle('flex');
+      });
+    }
+  },
+
+  /**
+   * Get current route from hash
+   */
+  getHashRoute: function() {
+    return window.location.hash.substring(1) || 'home';
+  },
+
+  /**
+   * Load route and render view
+   */
+  loadRoute: function(route) {
+    console.log('Loading route:', route);
+
+    // Update active nav link
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.classList.remove('active', 'bg-primary/5', 'text-primary');
+      if (link.getAttribute('data-route') === route) {
+        link.classList.add('active', 'bg-primary/5', 'text-primary');
+      }
+    });
+
+    // Update breadcrumb
+    this.updateBreadcrumb(route);
+
+    // Load view content
+    const container = document.getElementById('content-container');
+
+    // Parse route (format: route or route:projectId)
+    const [viewName, param] = route.split(':');
+
+    if (viewName === 'home') {
+      this.loadHomeView(container);
+    } else if (viewName === 'projects') {
+      this.loadProjectsView(container);
+    } else if (viewName === 'project' && param) {
+      this.currentProject = param;
+      this.loadProjectDetailView(container, param);
+    } else if (viewName.startsWith('module')) {
+      const moduleId = viewName;
+      this.loadModuleView(container, moduleId, this.currentProject);
+    } else {
+      container.innerHTML = '<div class="p-8"><p class="text-text-muted">ページが見つかりません</p></div>';
+    }
+  },
+
+  /**
+   * Update breadcrumb
+   */
+  updateBreadcrumb: function(route) {
+    const breadcrumb = document.getElementById('breadcrumb-text');
+    const routeNames = {
+      'home': 'ホーム',
+      'projects': 'プロジェクト一覧',
+      'project': 'プロジェクト詳細',
+      'module1': 'Module 1: ビジョン',
+      'module2': 'Module 2: ユースケース選定',
+      'module4': 'Module 4: RACI',
+      'module7': 'Module 7: 価値トラッカー'
+    };
+
+    const [viewName] = route.split(':');
+    breadcrumb.textContent = routeNames[viewName] || 'Blueprint ワークショップ';
+  },
+
+  /**
+   * Load Home View
+   */
+  loadHomeView: function(container) {
+    this.showLoading();
+    google.script.run
+      .withSuccessHandler((result) => {
+        this.hideLoading();
+        this.renderHomeView(container, result.projects || []);
+      })
+      .withFailureHandler((error) => {
+        this.hideLoading();
+        this.showToast('プロジェクト読込エラー: ' + error.message, 'error');
+        container.innerHTML = '<div class="p-8"><p class="text-red-600">エラーが発生しました</p></div>';
+      })
+      .listProjects(null, null);
+  },
+
+  /**
+   * Render Home View
+   */
+  renderHomeView: function(container, projects) {
+    const recentProjects = projects.slice(0, 3);
+
+    container.innerHTML = `
+      <div class="w-full max-w-7xl mx-auto px-6 py-8">
+        <div class="mb-10">
+          <div class="flex items-end justify-between mb-6">
+            <div>
+              <h2 class="text-xl font-bold text-text-main">ワークショップを開始</h2>
+              <p class="text-sm text-text-muted mt-1">目的に合わせてフェーズを選択してください</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            ${this.renderModuleCards()}
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-4">
+          <div class="flex items-center justify-between px-1">
+            <h2 class="text-lg font-bold text-text-main">最近開いたプロジェクト</h2>
+            <a href="#projects" class="text-sm font-medium text-primary hover:text-primary-dark hover:underline">すべて見る</a>
+          </div>
+
+          ${this.renderRecentProjects(recentProjects)}
+        </div>
+      </div>
+    `;
+
+    // Setup "New Project" button
+    this.setupNewProjectButton();
+  },
+
+  /**
+   * Render module cards
+   */
+  renderModuleCards: function() {
+    const modules = [
+      { num: 1, icon: 'flag', title: '北極星を決める', desc: 'プロジェクトの方向性と、全員が目指すべき長期的なゴールを設定・合意します。', route: 'module1' },
+      { num: 2, icon: 'search', title: 'ユースケース選定', desc: '候補のユースケースをスコアリングし、優先順位を決定します。', route: 'module2' },
+      { num: 4, icon: 'diversity_3', title: '体制と責任を確定する', desc: '推進チーム体制と、各メンバーの責任範囲を明確化します。', route: 'module4' },
+      { num: 7, icon: 'trending_up', title: '価値トラッカー', desc: '定量・定性的な効果を追跡し、証跡を管理します。', route: 'module7' }
+    ];
+
+    return modules.map(m => `
+      <div class="group bg-surface rounded-lg border border-border-subtle p-5 shadow-card hover:shadow-card-hover hover:border-primary/50 transition-all duration-200 flex flex-col h-full relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity pointer-events-none">
+          <span class="text-8xl font-black text-primary">${m.num}</span>
+        </div>
+        <div class="flex items-center justify-between mb-4 relative z-10">
+          <div class="flex items-center justify-center size-10 rounded-md bg-blue-50 text-primary border border-blue-100">
+            <span class="material-symbols-outlined filled-icon">${m.icon}</span>
+          </div>
+          <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-gray-100 text-gray-600 border border-gray-200 uppercase tracking-wide">Step ${m.num}</span>
+        </div>
+        <h3 class="text-base font-bold text-text-main mb-2 relative z-10">${m.title}</h3>
+        <p class="text-sm text-text-muted mb-6 leading-relaxed flex-1 relative z-10">${m.desc}</p>
+        <button onclick="App.navigateToModule('${m.route}')" class="w-full h-9 flex items-center justify-center rounded-md bg-primary hover:bg-primary-dark text-white text-sm font-semibold shadow-sm transition-colors relative z-10">
+          セッションを開始
+        </button>
+      </div>
+    `).join('');
+  },
+
+  /**
+   * Render recent projects
+   */
+  renderRecentProjects: function(projects) {
+    if (projects.length === 0) {
+      return `
+        <div class="bg-surface rounded-lg border border-border-subtle shadow-card p-8 text-center">
+          <p class="text-text-muted mb-4">プロジェクトがまだありません</p>
+          <button onclick="App.showNewProjectDialog()" class="h-9 px-4 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-md shadow-sm transition-colors">
+            新規プロジェクトを作成
+          </button>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="bg-surface rounded-lg border border-border-subtle shadow-card overflow-hidden">
+        <div class="grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50 border-b border-border-subtle text-xs font-bold text-gray-500 uppercase tracking-wider">
+          <div class="col-span-6 md:col-span-5">プロジェクト名</div>
+          <div class="col-span-3 md:col-span-3">最終更新</div>
+          <div class="col-span-3 md:col-span-2">ステータス</div>
+          <div class="hidden md:block md:col-span-2 text-right">アクション</div>
+        </div>
+        <div class="divide-y divide-gray-100">
+          ${projects.map(p => this.renderProjectRow(p)).join('')}
+        </div>
+      </div>
+    `;
+  },
+
+  /**
+   * Render single project row
+   */
+  renderProjectRow: function(project) {
+    const statusColors = {
+      '下書き': 'bg-gray-100 text-gray-600 border-gray-200',
+      '確定': 'bg-green-50 text-green-700 border-green-200',
+      'アーカイブ': 'bg-slate-100 text-slate-500 border-slate-200'
+    };
+
+    const statusColor = statusColors[project.status] || statusColors['下書き'];
+    const timeAgo = this.formatTimeAgo(project.lastUpdated);
+
+    return `
+      <div class="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors cursor-pointer group" onclick="App.openProject('${project.projectId}')">
+        <div class="col-span-6 md:col-span-5 flex items-center gap-3">
+          <div class="size-8 rounded bg-blue-100 text-primary flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-lg">folder</span>
+          </div>
+          <div class="font-bold text-text-main truncate text-sm">${this.escapeHtml(project.customerName)}</div>
+        </div>
+        <div class="col-span-3 md:col-span-3 text-sm text-text-muted">
+          ${timeAgo}
+        </div>
+        <div class="col-span-3 md:col-span-2">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor}">
+            <span class="size-1.5 rounded-full bg-current"></span>
+            ${project.status}
+          </span>
+        </div>
+        <div class="hidden md:block md:col-span-2 text-right opacity-0 group-hover:opacity-100 transition-opacity">
+          <button class="text-gray-400 hover:text-primary transition-colors p-1 rounded hover:bg-blue-50" onclick="event.stopPropagation(); App.openProject('${project.projectId}')">
+            <span class="material-symbols-outlined text-lg">edit</span>
+          </button>
+        </div>
+      </div>
+    `;
+  },
+
+  /**
+   * Load Projects View
+   */
+  loadProjectsView: function(container) {
+    this.showLoading();
+    google.script.run
+      .withSuccessHandler((result) => {
+        this.hideLoading();
+        this.renderProjectsView(container, result.projects || []);
+      })
+      .withFailureHandler((error) => {
+        this.hideLoading();
+        this.showToast('プロジェクト読込エラー: ' + error.message, 'error');
+      })
+      .listProjects(null, null);
+  },
+
+  /**
+   * Render Projects View
+   */
+  renderProjectsView: function(container, projects) {
+    container.innerHTML = `
+      <div class="w-full max-w-7xl mx-auto px-6 py-8">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 class="text-2xl font-bold text-text-main tracking-tight">プロジェクト</h1>
+            <p class="text-text-muted text-sm mt-1">すべての進行中案件とステータスを管理します</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button onclick="App.showNewProjectDialog()" class="flex items-center justify-center gap-2 h-9 px-4 rounded bg-primary hover:bg-primary-dark text-white text-sm font-bold shadow-sm transition-all active:scale-95">
+              <span class="material-symbols-outlined" style="font-size: 18px;">add</span>
+              <span>新規作成</span>
+            </button>
+          </div>
+        </div>
+
+        ${this.renderRecentProjects(projects)}
+      </div>
+    `;
+  },
+
+  /**
+   * Load Project Detail View
+   */
+  loadProjectDetailView: function(container, projectId) {
+    this.showLoading();
+    google.script.run
+      .withSuccessHandler((result) => {
+        this.hideLoading();
+        this.renderProjectDetailView(container, result.project);
+      })
+      .withFailureHandler((error) => {
+        this.hideLoading();
+        this.showToast('プロジェクト読込エラー: ' + error.message, 'error');
+      })
+      .getProject(projectId);
+  },
+
+  /**
+   * Render Project Detail View
+   */
+  renderProjectDetailView: function(container, project) {
+    container.innerHTML = `
+      <div class="w-full max-w-7xl mx-auto px-6 py-8">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <div class="size-10 bg-white border border-slate-200 rounded-lg flex items-center justify-center shadow-sm">
+                <span class="material-symbols-outlined text-primary text-2xl">domain</span>
+              </div>
+              <h1 class="text-2xl font-bold text-slate-900">${this.escapeHtml(project.customerName)}</h1>
+            </div>
+            <div class="flex items-center gap-4 text-sm text-slate-500 ml-1">
+              <span class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                更新日: ${this.formatDate(project.lastUpdated)}
+              </span>
+              <span class="text-slate-300">|</span>
+              <span class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px]">person</span>
+                所有者: ${project.creatorEmail}
+              </span>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <button onclick="App.exportProject('${project.projectId}')" class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-md text-sm font-bold hover:bg-primary-dark transition-colors shadow-sm shadow-blue-200">
+              <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">assignment_turned_in</span>
+              稟議書作成
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 pb-12">
+          ${this.renderModuleProgress(project.projectId)}
+        </div>
+      </div>
+    `;
+  },
+
+  /**
+   * Render module progress cards
+   */
+  renderModuleProgress: function(projectId) {
+    const modules = [
+      { id: 'module1', step: 1, title: 'ビジョン', desc: 'ビジョンとゴール設定' },
+      { id: 'module2', step: 2, title: 'ユースケース', desc: 'ユースケース選定' },
+      { id: 'module4', step: 4, title: 'RACI', desc: '体制と責任の確定' },
+      { id: 'module7', step: 7, title: '価値トラッカー', desc: '価値実現の追跡' }
+    ];
+
+    return modules.map(m => `
+      <div onclick="App.navigateToModule('${m.id}:${projectId}')" class="bg-surface rounded-lg p-5 border border-border-subtle shadow-card hover:shadow-card-hover hover:border-primary/50 transition-all group flex flex-col relative overflow-hidden h-full cursor-pointer">
+        <div class="flex justify-between items-start mb-3">
+          <div class="flex flex-col">
+            <span class="text-[10px] font-bold text-slate-400 mb-0.5 tracking-wider">STEP ${String(m.step).padStart(2, '0')}</span>
+            <h3 class="text-base font-bold text-slate-900 group-hover:text-primary transition-colors">${m.title}</h3>
+          </div>
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-200">
+            未着手
+          </span>
+        </div>
+        <p class="text-sm text-slate-500 mb-5 leading-relaxed">${m.desc}</p>
+        <div class="mt-auto pt-4 border-t border-slate-50">
+          <button class="w-full py-2 bg-white border border-slate-300 text-slate-700 rounded-md text-sm font-bold hover:border-primary hover:text-primary transition-colors">
+            開始する
+          </button>
+        </div>
+      </div>
+    `).join('');
+  },
+
+  /**
+   * Load Module View
+   */
+  loadModuleView: function(container, moduleId, projectId) {
+    if (!projectId) {
+      this.showToast('プロジェクトを選択してください', 'warning');
+      window.location.hash = 'projects';
+      return;
+    }
+
+    this.currentModule = moduleId;
+
+    // Load module data
+    this.showLoading();
+    google.script.run
+      .withSuccessHandler((result) => {
+        this.hideLoading();
+        this.renderModuleView(container, moduleId, projectId, result.data || {});
+      })
+      .withFailureHandler((error) => {
+        this.hideLoading();
+        this.showToast('モジュール読込エラー: ' + error.message, 'error');
+      })
+      .loadModule(projectId, moduleId);
+  },
+
+  /**
+   * Render Module View (placeholder - will load from Views/*.html)
+   */
+  renderModuleView: function(container, moduleId, projectId, data) {
+    // This will be replaced by actual view files
+    container.innerHTML = `
+      <div class="w-full max-w-7xl mx-auto px-6 py-8">
+        <div class="bg-white rounded-lg border border-slate-200 shadow-card p-6">
+          <h2 class="text-xl font-bold text-text-main mb-4">${moduleId}</h2>
+          <p class="text-text-muted mb-4">モジュールビューを準備中...</p>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-text-main mb-2">サンプル入力</label>
+              <textarea data-field="sample.text" class="w-full px-3 py-2 border border-slate-300 rounded-md" rows="4">${data['sample.text'] || ''}</textarea>
+            </div>
+
+            <div class="flex gap-3">
+              <button onclick="App.saveCurrentModule()" class="px-4 py-2 bg-white border border-slate-300 rounded-md text-slate-700 text-sm font-semibold hover:bg-slate-50">
+                保存
+              </button>
+              <button onclick="App.markModuleComplete()" class="px-4 py-2 bg-primary text-white rounded-md text-sm font-semibold hover:bg-primary-dark">
+                完了にする
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  /**
+   * Navigate to module
+   */
+  navigateToModule: function(route) {
+    if (!this.currentProject) {
+      this.showToast('プロジェクトを選択してください', 'warning');
+      window.location.hash = 'projects';
+      return;
+    }
+
+    window.location.hash = route + ':' + this.currentProject;
+  },
+
+  /**
+   * Open project
+   */
+  openProject: function(projectId) {
+    this.currentProject = projectId;
+    window.location.hash = 'project:' + projectId;
+  },
+
+  /**
+   * Show new project dialog
+   */
+  showNewProjectDialog: function() {
+    const customerName = prompt('顧客名を入力してください:');
+    if (!customerName) return;
+
+    this.showLoading();
+    google.script.run
+      .withSuccessHandler((result) => {
+        this.hideLoading();
+        this.showToast('プロジェクトを作成しました', 'success');
+        this.currentProject = result.projectId;
+        window.location.hash = 'project:' + result.projectId;
+      })
+      .withFailureHandler((error) => {
+        this.hideLoading();
+        this.showToast('作成エラー: ' + error.message, 'error');
+      })
+      .createProject(customerName, '');
+  },
+
+  /**
+   * Setup new project button
+   */
+  setupNewProjectButton: function() {
+    const btn = document.querySelector('.hidden.sm\\:flex');
+    if (btn) {
+      btn.onclick = () => this.showNewProjectDialog();
+    }
+  },
+
+  /**
+   * Collect form fields with data-field attribute
+   */
+  collectFields: function() {
+    const fields = {};
+    document.querySelectorAll('[data-field]').forEach(el => {
+      const key = el.getAttribute('data-field');
+      const value = el.value || el.textContent;
+      fields[key] = value;
+    });
+    return fields;
+  },
+
+  /**
+   * Save current module
+   */
+  saveCurrentModule: function() {
+    if (!this.currentProject || !this.currentModule) {
+      this.showToast('プロジェクトとモジュールを選択してください', 'error');
+      return;
+    }
+
+    const data = this.collectFields();
+
+    this.showLoading();
+    google.script.run
+      .withSuccessHandler((result) => {
+        this.hideLoading();
+        this.showToast('保存しました', 'success');
+      })
+      .withFailureHandler((error) => {
+        this.hideLoading();
+        this.showToast('保存エラー: ' + error.message, 'error');
+      })
+      .saveModule(this.currentProject, this.currentModule, data);
+  },
+
+  /**
+   * Mark module complete
+   */
+  markModuleComplete: function() {
+    if (!this.currentProject || !this.currentModule) {
+      this.showToast('プロジェクトとモジュールを選択してください', 'error');
+      return;
+    }
+
+    // Save first, then mark complete
+    const data = this.collectFields();
+    data._completed = true;
+
+    this.showLoading();
+    google.script.run
+      .withSuccessHandler((result) => {
+        this.hideLoading();
+        this.showToast('モジュールを完了にしました', 'success');
+      })
+      .withFailureHandler((error) => {
+        this.hideLoading();
+        this.showToast('エラー: ' + error.message, 'error');
+      })
+      .saveModule(this.currentProject, this.currentModule, data);
+  },
+
+  /**
+   * Export project to Doc
+   */
+  exportProject: function(projectId) {
+    this.showLoading();
+    google.script.run
+      .withSuccessHandler((result) => {
+        this.hideLoading();
+        this.showToast('ドキュメントを生成しました', 'success');
+        window.open(result.docUrl, '_blank');
+      })
+      .withFailureHandler((error) => {
+        this.hideLoading();
+        this.showToast('エクスポートエラー: ' + error.message, 'error');
+      })
+      .exportProjectDoc(projectId);
+  },
+
+  /**
+   * Show loading overlay
+   */
+  showLoading: function() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+      overlay.classList.remove('hidden');
+      overlay.classList.add('flex');
+    }
+  },
+
+  /**
+   * Hide loading overlay
+   */
+  hideLoading: function() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+      overlay.classList.add('hidden');
+      overlay.classList.remove('flex');
+    }
+  },
+
+  /**
+   * Show toast notification
+   */
+  showToast: function(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const colors = {
+      success: 'bg-green-500',
+      error: 'bg-red-500',
+      warning: 'bg-yellow-500',
+      info: 'bg-blue-500'
+    };
+
+    const toast = document.createElement('div');
+    toast.className = `toast-enter px-6 py-3 rounded-lg shadow-lg text-white ${colors[type] || colors.info} min-w-[300px]`;
+    toast.textContent = message;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.remove('toast-enter');
+      toast.classList.add('toast-exit');
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  },
+
+  /**
+   * Format date
+   */
+  formatDate: function(date) {
+    if (!date) return '-';
+    const d = new Date(date);
+    return d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate();
+  },
+
+  /**
+   * Format time ago
+   */
+  formatTimeAgo: function(date) {
+    if (!date) return '-';
+
+    const now = new Date();
+    const past = new Date(date);
+    const diffMs = now - past;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 60) return diffMins + '分前';
+    if (diffHours < 24) return diffHours + '時間前';
+    if (diffDays < 7) return diffDays + '日前';
+
+    return this.formatDate(date);
+  },
+
+  /**
+   * Escape HTML
+   */
+  escapeHtml: function(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+};
+</script>

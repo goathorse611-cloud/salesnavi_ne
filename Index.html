@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blueprint ワークショップ</title>
+  <?!= include('Stylesheet'); ?>
+</head>
+<body class="bg-background-body text-text-body antialiased min-h-screen flex">
+
+  <!-- Sidebar Navigation -->
+  <aside id="sidebar" class="w-64 bg-surface border-r border-border-subtle hidden md:flex flex-col h-screen sticky top-0 z-20 shadow-sm">
+    <div class="h-16 flex items-center px-6 border-b border-border-subtle">
+      <div class="flex items-center gap-3">
+        <div class="size-8 flex items-center justify-center bg-primary rounded text-white">
+          <span class="material-symbols-outlined text-2xl">architecture</span>
+        </div>
+        <div class="flex flex-col">
+          <h1 class="text-sm font-bold text-text-main tracking-tight">Blueprint</h1>
+          <span class="text-[10px] text-text-muted font-medium">ワークショップ</span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+      <p class="px-3 text-[11px] font-bold text-text-muted uppercase tracking-wider mb-2 mt-2">Main</p>
+
+      <a href="#" data-route="home" class="nav-link flex items-center gap-3 px-3 py-2 rounded-md text-slate-600 hover:bg-slate-50 hover:text-primary transition-colors group">
+        <span class="material-symbols-outlined text-slate-400 group-hover:text-primary">home</span>
+        <span class="text-sm font-medium">ホーム</span>
+      </a>
+
+      <a href="#" data-route="projects" class="nav-link flex items-center gap-3 px-3 py-2 rounded-md text-slate-600 hover:bg-slate-50 hover:text-primary transition-colors group">
+        <span class="material-symbols-outlined text-slate-400 group-hover:text-primary">folder</span>
+        <span class="text-sm font-medium">プロジェクト</span>
+      </a>
+
+      <div class="my-4 border-t border-slate-100"></div>
+
+      <p class="px-3 text-[11px] font-bold text-text-muted uppercase tracking-wider mb-2">Modules</p>
+
+      <a href="#" data-route="module1" class="nav-link flex items-center gap-3 px-3 py-2 rounded-md text-slate-600 hover:bg-slate-50 hover:text-primary transition-colors group">
+        <span class="material-symbols-outlined text-slate-400 group-hover:text-primary">flag</span>
+        <span class="text-sm font-medium">Module 1: ビジョン</span>
+      </a>
+
+      <a href="#" data-route="module2" class="nav-link flex items-center gap-3 px-3 py-2 rounded-md text-slate-600 hover:bg-slate-50 hover:text-primary transition-colors group">
+        <span class="material-symbols-outlined text-slate-400 group-hover:text-primary">search</span>
+        <span class="text-sm font-medium">Module 2: ユースケース</span>
+      </a>
+
+      <a href="#" data-route="module4" class="nav-link flex items-center gap-3 px-3 py-2 rounded-md text-slate-600 hover:bg-slate-50 hover:text-primary transition-colors group">
+        <span class="material-symbols-outlined text-slate-400 group-hover:text-primary">diversity_3</span>
+        <span class="text-sm font-medium">Module 4: RACI</span>
+      </a>
+
+      <a href="#" data-route="module7" class="nav-link flex items-center gap-3 px-3 py-2 rounded-md text-slate-600 hover:bg-slate-50 hover:text-primary transition-colors group">
+        <span class="material-symbols-outlined text-slate-400 group-hover:text-primary">trending_up</span>
+        <span class="text-sm font-medium">Module 7: 価値トラッカー</span>
+      </a>
+    </nav>
+
+    <div class="p-4 border-t border-border-subtle bg-slate-50">
+      <div class="flex items-center gap-3">
+        <div class="size-9 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-semibold text-sm">
+          <span id="user-initials">--</span>
+        </div>
+        <div class="flex flex-col overflow-hidden">
+          <p class="text-sm font-semibold text-text-main truncate" id="user-email">読込中...</p>
+          <p class="text-xs text-text-muted truncate">ユーザー</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="flex-1 flex flex-col min-w-0">
+    <!-- Top Header -->
+    <header class="bg-surface border-b border-border-subtle h-16 sticky top-0 z-10 shadow-sm flex items-center justify-between px-6">
+      <div class="flex items-center gap-4">
+        <button id="mobile-menu-btn" class="md:hidden text-text-muted hover:text-primary">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+
+        <div class="flex items-center gap-2 text-sm text-text-muted">
+          <span id="breadcrumb-text">Blueprint ワークショップ</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button class="size-9 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition-colors">
+          <span class="material-symbols-outlined text-[22px]">notifications</span>
+        </button>
+
+        <button class="size-9 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition-colors">
+          <span class="material-symbols-outlined text-[22px]">help</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Dynamic Content Container -->
+    <main id="content-container" class="flex-1 overflow-y-auto bg-background-body">
+      <div class="w-full max-w-7xl mx-auto px-6 py-8">
+        <div class="flex items-center justify-center min-h-[400px]">
+          <div class="text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p class="text-text-muted">読み込み中...</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+    <div class="bg-white rounded-lg p-6 shadow-xl">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+      <p class="text-text-main font-medium">処理中...</p>
+    </div>
+  </div>
+
+  <?!= include('ClientJS'); ?>
+
+  <script>
+    // Initialize app on load
+    window.addEventListener('DOMContentLoaded', function() {
+      App.init();
+    });
+  </script>
+</body>
+</html>

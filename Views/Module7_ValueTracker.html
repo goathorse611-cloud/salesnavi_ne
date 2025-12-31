@@ -1,0 +1,146 @@
+<!-- Module 7: 価値実現トラッカー -->
+<div class="w-full max-w-[1400px] mx-auto px-6 py-6">
+
+  <!-- Header -->
+  <div class="flex flex-col gap-1 border-b border-slate-200 pb-6 mb-6">
+    <div class="flex items-center gap-2 text-slate-500 text-xs font-medium mb-1">
+      <span>Workspace</span>
+      <span class="material-symbols-outlined text-[12px]">chevron_right</span>
+      <span class="text-slate-800">Module 7</span>
+    </div>
+    <h1 class="text-3xl font-bold text-slate-900 tracking-tight">価値実現トラッカー</h1>
+    <p class="text-slate-500 text-sm mt-1 max-w-3xl">
+      定量・定性的な効果を追跡し、証跡を管理することで、顧客との次の投資判断を円滑に進めます。
+    </p>
+  </div>
+
+  <!-- Summary Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white rounded-lg p-5 border border-slate-200 shadow-card flex flex-col">
+      <div class="flex justify-between items-start mb-2">
+        <p class="text-sm font-medium text-slate-500">累計削減コスト (Total Savings)</p>
+        <span class="material-symbols-outlined text-green-600 bg-green-50 p-1.5 rounded-md text-[20px]">payments</span>
+      </div>
+      <div class="flex items-baseline gap-3 mt-auto">
+        <p class="text-3xl font-bold text-slate-900" data-field="summary.totalSavings">¥0M</p>
+        <span class="text-xs font-bold text-green-700 bg-green-50 px-1.5 py-0.5 rounded">
+          +0%
+        </span>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg p-5 border border-slate-200 shadow-card flex flex-col">
+      <div class="flex justify-between items-start mb-2">
+        <p class="text-sm font-medium text-slate-500">生産性向上 (Productivity)</p>
+        <span class="material-symbols-outlined text-blue-600 bg-blue-50 p-1.5 rounded-md text-[20px]">speed</span>
+      </div>
+      <div class="flex items-baseline gap-3 mt-auto">
+        <p class="text-3xl font-bold text-slate-900" data-field="summary.productivity">+0%</p>
+        <span class="text-xs font-bold text-green-700 bg-green-50 px-1.5 py-0.5 rounded">
+          +0%
+        </span>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg p-5 border border-slate-200 shadow-card flex flex-col">
+      <div class="flex justify-between items-start mb-2">
+        <p class="text-sm font-medium text-slate-500">投資対効果 (ROI)</p>
+        <span class="material-symbols-outlined text-purple-600 bg-purple-50 p-1.5 rounded-md text-[20px]">query_stats</span>
+      </div>
+      <div class="flex items-baseline gap-3 mt-auto">
+        <p class="text-3xl font-bold text-slate-900" data-field="summary.roi">0x</p>
+        <span class="text-xs font-bold text-green-700 bg-green-50 px-1.5 py-0.5 rounded">
+          +0x
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Bar (Filter + Add) -->
+  <div class="flex justify-between items-center gap-4 bg-white p-3 rounded-lg border border-slate-200 shadow-sm mb-6">
+    <div class="flex items-center gap-1 overflow-x-auto p-1">
+      <span class="text-slate-500 text-xs font-semibold uppercase mr-2 shrink-0 px-2">Filter:</span>
+      <button class="h-8 px-3 rounded bg-primary text-white text-sm font-medium">すべて</button>
+      <button class="h-8 px-3 rounded hover:bg-slate-100 text-slate-600 text-sm font-medium">定量効果あり</button>
+      <button class="h-8 px-3 rounded hover:bg-slate-100 text-slate-600 text-sm font-medium">証跡未提出</button>
+    </div>
+    <button onclick="App.addValueEntry()" class="flex items-center gap-2 h-10 px-6 rounded bg-primary hover:bg-primary-dark text-white font-bold shadow-md transition-all">
+      <span class="material-symbols-outlined text-[20px]">add_circle</span>
+      <span>証跡を追加</span>
+    </button>
+  </div>
+
+  <!-- Value Cards Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-20" id="value-cards-container">
+    <!-- Sample Value Card -->
+    <div class="group flex flex-col bg-white rounded-lg border border-slate-200 shadow-card hover:shadow-lg transition-all">
+      <div class="p-5 flex flex-col gap-5 h-full">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 mb-2 border border-blue-100">
+              <input type="text" data-field="value.0.category" value="IT INFRASTRUCTURE" class="bg-transparent outline-none w-full" />
+            </span>
+            <h3 class="text-lg font-bold text-slate-900 leading-snug group-hover:text-primary transition-colors">
+              <input type="text" data-field="value.0.title" value="Remote Work Transition" class="bg-transparent border-b border-transparent focus:border-primary outline-none w-full" />
+            </h3>
+          </div>
+        </div>
+
+        <div class="bg-slate-50 rounded border border-slate-100 p-3">
+          <p class="text-[11px] font-bold text-slate-500 uppercase mb-2">定量効果 (Quantitative)</p>
+          <div class="flex items-center gap-3 mt-2">
+            <input type="text" data-field="value.0.quantValue" value="-40%" class="text-2xl font-bold text-slate-800 bg-transparent border-b border-transparent focus:border-primary outline-none w-20" />
+            <input type="text" data-field="value.0.quantDesc" value="Travel costs reduction" class="text-sm text-slate-600 bg-transparent border-b border-transparent focus:border-primary outline-none flex-1" />
+          </div>
+        </div>
+
+        <div>
+          <p class="text-[11px] font-bold text-slate-500 uppercase mb-2">定性効果 (Qualitative)</p>
+          <textarea data-field="value.0.qualitative" rows="3" class="w-full text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded p-2 focus:border-primary outline-none">Faster response times to client tickets.
+Improved employee work-life balance.</textarea>
+        </div>
+
+        <div class="mt-auto border-t border-slate-100 pt-4">
+          <div class="flex justify-between items-center mb-2">
+            <p class="text-[11px] font-bold text-slate-800 uppercase">証跡 (Evidence)</p>
+            <span class="bg-green-100 text-green-700 text-[10px] font-bold px-1.5 py-0.5 rounded">VERIFIED</span>
+          </div>
+          <input type="text" data-field="value.0.evidenceLink" placeholder="証跡リンク（Drive URL等）" class="w-full text-sm px-3 py-2 border border-slate-200 rounded focus:border-primary outline-none" />
+        </div>
+      </div>
+
+      <div class="bg-slate-50 px-5 py-3 border-t border-slate-200 rounded-b-lg flex items-center justify-between">
+        <span class="text-xs font-semibold text-slate-500">次の投資判断</span>
+        <input type="text" data-field="value.0.nextAction" value="Expand License" class="text-xs font-bold text-slate-800 bg-white border border-slate-200 shadow-sm px-2.5 py-1 rounded outline-none focus:border-primary" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Action Bar -->
+<div class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 px-8 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)] z-40">
+  <div class="max-w-[1400px] mx-auto flex justify-between items-center">
+    <div class="flex items-center gap-2 text-xs font-medium text-slate-500">
+      <span class="material-symbols-outlined text-[16px] text-emerald-500">cloud_done</span>
+      <span>Auto-save enabled</span>
+    </div>
+    <div class="flex gap-3">
+      <button onclick="App.saveCurrentModule()" class="px-4 py-2 rounded-md border border-slate-300 text-slate-600 bg-white font-semibold hover:bg-slate-50 transition-colors text-sm">
+        保存
+      </button>
+      <button onclick="App.markModuleComplete()" class="px-5 py-2 bg-primary text-white rounded-md font-semibold hover:bg-primary-dark transition-colors shadow-lg text-sm flex items-center gap-2">
+        <span>完了</span>
+        <span class="material-symbols-outlined text-[18px]">check</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Add value entry function
+if (typeof App !== 'undefined') {
+  App.addValueEntry = function() {
+    alert('価値エントリーの追加機能は実装予定です');
+  };
+}
+</script>

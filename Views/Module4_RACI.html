@@ -1,0 +1,182 @@
+<!-- Module 4: Org & RACI Structure -->
+<div class="max-w-[1400px] mx-auto px-6 py-8 pb-32">
+
+  <!-- Header -->
+  <div class="flex flex-col gap-1 bg-white p-6 rounded-lg shadow-card border border-slate-200 mb-6">
+    <div class="flex items-center gap-2 text-slate-500 text-xs font-medium mb-1">
+      <span>Design Phase</span>
+      <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+      <span class="text-slate-800">Module 4</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <h1 class="text-2xl font-bold text-slate-900">Org &amp; RACI Structure</h1>
+      <span class="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded border border-slate-200">Draft</span>
+    </div>
+    <p class="text-slate-500 text-sm mt-1">プロジェクト体制と責任分担（RACI）を定義します。</p>
+  </div>
+
+  <!-- Organizational Structure -->
+  <section class="flex flex-col gap-4 mb-8">
+    <div class="flex items-center justify-between px-1">
+      <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+        <div class="w-1 h-5 bg-primary rounded-full"></div>
+        組織体制 (Organizational Structure)
+      </h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- CoE Pillar -->
+      <div class="flex flex-col gap-4 rounded-lg border-t-4 border-indigo-500 bg-white p-5 shadow-card">
+        <div class="flex items-start justify-between border-b border-slate-100 pb-3">
+          <div>
+            <h3 class="font-bold text-slate-800 text-lg">CoE</h3>
+            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide mt-1">Strategic &amp; Governance</p>
+          </div>
+          <div class="p-1.5 bg-indigo-50 text-indigo-600 rounded-md">
+            <span class="material-symbols-outlined">crown</span>
+          </div>
+        </div>
+        <div class="flex flex-col gap-3">
+          <div class="bg-white border border-slate-200 rounded-md p-3">
+            <input type="text" data-field="raci.coe.lead.role" value="Project Manager" class="font-bold text-slate-700 text-sm bg-transparent border-b border-transparent focus:border-primary outline-none w-full mb-2" />
+            <input type="text" data-field="raci.coe.lead.name" placeholder="名前を入力..." class="text-xs text-slate-600 bg-transparent border-b border-transparent focus:border-primary outline-none w-full" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Biz Data Network Pillar -->
+      <div class="flex flex-col gap-4 rounded-lg border-t-4 border-emerald-500 bg-white p-5 shadow-card">
+        <div class="flex items-start justify-between border-b border-slate-100 pb-3">
+          <div>
+            <h3 class="font-bold text-slate-800 text-lg">Biz Data Network</h3>
+            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide mt-1">Operational &amp; Process</p>
+          </div>
+          <div class="p-1.5 bg-emerald-50 text-emerald-600 rounded-md">
+            <span class="material-symbols-outlined">hub</span>
+          </div>
+        </div>
+        <div class="flex flex-col gap-3">
+          <div class="bg-white border border-slate-200 rounded-md p-3">
+            <input type="text" data-field="raci.biz.lead.role" value="Data Steward" class="font-bold text-slate-700 text-sm bg-transparent border-b border-transparent focus:border-primary outline-none w-full mb-2" />
+            <input type="text" data-field="raci.biz.lead.name" placeholder="名前を入力..." class="text-xs text-slate-600 bg-transparent border-b border-transparent focus:border-primary outline-none w-full" />
+          </div>
+        </div>
+      </div>
+
+      <!-- IT Pillar -->
+      <div class="flex flex-col gap-4 rounded-lg border-t-4 border-blue-500 bg-white p-5 shadow-card">
+        <div class="flex items-start justify-between border-b border-slate-100 pb-3">
+          <div>
+            <h3 class="font-bold text-slate-800 text-lg">IT</h3>
+            <p class="text-xs font-medium text-slate-500 uppercase tracking-wide mt-1">Technical &amp; Imp.</p>
+          </div>
+          <div class="p-1.5 bg-blue-50 text-blue-600 rounded-md">
+            <span class="material-symbols-outlined">dns</span>
+          </div>
+        </div>
+        <div class="flex flex-col gap-3">
+          <div class="bg-white border border-slate-200 rounded-md p-3">
+            <input type="text" data-field="raci.it.lead.role" value="System Architect" class="font-bold text-slate-700 text-sm bg-transparent border-b border-transparent focus:border-primary outline-none w-full mb-2" />
+            <input type="text" data-field="raci.it.lead.name" placeholder="名前を入力..." class="text-xs text-slate-600 bg-transparent border-b border-transparent focus:border-primary outline-none w-full" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RACI Matrix -->
+  <section class="flex flex-col gap-4">
+    <div class="flex items-center justify-between px-1">
+      <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+        <div class="w-1 h-5 bg-primary rounded-full"></div>
+        RACI Matrix
+      </h2>
+      <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
+        <span class="text-[10px] text-slate-400 font-bold uppercase mr-1">Legend:</span>
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100">R</span>
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-700 border border-red-100">A</span>
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-100">C</span>
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">I</span>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg border border-slate-200 shadow-card overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse min-w-[900px]">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200">
+              <th class="p-4 font-bold text-xs uppercase tracking-wider text-slate-500 w-72">Task / Milestone</th>
+              <th class="p-4 font-bold text-xs uppercase tracking-wider text-slate-500 text-center min-w-[140px]">PM</th>
+              <th class="p-4 font-bold text-xs uppercase tracking-wider text-slate-500 text-center min-w-[140px]">Sponsor</th>
+              <th class="p-4 font-bold text-xs uppercase tracking-wider text-slate-500 text-center min-w-[140px]">Data</th>
+              <th class="p-4 font-bold text-xs uppercase tracking-wider text-slate-500 text-center min-w-[140px]">Architect</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <!-- Row 1 -->
+            <tr class="hover:bg-slate-50 transition-colors">
+              <td class="p-4 font-semibold text-sm text-slate-800">
+                <input type="text" data-field="raci.task.0.name" value="Define KPI Definitions" class="bg-transparent border-b border-transparent focus:border-primary outline-none w-full" />
+              </td>
+              <td class="p-3 text-center">
+                <select data-field="raci.task.0.pm" class="w-16 h-8 rounded-md text-xs font-bold border border-slate-300">
+                  <option value="">-</option>
+                  <option value="R">R</option>
+                  <option value="A">A</option>
+                  <option value="C">C</option>
+                  <option value="I" selected>I</option>
+                </select>
+              </td>
+              <td class="p-3 text-center">
+                <select data-field="raci.task.0.sponsor" class="w-16 h-8 rounded-md text-xs font-bold border border-slate-300">
+                  <option value="">-</option>
+                  <option value="R">R</option>
+                  <option value="A" selected>A</option>
+                  <option value="C">C</option>
+                  <option value="I">I</option>
+                </select>
+              </td>
+              <td class="p-3 text-center">
+                <select data-field="raci.task.0.data" class="w-16 h-8 rounded-md text-xs font-bold border border-slate-300">
+                  <option value="">-</option>
+                  <option value="R" selected>R</option>
+                  <option value="A">A</option>
+                  <option value="C">C</option>
+                  <option value="I">I</option>
+                </select>
+              </td>
+              <td class="p-3 text-center">
+                <select data-field="raci.task.0.architect" class="w-16 h-8 rounded-md text-xs font-bold border border-slate-300">
+                  <option value="">-</option>
+                  <option value="R">R</option>
+                  <option value="A">A</option>
+                  <option value="C" selected>C</option>
+                  <option value="I">I</option>
+                </select>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Action Bar -->
+<div class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 px-8 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.1)] z-40">
+  <div class="max-w-[1400px] mx-auto flex justify-between items-center">
+    <div class="flex items-center gap-2 text-xs font-medium text-slate-500">
+      <span class="material-symbols-outlined text-[16px] text-emerald-500">cloud_done</span>
+      <span>Auto-save enabled</span>
+    </div>
+    <div class="flex gap-3">
+      <button onclick="App.saveCurrentModule()" class="px-4 py-2 rounded-md border border-slate-300 text-slate-600 bg-white font-semibold hover:bg-slate-50 transition-colors text-sm">
+        保存
+      </button>
+      <button onclick="App.markModuleComplete()" class="px-5 py-2 bg-primary text-white rounded-md font-semibold hover:bg-primary-dark transition-colors shadow-lg text-sm flex items-center gap-2">
+        <span>完了して次へ</span>
+        <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+      </button>
+    </div>
+  </div>
+</div>

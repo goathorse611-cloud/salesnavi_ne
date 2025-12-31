@@ -1,0 +1,128 @@
+<!-- Module 1: ビジョンメーカー -->
+<div class="max-w-[1600px] mx-auto p-6 lg:p-8">
+  <div class="flex flex-col gap-5 max-w-3xl pb-24">
+    <!-- Instruction Banner -->
+    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 flex gap-4 items-start shadow-sm">
+      <div class="bg-white p-2 rounded-lg shadow-sm text-primary mt-1">
+        <span class="material-symbols-outlined text-[20px]">lightbulb</span>
+      </div>
+      <div>
+        <h4 class="text-sm font-bold text-blue-900 mb-1">Workshop Objective</h4>
+        <p class="text-sm text-blue-800 leading-relaxed opacity-90">
+          プロジェクトの北極星ビジョン、意思決定ルール、成功指標を定義します。
+        </p>
+      </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="bg-white rounded-xl border border-border-subtle shadow-card p-6 lg:p-8 space-y-8">
+
+      <!-- Vision Statement -->
+      <div class="group relative">
+        <div class="flex justify-between items-center mb-3">
+          <label class="text-[13px] font-bold text-slate-700 uppercase tracking-wide flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+            ビジョン本文 (Vision Statement)
+          </label>
+          <span class="text-[11px] font-semibold text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100" id="vision-char-count">0/200</span>
+        </div>
+        <div class="relative">
+          <textarea
+            data-field="vision.statement"
+            id="vision-statement"
+            class="w-full rounded-lg border-slate-300 bg-slate-50/30 p-4 text-base text-slate-800 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary min-h-[140px] resize-y transition-all placeholder:text-slate-400"
+            placeholder="例: To empower every remote team in Asia with seamless collaboration tools by 2026."
+            maxlength="200"
+          ></textarea>
+        </div>
+        <p class="mt-2 text-xs text-slate-500 flex items-center gap-1">
+          <span class="material-symbols-outlined text-[14px]">info</span>
+          究極のゴールを明確かつ簡潔に記述してください。専門用語は避けてください。
+        </p>
+      </div>
+
+      <hr class="border-slate-100"/>
+
+      <!-- Decision Rules -->
+      <div class="group">
+        <div class="flex justify-between items-center mb-3">
+          <label class="text-[13px] font-bold text-slate-700 uppercase tracking-wide flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+            意思決定ルール (Decision Rules)
+          </label>
+          <span class="text-[11px] font-semibold text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100" id="rules-char-count">0/300</span>
+        </div>
+        <textarea
+          data-field="vision.decisionRules"
+          id="decision-rules"
+          class="w-full rounded-lg border-slate-300 bg-slate-50/30 p-4 text-sm text-slate-800 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary min-h-[120px] resize-y transition-all placeholder:text-slate-400"
+          placeholder="1. Customer satisfaction over short-term profit.&#10;2. Mobile-first design approach."
+          maxlength="300"
+        ></textarea>
+      </div>
+
+      <hr class="border-slate-100"/>
+
+      <!-- Success Metrics -->
+      <div class="group">
+        <div class="flex justify-between items-center mb-3">
+          <label class="text-[13px] font-bold text-slate-700 uppercase tracking-wide flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+            成功指標 (Success Metrics)
+          </label>
+          <span class="text-[11px] font-semibold text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-100" id="metrics-char-count">0/150</span>
+        </div>
+        <textarea
+          data-field="vision.successMetrics"
+          id="success-metrics"
+          class="w-full rounded-lg border-slate-300 bg-slate-50/30 p-4 text-sm text-slate-800 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary min-h-[120px] resize-y transition-all placeholder:text-slate-400"
+          placeholder="- Achieve $10M ARR&#10;- Maintain NPS > 50"
+          maxlength="150"
+        ></textarea>
+      </div>
+
+      <!-- Notes -->
+      <div class="bg-slate-50 rounded-lg p-4 border border-slate-100">
+        <label class="text-xs font-bold text-slate-500 mb-2 block uppercase">備考 (Notes)</label>
+        <input
+          data-field="vision.notes"
+          class="w-full rounded-md border-slate-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-slate-400"
+          placeholder="Any additional context or constraints..."
+          type="text"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Action Bar -->
+<div class="fixed bottom-0 left-0 right-0 bg-white border-t border-border-subtle p-4 px-8 flex justify-between items-center z-30 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.05)]">
+  <div class="flex items-center gap-2">
+    <span class="material-symbols-outlined text-green-500 text-[20px]">cloud_done</span>
+    <span class="text-sm text-slate-500 font-medium">Auto-save enabled</span>
+  </div>
+  <div class="flex gap-3">
+    <button onclick="App.saveCurrentModule()" class="px-5 py-2.5 rounded-md border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50 hover:border-slate-400 transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-slate-300">
+      保存 (Save)
+    </button>
+    <button onclick="App.markModuleComplete()" class="px-6 py-2.5 rounded-md bg-primary text-white font-semibold text-sm hover:bg-primary-dark transition-colors shadow-sm flex items-center justify-center gap-2 focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+      <span class="material-symbols-outlined text-[18px]">check</span>
+      このモジュールを完了
+    </button>
+  </div>
+</div>
+
+<script>
+// Character counters
+document.getElementById('vision-statement')?.addEventListener('input', function(e) {
+  document.getElementById('vision-char-count').textContent = e.target.value.length + '/200';
+});
+
+document.getElementById('decision-rules')?.addEventListener('input', function(e) {
+  document.getElementById('rules-char-count').textContent = e.target.value.length + '/300';
+});
+
+document.getElementById('success-metrics')?.addEventListener('input', function(e) {
+  document.getElementById('metrics-char-count').textContent = e.target.value.length + '/150';
+});
+</script>
