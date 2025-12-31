@@ -650,3 +650,191 @@ function getAuditLogs(projectId) {
     };
   });
 }
+
+// ========================================
+// 統制操作 (Module 5)
+// ========================================
+
+/**
+ * 統制エントリを保存（一括）
+ * @param {string} projectId - プロジェクトID
+ * @param {Array<Object>} governanceEntries - 統制エントリ配列
+ * @param {string} userEmail - 更新者メール
+ */
+function saveGovernanceEntries(projectId, governanceEntries, userEmail) {
+  // 既存のエントリを削除
+  var existingRows = findRows(
+    SCHEMA_GOVERNANCE.sheetName,
+    SCHEMA_GOVERNANCE.columns.PROJECT_ID,
+    projectId
+  );
+
+  // 逆順で削除（行番号がずれないように）
+  existingRows.reverse().forEach(function(row) {
+    deleteRow(SCHEMA_GOVERNANCE.sheetName, row.rowNumber);
+  });
+
+  // 新しいエントリを追加
+  governanceEntries.forEach(function(entry) {
+    var rowData = [];
+    rowData[SCHEMA_GOVERNANCE.columns.PROJECT_ID] = projectId;
+    rowData[SCHEMA_GOVERNANCE.columns.TARGET] = entry.target || '';
+    rowData[SCHEMA_GOVERNANCE.columns.MODEL] = entry.model || '';
+    rowData[SCHEMA_GOVERNANCE.columns.OWNER] = entry.owner || '';
+    rowData[SCHEMA_GOVERNANCE.columns.RULES] = entry.rules || '';
+    rowData[SCHEMA_GOVERNANCE.columns.EXCEPTION_PROCESS] = entry.exceptionProcess || '';
+    rowData[SCHEMA_GOVERNANCE.columns.UPDATED_DATE] = getCurrentTimestamp();
+
+    appendRow(SCHEMA_GOVERNANCE.sheetName, rowData);
+  });
+
+  logAudit(userEmail, OPERATION_TYPES.UPDATE, projectId, {
+    module: 'governance',
+    count: governanceEntries.length
+  });
+}
+
+/**
+ * 統制エントリを取得
+ * @param {string} projectId - プロジェクトID
+ * @return {Array<Object>} 統制エントリ一覧
+ */
+function getGovernanceEntries(projectId) {
+  var results = findRows(
+    SCHEMA_GOVERNANCE.sheetName,
+    SCHEMA_GOVERNANCE.columns.PROJECT_ID,
+    projectId
+  );
+
+  return results.map(function(result) {
+    var data = result.data;
+    return {
+      target: data[SCHEMA_GOVERNANCE.columns.TARGET],
+      model: data[SCHEMA_GOVERNANCE.columns.MODEL],
+      owner: data[SCHEMA_GOVERNANCE.columns.OWNER],
+      rules: data[SCHEMA_GOVERNANCE.columns.RULES],
+      exceptionProcess: data[SCHEMA_GOVERNANCE.columns.EXCEPTION_PROCESS],
+      updatedDate: data[SCHEMA_GOVERNANCE.columns.UPDATED_DATE]
+    };
+  });
+}
+
+/**
+ * 統制エントリを1件追加
+ * @param {Object} governanceData - 統制データ
+ * @param {string} userEmail - ユーザーメール
+ */
+function addGovernanceEntry(governanceData, userEmail) {
+  var rowData = [];
+  rowData[SCHEMA_GOVERNANCE.columns.PROJECT_ID] = governanceData.projectId;
+  rowData[SCHEMA_GOVERNANCE.columns.TARGET] = governanceData.target || '';
+  rowData[SCHEMA_GOVERNANCE.columns.MODEL] = governanceData.model || '';
+  rowData[SCHEMA_GOVERNANCE.columns.OWNER] = governanceData.owner || '';
+  rowData[SCHEMA_GOVERNANCE.columns.RULES] = governanceData.rules || '';
+  rowData[SCHEMA_GOVERNANCE.columns.EXCEPTION_PROCESS] = governanceData.exceptionProcess || '';
+  rowData[SCHEMA_GOVERNANCE.columns.UPDATED_DATE] = getCurrentTimestamp();
+
+  appendRow(SCHEMA_GOVERNANCE.sheetName, rowData);
+
+  logAudit(userEmail, OPERATION_TYPES.CREATE, governanceData.projectId, {
+    module: 'governance',
+    target: governanceData.target
+  });
+}
+
+// ========================================
+// 運営支援操作 (Module 6)
+// ========================================
+
+/**
+ * 運営支援設定を保存
+ * @param {Object} supportData - 運営支援データ
+ * @param {string} userEmail - ユーザーメール
+ */
+function saveOperationsSupport(supportData, userEmail) {
+  var existing = findFirstRow(
+    SCHEMA_OPERATIONS_SUPPORT.sheetName,
+    SCHEMA_OPERATIONS_SUPPORT.columns.PROJECT_ID,
+    supportData.projectId
+  );
+
+  var rowData = [];
+  rowData[SCHEMA_OPERATIONS_SUPPORT.columns.PROJECT_ID] = supportData.projectId;
+  rowData[SCHEMA_OPERATIONS_SUPPORT.columns.L1_SUPPORT] = supportData.l1Support || '';
+  rowData[SCHEMA_OPERATIONS_SUPPORT.columns.L2_SUPPORT] = supportData.l2Support || '';
+  rowData[SCHEMA_OPERATIONS_SUPPORT.columns.L3_SUPPORT] = supportData.l3Support || '';
+  rowData[SCHEMA_OPERATIONS_SUPPORT.columns.L4_SUPPORT] = supportData.l4Support || '';
+  rowData[SCHEMA_OPERATIONS_SUPPORT.columns.FAQ_LINK] = supportData.faqLink || '';
+  rowData[SCHEMA_OPERATIONS_SUPPORT.columns.ESCALATION_CRITERIA] = supportData.escalationCriteria || '';
+  rowData[SCHEMA_OPERATIONS_SUPPORT.columns.COMMUNITY_OPS] = supportData.communityOps || '';
+  rowData[SCHEMA_OPERATIONS_SUPPORT.columns.UPDATED_DATE] = getCurrentTimestamp();
+
+  if (existing) {
+    updateRow(SCHEMA_OPERATIONS_SUPPORT.sheetName, existing.rowNumber, rowData);
+    logAudit(userEmail, OPERATION_TYPES.UPDATE, supportData.projectId, { module: 'operations-support' });
+  } else {
+    appendRow(SCHEMA_OPERATIONS_SUPPORT.sheetName, rowData);
+    logAudit(userEmail, OPERATION_TYPES.CREATE, supportData.projectId, { module: 'operations-support' });
+  }
+}
+
+/**
+ * 運営支援設定を取得
+ * @param {string} projectId - プロジェクトID
+ * @return {Object|null} 運営支援データ
+ */
+function getOperationsSupport(projectId) {
+  var result = findFirstRow(
+    SCHEMA_OPERATIONS_SUPPORT.sheetName,
+    SCHEMA_OPERATIONS_SUPPORT.columns.PROJECT_ID,
+    projectId
+  );
+
+  if (!result) return null;
+
+  var data = result.data;
+  return {
+    projectId: data[SCHEMA_OPERATIONS_SUPPORT.columns.PROJECT_ID],
+    l1Support: data[SCHEMA_OPERATIONS_SUPPORT.columns.L1_SUPPORT],
+    l2Support: data[SCHEMA_OPERATIONS_SUPPORT.columns.L2_SUPPORT],
+    l3Support: data[SCHEMA_OPERATIONS_SUPPORT.columns.L3_SUPPORT],
+    l4Support: data[SCHEMA_OPERATIONS_SUPPORT.columns.L4_SUPPORT],
+    faqLink: data[SCHEMA_OPERATIONS_SUPPORT.columns.FAQ_LINK],
+    escalationCriteria: data[SCHEMA_OPERATIONS_SUPPORT.columns.ESCALATION_CRITERIA],
+    communityOps: data[SCHEMA_OPERATIONS_SUPPORT.columns.COMMUNITY_OPS],
+    updatedDate: data[SCHEMA_OPERATIONS_SUPPORT.columns.UPDATED_DATE]
+  };
+}
+
+// ========================================
+// ユースケース追加操作
+// ========================================
+
+/**
+ * ユースケースを取得（単一）
+ * @param {string} usecaseId - ユースケースID
+ * @return {Object|null} ユースケース情報
+ */
+function getUsecaseById(usecaseId) {
+  var result = findFirstRow(
+    SCHEMA_USECASES.sheetName,
+    SCHEMA_USECASES.columns.USECASE_ID,
+    usecaseId
+  );
+
+  if (!result) return null;
+
+  var data = result.data;
+  return {
+    usecaseId: data[SCHEMA_USECASES.columns.USECASE_ID],
+    projectId: data[SCHEMA_USECASES.columns.PROJECT_ID],
+    challenge: data[SCHEMA_USECASES.columns.CHALLENGE],
+    goal: data[SCHEMA_USECASES.columns.GOAL],
+    expectedImpact: data[SCHEMA_USECASES.columns.EXPECTED_IMPACT],
+    ninetyDayGoal: data[SCHEMA_USECASES.columns.NINETY_DAY_GOAL],
+    score: data[SCHEMA_USECASES.columns.SCORE],
+    priority: data[SCHEMA_USECASES.columns.PRIORITY],
+    updatedDate: data[SCHEMA_USECASES.columns.UPDATED_DATE],
+    _rowNumber: result.rowNumber
+  };
+}

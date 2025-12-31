@@ -1,0 +1,29 @@
+{
+  "name": "salesnavi-blueprint-workshop",
+  "version": "1.0.0",
+  "description": "Tableau Blueprint v10 ベース 営業ワークショップアプリ",
+  "scripts": {
+    "setup": "clasp login && clasp create --type webapp --title 'Blueprint Workshop'",
+    "push": "clasp push",
+    "pull": "clasp pull",
+    "watch": "clasp push --watch",
+    "deploy": "clasp deploy",
+    "open": "clasp open",
+    "open:web": "clasp open --webapp",
+    "logs": "clasp logs",
+    "test": "echo 'Manual testing in Apps Script Editor'",
+    "lint": "echo 'No linting configured for .gs files'"
+  },
+  "keywords": [
+    "google-apps-script",
+    "tableau",
+    "blueprint",
+    "workshop"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@google/clasp": "^2.4.2",
+    "@types/google-apps-script": "^1.0.83"
+  }
+}

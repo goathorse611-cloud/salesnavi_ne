@@ -1,0 +1,33 @@
+# Development files
+node_modules/**
+package.json
+package-lock.json
+.git/**
+.gitignore
+.clasp.json.template
+
+# Documentation
+*.md
+CLAUDE.md
+README.md
+DEPLOYMENT.md
+IMPLEMENTATION_SUMMARY.md
+
+# IDE and OS files
+.vscode/**
+.idea/**
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Raw/source files not for deployment
+stitch_raw/**
+
+# Logs and temporary files
+*.log
+*.tmp
+.tmp/**
+
+# Local settings
+.claude/**
