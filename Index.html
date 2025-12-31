@@ -24,7 +24,7 @@
 <aside id="sidebar" class="w-64 bg-surface border-r border-border-color hidden md:flex flex-col h-full shadow-[2px_0_5px_rgba(0,0,0,0.02)] z-10 flex-shrink-0">
   <div class="h-16 flex items-center px-4 border-b border-border-color bg-white gap-3">
     <div class="bg-primary rounded-md size-8 flex items-center justify-center shadow-sm">
-      <span class="material-symbols-outlined text-white text-xl">architecture</span>
+      <i data-lucide="layout-grid" class="text-white w-5 h-5"></i>
     </div>
     <div class="flex flex-col">
       <span class="text-sm font-bold text-slate-800 leading-tight">Blueprint</span>
@@ -34,11 +34,11 @@
 
   <nav class="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-1">
     <a class="nav-link flex items-center gap-3 px-3 py-2 rounded-md text-text-sub hover:bg-slate-50 hover:text-primary transition-colors group" href="#" data-view="home">
-      <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary">home</span>
+      <i data-lucide="home" class="w-5 h-5 text-slate-400 group-hover:text-primary"></i>
       <span class="text-sm font-medium">ホーム</span>
     </a>
     <a class="nav-link flex items-center gap-3 px-3 py-2 rounded-md text-text-sub hover:bg-slate-50 hover:text-primary transition-colors group" href="#" data-view="projectlist">
-      <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary">folder_open</span>
+      <i data-lucide="folder-open" class="w-5 h-5 text-slate-400 group-hover:text-primary"></i>
       <span class="text-sm font-medium">プロジェクト管理</span>
     </a>
 
@@ -46,23 +46,23 @@
     <p class="px-3 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider">モジュール</p>
 
     <a class="nav-link flex items-center gap-3 px-3 py-2 rounded-md text-text-sub hover:bg-slate-50 hover:text-primary transition-colors group" href="#" data-view="vision" data-module="1">
-      <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary">flag</span>
+      <i data-lucide="flag" class="w-5 h-5 text-slate-400 group-hover:text-primary"></i>
       <span class="text-sm font-medium">1. 北極星ビジョン</span>
     </a>
     <a class="nav-link flex items-center gap-3 px-3 py-2 rounded-md text-text-sub hover:bg-slate-50 hover:text-primary transition-colors group" href="#" data-view="usecaseselect" data-module="2">
-      <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary">checklist</span>
+      <i data-lucide="list-checks" class="w-5 h-5 text-slate-400 group-hover:text-primary"></i>
       <span class="text-sm font-medium">2. ユースケース選択</span>
     </a>
     <a class="nav-link flex items-center gap-3 px-3 py-2 rounded-md text-text-sub hover:bg-slate-50 hover:text-primary transition-colors group" href="#" data-view="90daysplan" data-module="3">
-      <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary">calendar_month</span>
+      <i data-lucide="calendar" class="w-5 h-5 text-slate-400 group-hover:text-primary"></i>
       <span class="text-sm font-medium">3. 90日計画</span>
     </a>
     <a class="nav-link flex items-center gap-3 px-3 py-2 rounded-md text-text-sub hover:bg-slate-50 hover:text-primary transition-colors group" href="#" data-view="raci" data-module="4">
-      <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary">diversity_3</span>
+      <i data-lucide="users" class="w-5 h-5 text-slate-400 group-hover:text-primary"></i>
       <span class="text-sm font-medium">4. 体制・RACI</span>
     </a>
     <a class="nav-link flex items-center gap-3 px-3 py-2 rounded-md text-text-sub hover:bg-slate-50 hover:text-primary transition-colors group" href="#" data-view="valuetracker" data-module="7">
-      <span class="material-symbols-outlined text-[20px] text-slate-400 group-hover:text-primary">monitoring</span>
+      <i data-lucide="trending-up" class="w-5 h-5 text-slate-400 group-hover:text-primary"></i>
       <span class="text-sm font-medium">7. 価値トラッカー</span>
     </a>
   </nav>
@@ -97,7 +97,7 @@
       <!-- Search -->
       <div class="relative hidden sm:block group">
         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 group-focus-within:text-primary">
-          <span class="material-symbols-outlined text-[20px]">search</span>
+          <i data-lucide="search" class="w-5 h-5"></i>
         </span>
         <input id="global-search" class="pl-10 pr-4 py-1.5 text-sm bg-white border border-slate-300 rounded-md focus:ring-1 focus:ring-primary focus:border-primary w-64 transition-all placeholder:text-slate-400 text-slate-700" placeholder="検索..." type="text"/>
       </div>
@@ -106,18 +106,18 @@
 
       <!-- New Project Button -->
       <button id="btn-new-project" class="hidden sm:flex h-9 items-center gap-1.5 px-4 bg-primary hover:bg-primary-hover text-white text-sm font-semibold rounded-md shadow-sm transition-colors">
-        <span class="material-symbols-outlined text-[18px]">add</span>
+        <i data-lucide="plus" class="w-4 h-4"></i>
         <span>新規プロジェクト</span>
       </button>
 
       <!-- Notifications -->
       <button class="text-slate-500 hover:text-primary relative p-1.5 hover:bg-slate-50 rounded-md transition-colors">
-        <span class="material-symbols-outlined text-[22px]">notifications</span>
+        <i data-lucide="bell" class="w-5 h-5"></i>
       </button>
 
       <!-- Help -->
       <button class="text-slate-500 hover:text-primary p-1.5 hover:bg-slate-50 rounded-md transition-colors">
-        <span class="material-symbols-outlined text-[22px]">help</span>
+        <i data-lucide="help-circle" class="w-5 h-5"></i>
       </button>
     </div>
   </header>
@@ -127,7 +127,7 @@
     <div id="view-content" class="max-w-[1400px] mx-auto px-6 py-8">
       <!-- Views will be loaded here dynamically -->
       <div class="flex flex-col items-center justify-center py-16 text-slate-500">
-        <span class="material-symbols-outlined text-5xl mb-3">hourglass_empty</span>
+        <i data-lucide="loader-2" class="w-12 h-12 mb-3 animate-spin"></i>
         <p class="text-sm">コンテンツを読み込んでいます...</p>
       </div>
     </div>
@@ -140,7 +140,7 @@
     <div class="flex items-center justify-between p-4 border-b border-slate-200">
       <h3 class="text-lg font-bold text-slate-900">新規プロジェクト作成</h3>
       <button id="modal-close" class="text-slate-400 hover:text-slate-600 transition-colors">
-        <span class="material-symbols-outlined">close</span>
+        <i data-lucide="x" class="w-5 h-5"></i>
       </button>
     </div>
     <form id="form-new-project" class="p-4 space-y-4">

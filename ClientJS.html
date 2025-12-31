@@ -76,21 +76,26 @@
     toast.className = `toast toast-${type}`;
 
     const iconMap = {
-      success: 'check_circle',
-      error: 'error',
-      warning: 'warning',
+      success: 'check-circle',
+      error: 'alert-circle',
+      warning: 'alert-triangle',
       info: 'info'
     };
 
     toast.innerHTML = `
-      <span class="material-symbols-outlined filled-icon">${iconMap[type] || 'info'}</span>
+      <i data-lucide="${iconMap[type] || 'info'}" class="w-4 h-4 flex-shrink-0"></i>
       <span class="flex-1 text-sm font-medium">${escapeHtml(message)}</span>
       <button class="ml-2 opacity-60 hover:opacity-100" onclick="this.parentElement.remove()">
-        <span class="material-symbols-outlined text-lg">close</span>
+        <i data-lucide="x" class="w-4 h-4"></i>
       </button>
     `;
 
     container.appendChild(toast);
+
+    // Initialize Lucide icons in the toast
+    if (window.lucide) {
+      lucide.createIcons({ nameAttr: 'data-lucide' });
+    }
 
     // Auto remove
     setTimeout(() => {
@@ -259,14 +264,20 @@
     } else {
       container.innerHTML = `
         <div class="flex flex-col items-center justify-center py-16 text-slate-500">
-          <span class="material-symbols-outlined text-5xl mb-3">error_outline</span>
+          <i data-lucide="alert-circle" class="w-12 h-12 mb-3"></i>
           <p class="text-sm">ビュー "${escapeHtml(viewName)}" が見つかりません</p>
         </div>
       `;
+      if (window.lucide) lucide.createIcons({ nameAttr: 'data-lucide' });
     }
 
     // Bind events after loading
     bindViewEvents(container);
+
+    // Initialize Lucide icons in newly loaded content
+    if (window.lucide) {
+      lucide.createIcons({ nameAttr: 'data-lucide' });
+    }
   }
 
   // ============================================
@@ -311,11 +322,12 @@
       console.error('Error loading home view:', error);
       container.innerHTML = `
         <div class="flex flex-col items-center justify-center py-16 text-red-500">
-          <span class="material-symbols-outlined text-5xl mb-3">error</span>
+          <i data-lucide="alert-circle" class="w-12 h-12 mb-3"></i>
           <p class="text-sm">データの読み込みに失敗しました</p>
           <button class="mt-4 btn-primary" onclick="App.navigateTo('home')">再試行</button>
         </div>
       `;
+      if (window.lucide) lucide.createIcons({ nameAttr: 'data-lucide' });
     }
   }
 
@@ -325,9 +337,9 @@
   function renderWorkshopCards() {
     const cards = [
       { step: 1, icon: 'flag', title: '北極星を決める', desc: 'プロジェクトの方向性と、全員が目指すべき長期的なゴールを設定・合意します。', action: 'vision', buttonText: 'セッションを開始' },
-      { step: 2, icon: 'checklist', title: 'ユースケースを選択', desc: '具体的なユースケースを選定し、優先順位を決定します。', action: 'usecaseselect', buttonText: '選択を開始' },
-      { step: 3, icon: 'calendar_month', title: '90日計画を作る', desc: '直近の四半期における具体的なアクションプランとマイルストーンを策定します。', action: '90daysplan', buttonText: '計画を作成' },
-      { step: 4, icon: 'diversity_3', title: '体制と責任を確定', desc: '推進チーム体制と、各メンバーの責任範囲（RACI）を明確化します。', action: 'raci', buttonText: '体制図を編集' }
+      { step: 2, icon: 'list-checks', title: 'ユースケースを選択', desc: '具体的なユースケースを選定し、優先順位を決定します。', action: 'usecaseselect', buttonText: '選択を開始' },
+      { step: 3, icon: 'calendar', title: '90日計画を作る', desc: '直近の四半期における具体的なアクションプランとマイルストーンを策定します。', action: '90daysplan', buttonText: '計画を作成' },
+      { step: 4, icon: 'users', title: '体制と責任を確定', desc: '推進チーム体制と、各メンバーの責任範囲（RACI）を明確化します。', action: 'raci', buttonText: '体制図を編集' }
     ];
 
     return cards.map(card => `
@@ -337,7 +349,7 @@
         </div>
         <div class="flex items-center justify-between mb-4 relative z-10">
           <div class="flex items-center justify-center size-10 rounded-md bg-blue-50 text-primary border border-blue-100">
-            <span class="material-symbols-outlined filled-icon">${card.icon}</span>
+            <i data-lucide="${card.icon}" class="w-5 h-5"></i>
           </div>
           <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-gray-100 text-gray-600 border border-gray-200 uppercase tracking-wide">Step ${card.step}</span>
         </div>
@@ -357,7 +369,7 @@
     if (!projects || projects.length === 0) {
       return `
         <div class="p-8 text-center text-slate-500">
-          <span class="material-symbols-outlined text-4xl mb-2">folder_off</span>
+          <i data-lucide="folder-x" class="w-10 h-10 mb-2 mx-auto"></i>
           <p class="text-sm">プロジェクトがありません</p>
           <button class="mt-4 btn-primary" data-action="open-new-project-modal">新規プロジェクトを作成</button>
         </div>
@@ -376,7 +388,7 @@
           <div class="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors cursor-pointer group" data-action="open-project" data-project-id="${escapeHtml(p.projectId)}">
             <div class="col-span-5 flex items-center gap-3">
               <div class="size-8 rounded bg-blue-100 text-primary flex items-center justify-center shrink-0">
-                <span class="material-symbols-outlined text-lg">folder</span>
+                <i data-lucide="folder" class="w-4 h-4"></i>
               </div>
               <div class="font-bold text-text-main truncate text-sm">${escapeHtml(p.customerName)}</div>
             </div>
@@ -389,7 +401,7 @@
             </div>
             <div class="col-span-2 text-right opacity-0 group-hover:opacity-100 transition-opacity">
               <button class="text-gray-400 hover:text-primary transition-colors p-1 rounded hover:bg-blue-50" data-action="open-project" data-project-id="${escapeHtml(p.projectId)}">
-                <span class="material-symbols-outlined text-lg">edit</span>
+                <i data-lucide="pencil" class="w-4 h-4"></i>
               </button>
             </div>
           </div>
@@ -415,7 +427,7 @@
           <div class="flex gap-3">
             <div class="relative">
               <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                <span class="material-symbols-outlined text-[20px]">search</span>
+                <i data-lucide="search" class="w-5 h-5"></i>
               </span>
               <input id="project-search" class="pl-10 pr-4 py-2 text-sm bg-white border border-slate-300 rounded-md focus:ring-1 focus:ring-primary focus:border-primary w-64" placeholder="プロジェクトを検索..." type="text"/>
             </div>
@@ -425,7 +437,7 @@
               <option value="shared">共有されたもの</option>
             </select>
             <button class="btn-primary flex items-center gap-2" data-action="open-new-project-modal">
-              <span class="material-symbols-outlined text-[18px]">add</span>
+              <i data-lucide="plus" class="w-4 h-4"></i>
               新規作成
             </button>
           </div>
@@ -520,29 +532,29 @@
           <div>
             <div class="flex items-center gap-3 mb-2">
               <div class="size-10 bg-white border border-slate-200 rounded-lg flex items-center justify-center shadow-sm">
-                <span class="material-symbols-outlined text-primary text-2xl">domain</span>
+                <i data-lucide="building-2" class="w-6 h-6 text-primary"></i>
               </div>
               <h1 class="text-2xl font-bold text-slate-900">${escapeHtml(project.customerName)}</h1>
             </div>
             <div class="flex items-center gap-4 text-sm text-slate-500 ml-1">
               <span class="flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                <i data-lucide="calendar" class="w-4 h-4"></i>
                 作成日: ${formatDate(project.createdAt)}
               </span>
               <span class="text-slate-300">|</span>
               <span class="flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-[18px]">person</span>
+                <i data-lucide="user" class="w-4 h-4"></i>
                 ${escapeHtml(project.creatorEmail)}
               </span>
             </div>
           </div>
           <div class="flex gap-3">
             <button class="btn-secondary flex items-center gap-2">
-              <span class="material-symbols-outlined text-[18px]">share</span>
+              <i data-lucide="share-2" class="w-4 h-4"></i>
               共有
             </button>
             <button class="btn-primary flex items-center gap-2" data-action="export-doc" data-project-id="${escapeHtml(project.projectId)}">
-              <span class="material-symbols-outlined text-[18px] filled-icon">assignment_turned_in</span>
+              <i data-lucide="file-check" class="w-4 h-4"></i>
               稟議書作成
             </button>
           </div>
@@ -588,14 +600,14 @@
               <span class="text-[10px] font-bold text-slate-400 mb-0.5 tracking-wider">STEP ${String(module.id).padStart(2, '0')}</span>
               <h3 class="text-base font-bold text-slate-400 flex items-center gap-2">
                 ${escapeHtml(module.name)}
-                <span class="material-symbols-outlined text-base">lock</span>
+                <i data-lucide="lock" class="w-4 h-4"></i>
               </h3>
             </div>
           </div>
           <p class="text-sm text-slate-400 mb-5 leading-relaxed">${escapeHtml(module.desc)}</p>
           <div class="mt-auto">
             <div class="text-xs text-slate-400 font-medium flex items-center gap-1.5 bg-slate-100 p-2 rounded border border-slate-200">
-              <span class="material-symbols-outlined text-sm filled-icon">info</span>
+              <i data-lucide="info" class="w-3.5 h-3.5"></i>
               先のステップを完了してください
             </div>
           </div>
@@ -617,7 +629,7 @@
         <p class="text-sm text-slate-500 mb-5 leading-relaxed">${escapeHtml(module.desc)}</p>
         <div class="mt-auto pt-4 border-t border-slate-50">
           <button class="${isCompleted ? 'text-sm font-bold text-primary hover:text-primary-dark flex items-center gap-1' : 'w-full py-2 bg-primary text-white rounded-md text-sm font-bold hover:bg-primary-dark'}" data-action="open-module" data-view="${module.view}" data-project-id="${escapeHtml(projectId)}" data-module-id="${module.id}">
-            ${isCompleted ? '詳細を表示 <span class="material-symbols-outlined text-sm">arrow_forward</span>' : '編集を開始'}
+            ${isCompleted ? '<span class="flex items-center gap-1">詳細を表示 <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></span>' : '編集を開始'}
           </button>
         </div>
       </div>
@@ -631,11 +643,12 @@
     if (!params.projectId) {
       container.innerHTML = `
         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-          <span class="material-symbols-outlined text-4xl text-yellow-500 mb-2">warning</span>
+          <i data-lucide="alert-triangle" class="w-10 h-10 text-yellow-500 mb-2 mx-auto"></i>
           <p class="text-sm text-yellow-800">プロジェクトを選択してください</p>
           <button class="mt-4 btn-primary" data-action="navigate" data-view="projectlist">プロジェクト一覧へ</button>
         </div>
       `;
+      if (window.lucide) lucide.createIcons({ nameAttr: 'data-lucide' });
       return;
     }
 
@@ -684,11 +697,12 @@
     if (!params.projectId) {
       container.innerHTML = `
         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-          <span class="material-symbols-outlined text-4xl text-yellow-500 mb-2">warning</span>
+          <i data-lucide="alert-triangle" class="w-10 h-10 text-yellow-500 mb-2 mx-auto"></i>
           <p class="text-sm text-yellow-800">プロジェクトを選択してください</p>
           <button class="mt-4 btn-primary" data-action="navigate" data-view="projectlist">プロジェクト一覧へ</button>
         </div>
       `;
+      if (window.lucide) lucide.createIcons({ nameAttr: 'data-lucide' });
       return;
     }
 
@@ -1011,6 +1025,11 @@
 
       // Initial navigation
       handleHashChange();
+
+      // Initialize Lucide icons
+      if (window.lucide) {
+        lucide.createIcons({ nameAttr: 'data-lucide' });
+      }
 
     } catch (error) {
       console.error('Initialization error:', error);
