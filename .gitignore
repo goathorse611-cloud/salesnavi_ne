@@ -1,0 +1,22 @@
+# clasp
+.clasp.json
+
+# Node modules (if using clasp locally)
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+.tmp/

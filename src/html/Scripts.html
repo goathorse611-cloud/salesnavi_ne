@@ -1,0 +1,644 @@
+<script>
+  // ========================================
+  // グローバル変数
+  // ========================================
+  let currentProjectId = null;
+  let currentProject = null;
+  let usecases = [];
+  let raciEntries = [];
+
+  // ========================================
+  // 初期化
+  // ========================================
+  window.onload = function() {
+    loadUserProjects();
+  };
+
+  // ========================================
+  // ビュー切り替え
+  // ========================================
+  function showView(viewName) {
+    // すべてのビューを非表示
+    const views = document.querySelectorAll('.view');
+    views.forEach(view => view.style.display = 'none');
+
+    // 指定されたビューを表示
+    const targetView = document.getElementById('view-' + viewName);
+    if (targetView) {
+      targetView.style.display = 'block';
+    }
+
+    // プロジェクトが選択されている場合、プロジェクトナビを表示
+    if (currentProjectId) {
+      document.getElementById('projectNav').style.display = 'block';
+      document.getElementById('projectActions').style.display = 'block';
+
+      // ビューごとにデータをロード
+      if (viewName === 'vision') {
+        loadVision();
+      } else if (viewName === 'usecases') {
+        loadUsecases();
+      } else if (viewName === 'organization') {
+        loadRACIEntries();
+      } else if (viewName === 'value') {
+        loadValues();
+      }
+    }
+  }
+
+  // ========================================
+  // プロジェクト管理
+  // ========================================
+  function loadUserProjects() {
+    google.script.run
+      .withSuccessHandler(onLoadProjects)
+      .withFailureHandler(onError)
+      .apiGetUserProjects();
+  }
+
+  function onLoadProjects(response) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+
+    if (!response.success) {
+      alert('エラー: ' + response.error);
+      return;
+    }
+
+    const projects = response.data;
+    const projectsList = document.getElementById('projectsList');
+
+    if (projects.length === 0) {
+      projectsList.innerHTML = '<p>プロジェクトがありません。新規作成してください。</p>';
+      showView('home');
+      return;
+    }
+
+    let html = '';
+    projects.forEach(project => {
+      const statusClass = project.status === '確定' ? 'confirmed' :
+                          project.status === 'アーカイブ' ? 'archived' : 'draft';
+      html += `
+        <div class="project-card" onclick="selectProject('${project.projectId}')">
+          <h3>${escapeHtml(project.customerName)}</h3>
+          <span class="project-status ${statusClass}">${project.status}</span>
+          <div class="project-meta">
+            <p>作成日: ${formatDate(project.createdDate)}</p>
+            <p>更新日: ${formatDate(project.updatedDate)}</p>
+          </div>
+        </div>
+      `;
+    });
+
+    projectsList.innerHTML = html;
+    showView('home');
+  }
+
+  function selectProject(projectId) {
+    currentProjectId = projectId;
+
+    google.script.run
+      .withSuccessHandler(onLoadProject)
+      .withFailureHandler(onError)
+      .apiGetProject(projectId);
+  }
+
+  function onLoadProject(response) {
+    if (!response.success) {
+      alert('エラー: ' + response.error);
+      return;
+    }
+
+    currentProject = response.data;
+    document.getElementById('projectNav').style.display = 'block';
+    document.getElementById('projectActions').style.display = 'block';
+    showView('vision');
+  }
+
+  function showNewProjectModal() {
+    document.getElementById('newProjectModal').style.display = 'block';
+  }
+
+  function createProject() {
+    const customerName = document.getElementById('newProjectCustomerName').value.trim();
+
+    if (!customerName) {
+      alert('顧客名を入力してください');
+      return;
+    }
+
+    google.script.run
+      .withSuccessHandler(onCreateProject)
+      .withFailureHandler(onError)
+      .apiCreateProject(customerName);
+  }
+
+  function onCreateProject(response) {
+    if (!response.success) {
+      alert('エラー: ' + response.error);
+      return;
+    }
+
+    closeModal('newProjectModal');
+    document.getElementById('newProjectCustomerName').value = '';
+    alert('プロジェクトを作成しました');
+    loadUserProjects();
+  }
+
+  function confirmProject() {
+    if (!currentProjectId) return;
+
+    if (!confirm('プロジェクトを確定しますか？確定後は下書きに戻せません。')) {
+      return;
+    }
+
+    google.script.run
+      .withSuccessHandler(onConfirmProject)
+      .withFailureHandler(onError)
+      .apiUpdateProjectStatus(currentProjectId, '確定');
+  }
+
+  function onConfirmProject(response) {
+    if (!response.success) {
+      alert('エラー: ' + response.error);
+      return;
+    }
+
+    alert('プロジェクトを確定しました');
+    selectProject(currentProjectId);
+  }
+
+  // ========================================
+  // Module 1: ビジョン
+  // ========================================
+  function loadVision() {
+    if (!currentProjectId) return;
+
+    google.script.run
+      .withSuccessHandler(onLoadVision)
+      .withFailureHandler(onError)
+      .apiGetVision(currentProjectId);
+  }
+
+  function onLoadVision(response) {
+    if (!response.success) {
+      return;
+    }
+
+    const vision = response.data;
+    if (vision) {
+      document.getElementById('visionText').value = vision.visionText || '';
+      document.getElementById('decisionRules').value = vision.decisionRules || '';
+      document.getElementById('successMetrics').value = vision.successMetrics || '';
+      document.getElementById('visionNotes').value = vision.notes || '';
+    }
+  }
+
+  function saveVision() {
+    if (!currentProjectId) return;
+
+    const visionData = {
+      projectId: currentProjectId,
+      visionText: document.getElementById('visionText').value.trim(),
+      decisionRules: document.getElementById('decisionRules').value.trim(),
+      successMetrics: document.getElementById('successMetrics').value.trim(),
+      notes: document.getElementById('visionNotes').value.trim()
+    };
+
+    if (!visionData.visionText) {
+      alert('ビジョン本文を入力してください');
+      return;
+    }
+
+    google.script.run
+      .withSuccessHandler(onSaveVision)
+      .withFailureHandler(onError)
+      .apiSaveVision(visionData);
+  }
+
+  function onSaveVision(response) {
+    if (!response.success) {
+      alert('エラー: ' + response.error);
+      return;
+    }
+
+    const status = document.getElementById('visionSaveStatus');
+    status.textContent = '✓ 保存しました';
+    setTimeout(() => status.textContent = '', 3000);
+  }
+
+  // ========================================
+  // Module 2: ユースケース
+  // ========================================
+  function loadUsecases() {
+    if (!currentProjectId) return;
+
+    google.script.run
+      .withSuccessHandler(onLoadUsecases)
+      .withFailureHandler(onError)
+      .apiGetUsecases(currentProjectId);
+  }
+
+  function onLoadUsecases(response) {
+    if (!response.success) {
+      return;
+    }
+
+    usecases = response.data;
+    renderUsecases();
+  }
+
+  function renderUsecases() {
+    const usecasesList = document.getElementById('usecasesList');
+
+    if (usecases.length === 0) {
+      usecasesList.innerHTML = '<p>ユースケースがありません。追加してください。</p>';
+      return;
+    }
+
+    // 優先度順にソート
+    usecases.sort((a, b) => (a.priority || 999) - (b.priority || 999));
+
+    let html = '';
+    usecases.forEach((uc, index) => {
+      html += `
+        <div class="usecase-card">
+          <div class="usecase-header">
+            <div class="usecase-title">
+              <h3>${escapeHtml(uc.goal)}</h3>
+              <p class="usecase-priority">優先度: ${index + 1} / スコア: ${uc.score}</p>
+            </div>
+          </div>
+          <div class="usecase-content">
+            <p><strong>課題:</strong> ${escapeHtml(uc.challenge)}</p>
+            <p><strong>想定効果:</strong> ${escapeHtml(uc.expectedImpact)}</p>
+            <p><strong>90日ゴール:</strong> ${escapeHtml(uc.ninetyDayGoal)}</p>
+          </div>
+          <div class="usecase-actions">
+            <button onclick="show90DayPlanModal('${uc.usecaseId}')" class="btn btn-primary btn-sm">90日計画を作成</button>
+          </div>
+        </div>
+      `;
+    });
+
+    usecasesList.innerHTML = html;
+  }
+
+  function showNewUsecaseModal() {
+    document.getElementById('newUsecaseModal').style.display = 'block';
+  }
+
+  function addUsecase() {
+    if (!currentProjectId) return;
+
+    const usecaseData = {
+      projectId: currentProjectId,
+      challenge: document.getElementById('newUsecaseChallenge').value.trim(),
+      goal: document.getElementById('newUsecaseGoal').value.trim(),
+      expectedImpact: document.getElementById('newUsecaseImpact').value.trim(),
+      ninetyDayGoal: document.getElementById('newUsecaseNinetyDayGoal').value.trim(),
+      score: parseInt(document.getElementById('newUsecaseScore').value) || 50,
+      priority: usecases.length + 1
+    };
+
+    if (!usecaseData.challenge || !usecaseData.goal) {
+      alert('課題と狙いを入力してください');
+      return;
+    }
+
+    google.script.run
+      .withSuccessHandler(onAddUsecase)
+      .withFailureHandler(onError)
+      .apiAddUsecase(usecaseData);
+  }
+
+  function onAddUsecase(response) {
+    if (!response.success) {
+      alert('エラー: ' + response.error);
+      return;
+    }
+
+    closeModal('newUsecaseModal');
+    document.getElementById('newUsecaseChallenge').value = '';
+    document.getElementById('newUsecaseGoal').value = '';
+    document.getElementById('newUsecaseImpact').value = '';
+    document.getElementById('newUsecaseNinetyDayGoal').value = '';
+    document.getElementById('newUsecaseScore').value = '50';
+
+    loadUsecases();
+  }
+
+  function show90DayPlanModal(usecaseId) {
+    // 簡易実装: 別途モーダルを作成する場合はここに追加
+    alert('90日計画作成機能は拡張実装で追加予定です');
+  }
+
+  // ========================================
+  // Module 4: 体制・RACI
+  // ========================================
+  function loadRACIEntries() {
+    if (!currentProjectId) return;
+
+    google.script.run
+      .withSuccessHandler(onLoadRACIEntries)
+      .withFailureHandler(onError)
+      .apiGetRACIEntries(currentProjectId);
+  }
+
+  function onLoadRACIEntries(response) {
+    if (!response.success) {
+      return;
+    }
+
+    raciEntries = response.data;
+    renderRACITable();
+  }
+
+  function renderRACITable() {
+    const tbody = document.getElementById('raciTableBody');
+
+    if (raciEntries.length === 0) {
+      addRACIRow();
+      return;
+    }
+
+    tbody.innerHTML = '';
+    raciEntries.forEach((entry, index) => {
+      addRACIRowWithData(entry, index);
+    });
+  }
+
+  function addRACIRow() {
+    addRACIRowWithData({
+      pillar: 'CoE',
+      task: '',
+      assignee: '',
+      raci: 'R'
+    }, raciEntries.length);
+  }
+
+  function addRACIRowWithData(entry, index) {
+    const tbody = document.getElementById('raciTableBody');
+    const row = tbody.insertRow();
+
+    row.innerHTML = `
+      <td>
+        <select class="raci-pillar" data-index="${index}">
+          <option value="CoE" ${entry.pillar === 'CoE' ? 'selected' : ''}>CoE</option>
+          <option value="ビジネスデータネットワーク" ${entry.pillar === 'ビジネスデータネットワーク' ? 'selected' : ''}>ビジネスデータネットワーク</option>
+          <option value="IT" ${entry.pillar === 'IT' ? 'selected' : ''}>IT</option>
+        </select>
+      </td>
+      <td>
+        <input type="text" class="raci-task" data-index="${index}" value="${escapeHtml(entry.task)}" placeholder="タスク名">
+      </td>
+      <td>
+        <input type="text" class="raci-assignee" data-index="${index}" value="${escapeHtml(entry.assignee)}" placeholder="担当者名">
+      </td>
+      <td>
+        <select class="raci-type" data-index="${index}">
+          <option value="R" ${entry.raci === 'R' ? 'selected' : ''}>R (実行責任)</option>
+          <option value="A" ${entry.raci === 'A' ? 'selected' : ''}>A (説明責任)</option>
+          <option value="C" ${entry.raci === 'C' ? 'selected' : ''}>C (相談)</option>
+          <option value="I" ${entry.raci === 'I' ? 'selected' : ''}>I (情報共有)</option>
+        </select>
+      </td>
+      <td>
+        <button onclick="removeRACIRow(${index})" class="btn btn-danger btn-sm">削除</button>
+      </td>
+    `;
+  }
+
+  function removeRACIRow(index) {
+    raciEntries.splice(index, 1);
+    renderRACITable();
+  }
+
+  function saveRACIEntries() {
+    if (!currentProjectId) return;
+
+    // フォームから現在の値を収集
+    const entries = [];
+    const pillars = document.querySelectorAll('.raci-pillar');
+    const tasks = document.querySelectorAll('.raci-task');
+    const assignees = document.querySelectorAll('.raci-assignee');
+    const types = document.querySelectorAll('.raci-type');
+
+    for (let i = 0; i < pillars.length; i++) {
+      const task = tasks[i].value.trim();
+      const assignee = assignees[i].value.trim();
+
+      if (task && assignee) {
+        entries.push({
+          pillar: pillars[i].value,
+          task: task,
+          assignee: assignee,
+          raci: types[i].value
+        });
+      }
+    }
+
+    if (entries.length === 0) {
+      alert('少なくとも1行入力してください');
+      return;
+    }
+
+    google.script.run
+      .withSuccessHandler(onSaveRACIEntries)
+      .withFailureHandler(onError)
+      .apiSaveRACIEntries(currentProjectId, entries);
+  }
+
+  function onSaveRACIEntries(response) {
+    if (!response.success) {
+      alert('エラー: ' + response.error);
+      return;
+    }
+
+    const status = document.getElementById('raciSaveStatus');
+    status.textContent = '✓ 保存しました';
+    setTimeout(() => status.textContent = '', 3000);
+
+    loadRACIEntries();
+  }
+
+  // ========================================
+  // Module 7: 価値トラッキング
+  // ========================================
+  function loadValues() {
+    if (!currentProjectId) return;
+
+    // まずユースケースをロード
+    google.script.run
+      .withSuccessHandler(function(response) {
+        if (response.success) {
+          usecases = response.data;
+          loadValuesData();
+        }
+      })
+      .withFailureHandler(onError)
+      .apiGetUsecases(currentProjectId);
+  }
+
+  function loadValuesData() {
+    google.script.run
+      .withSuccessHandler(onLoadValues)
+      .withFailureHandler(onError)
+      .apiGetValues(currentProjectId);
+  }
+
+  function onLoadValues(response) {
+    if (!response.success) {
+      return;
+    }
+
+    const values = response.data;
+    renderValues(values);
+  }
+
+  function renderValues(values) {
+    const valuesList = document.getElementById('valuesList');
+
+    if (usecases.length === 0) {
+      valuesList.innerHTML = '<p>ユースケースがありません。先にユースケースを作成してください。</p>';
+      return;
+    }
+
+    let html = '';
+    usecases.forEach(uc => {
+      const value = values.find(v => v.usecaseId === uc.usecaseId) || {};
+
+      html += `
+        <div class="value-card">
+          <h4>${escapeHtml(uc.goal)}</h4>
+          <div class="form-group">
+            <label>定量効果</label>
+            <textarea id="quantitative-${uc.usecaseId}" rows="2" placeholder="数値で測定可能な効果">${escapeHtml(value.quantitativeImpact || '')}</textarea>
+          </div>
+          <div class="form-group">
+            <label>定性効果</label>
+            <textarea id="qualitative-${uc.usecaseId}" rows="2" placeholder="質的な効果・改善">${escapeHtml(value.qualitativeImpact || '')}</textarea>
+          </div>
+          <div class="form-group">
+            <label>証跡（DriveリンクまたはURL）</label>
+            <input type="text" id="evidence-${uc.usecaseId}" value="${escapeHtml(value.evidence || '')}" placeholder="https://drive.google.com/...">
+          </div>
+          <div class="form-group">
+            <label>次の投資判断</label>
+            <textarea id="investment-${uc.usecaseId}" rows="2" placeholder="継続/拡大/縮小の判断材料">${escapeHtml(value.nextInvestment || '')}</textarea>
+          </div>
+          <button onclick="saveValue('${uc.usecaseId}')" class="btn btn-primary">保存</button>
+        </div>
+      `;
+    });
+
+    valuesList.innerHTML = html;
+  }
+
+  function saveValue(usecaseId) {
+    if (!currentProjectId) return;
+
+    const valueData = {
+      projectId: currentProjectId,
+      usecaseId: usecaseId,
+      quantitativeImpact: document.getElementById('quantitative-' + usecaseId).value.trim(),
+      qualitativeImpact: document.getElementById('qualitative-' + usecaseId).value.trim(),
+      evidence: document.getElementById('evidence-' + usecaseId).value.trim(),
+      nextInvestment: document.getElementById('investment-' + usecaseId).value.trim()
+    };
+
+    google.script.run
+      .withSuccessHandler(function(response) {
+        if (response.success) {
+          alert('保存しました');
+        } else {
+          alert('エラー: ' + response.error);
+        }
+      })
+      .withFailureHandler(onError)
+      .apiSaveValue(valueData);
+  }
+
+  // ========================================
+  // ドキュメント生成
+  // ========================================
+  function generateProposal() {
+    if (!currentProjectId) return;
+
+    if (!confirm('稟議書案を生成しますか？')) {
+      return;
+    }
+
+    alert('稟議書案を生成中...');
+
+    google.script.run
+      .withSuccessHandler(onGenerateProposal)
+      .withFailureHandler(onError)
+      .apiGenerateProposal(currentProjectId);
+  }
+
+  function onGenerateProposal(response) {
+    if (!response.success) {
+      alert('エラー: ' + response.error);
+      return;
+    }
+
+    const url = response.data.documentUrl;
+    alert('稟議書案を生成しました！');
+    window.open(url, '_blank');
+  }
+
+  // ========================================
+  // ユーティリティ
+  // ========================================
+  function initializeSheets() {
+    if (!confirm('データベース（スプレッドシート）を初期化しますか？\n既存データがある場合、ヘッダー行のみが設定されます。')) {
+      return;
+    }
+
+    google.script.run
+      .withSuccessHandler(function(response) {
+        if (response.success) {
+          alert('シートを初期化しました');
+        } else {
+          alert('エラー: ' + response.error);
+        }
+      })
+      .withFailureHandler(onError)
+      .apiInitializeSheets();
+  }
+
+  function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+  }
+
+  function onError(error) {
+    console.error('Error:', error);
+    alert('エラーが発生しました: ' + error.message);
+  }
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    };
+    return text.toString().replace(/[&<>"']/g, m => map[m]);
+  }
+
+  function formatDate(date) {
+    if (!date) return '';
+    const d = new Date(date);
+    return d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate();
+  }
+
+  // モーダルの外側をクリックで閉じる
+  window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+      event.target.style.display = 'none';
+    }
+  };
+</script>
