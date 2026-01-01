@@ -8,33 +8,33 @@ function addUsecaseWithValidation(usecaseData, userEmail) {
 
   var project = getProject(usecaseData.projectId);
   if (project.status === PROJECT_STATUS.ARCHIVED) {
-    throw new Error('Archived projects cannot be edited.');
+    throw new Error('アーカイブ済みのプロジェクトは編集できません。');
   }
 
   if (!usecaseData.challenge || usecaseData.challenge.trim().length === 0) {
-    throw new Error('Challenge is required.');
+    throw new Error('課題は必須です。');
   }
 
   if (!usecaseData.goal || usecaseData.goal.trim().length === 0) {
-    throw new Error('Goal is required.');
+    throw new Error('目的は必須です。');
   }
 
   if (usecaseData.challenge.length > 1000) {
-    throw new Error('Challenge must be 1000 characters or less.');
+    throw new Error('課題は1000文字以内で入力してください。');
   }
 
   if (usecaseData.goal.length > 500) {
-    throw new Error('Goal must be 500 characters or less.');
+    throw new Error('目的は500文字以内で入力してください。');
   }
 
   var score = parseInt(usecaseData.score, 10) || 50;
   if (score < 0 || score > 100) {
-    throw new Error('Score must be between 0 and 100.');
+    throw new Error('スコアは0〜100の範囲で入力してください。');
   }
 
   var existingUsecases = getUsecases(usecaseData.projectId);
   if (existingUsecases.length >= 20) {
-    throw new Error('A project can have at most 20 use cases.');
+    throw new Error('1つのプロジェクトに登録できるユースケースは最大20件です。');
   }
 
   var cleanData = {
@@ -60,15 +60,15 @@ function updateUsecaseWithValidation(usecaseData, userEmail) {
   });
 
   if (!existing) {
-    throw new Error('Use case not found.');
+    throw new Error('ユースケースが見つかりません。');
   }
 
   if (!usecaseData.challenge || usecaseData.challenge.trim().length === 0) {
-    throw new Error('Challenge is required.');
+    throw new Error('課題は必須です。');
   }
 
   if (!usecaseData.goal || usecaseData.goal.trim().length === 0) {
-    throw new Error('Goal is required.');
+    throw new Error('目的は必須です。');
   }
 
   var rowData = [];
@@ -99,7 +99,7 @@ function deleteUsecaseWithValidation(projectId, usecaseId, userEmail) {
   });
 
   if (!target) {
-    throw new Error('Use case not found.');
+    throw new Error('ユースケースが見つかりません。');
   }
 
   var plan = getNinetyDayPlan(usecaseId);
@@ -228,12 +228,12 @@ function saveNinetyDayPlanWithValidation(planData, userEmail) {
   });
 
   if (!exists) {
-    throw new Error('Use case not found.');
+    throw new Error('ユースケースが見つかりません。');
   }
 
   var milestones = planData.weeklyMilestones || [];
   if (milestones.length > 12) {
-    throw new Error('Weekly milestones must be 12 weeks or fewer.');
+    throw new Error('週次マイルストーンは12週以内で入力してください。');
   }
 
   var cleanData = {

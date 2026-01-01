@@ -5,15 +5,15 @@
 
 function createProjectWithValidation(customerName, userEmail) {
   if (!customerName || customerName.trim().length === 0) {
-    throw new Error('Customer name is required.');
+    throw new Error('顧客名は必須です。');
   }
 
   if (customerName.length > 100) {
-    throw new Error('Customer name must be 100 characters or less.');
+    throw new Error('顧客名は100文字以内で入力してください。');
   }
 
   if (!userEmail) {
-    throw new Error('User authentication is required.');
+    throw new Error('ユーザー認証が必要です。');
   }
 
   return createProject(customerName.trim(), userEmail);
@@ -23,16 +23,16 @@ function updateProjectCustomerName(projectId, customerName, userEmail) {
   requireProjectAccess(projectId, userEmail);
 
   if (!customerName || customerName.trim().length === 0) {
-    throw new Error('Customer name is required.');
+    throw new Error('顧客名は必須です。');
   }
 
   var project = getProject(projectId);
   if (!project) {
-    throw new Error('Project not found.');
+    throw new Error('プロジェクトが見つかりません。');
   }
 
   if (project.status === PROJECT_STATUS.ARCHIVED) {
-    throw new Error('Archived projects cannot be edited.');
+    throw new Error('アーカイブ済みのプロジェクトは編集できません。');
   }
 
   var rowData = [];
@@ -59,7 +59,7 @@ function updateProjectStatusWithValidation(projectId, newStatus, userEmail) {
 
   var project = getProject(projectId);
   if (!project) {
-    throw new Error('Project not found.');
+    throw new Error('プロジェクトが見つかりません。');
   }
 
   var currentStatus = project.status;
@@ -70,13 +70,13 @@ function updateProjectStatusWithValidation(projectId, newStatus, userEmail) {
 
   var allowedTransitions = validTransitions[currentStatus] || [];
   if (allowedTransitions.indexOf(newStatus) === -1) {
-    throw new Error('Invalid status transition: ' + currentStatus + ' -> ' + newStatus);
+    throw new Error('無効なステータス遷移: ' + currentStatus + ' -> ' + newStatus);
   }
 
   if (newStatus === PROJECT_STATUS.CONFIRMED) {
     var vision = getVision(projectId);
     if (!vision || !vision.visionText) {
-      throw new Error('Vision is required before confirming the project.');
+      throw new Error('プロジェクトの確定前にビジョンの入力が必要です。');
     }
   }
 
@@ -176,7 +176,7 @@ function getProjectDetails(projectId, userEmail) {
 
   var project = getProject(projectId);
   if (!project) {
-    throw new Error('Project not found.');
+    throw new Error('プロジェクトが見つかりません。');
   }
 
   return {

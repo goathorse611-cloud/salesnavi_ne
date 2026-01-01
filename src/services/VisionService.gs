@@ -8,27 +8,27 @@ function saveVisionWithValidation(visionData, userEmail) {
 
   var project = getProject(visionData.projectId);
   if (!project) {
-    throw new Error('Project not found.');
+    throw new Error('プロジェクトが見つかりません。');
   }
 
   if (project.status === PROJECT_STATUS.ARCHIVED) {
-    throw new Error('Archived projects cannot be edited.');
+    throw new Error('アーカイブ済みのプロジェクトは編集できません。');
   }
 
   if (!visionData.visionText || visionData.visionText.trim().length === 0) {
-    throw new Error('Vision text is required.');
+    throw new Error('ビジョンは必須です。');
   }
 
   if (visionData.visionText.length > 2000) {
-    throw new Error('Vision text must be 2000 characters or less.');
+    throw new Error('ビジョンは2000文字以内で入力してください。');
   }
 
   if (visionData.decisionRules && visionData.decisionRules.length > 3000) {
-    throw new Error('Decision rules must be 3000 characters or less.');
+    throw new Error('意思決定ルールは3000文字以内で入力してください。');
   }
 
   if (visionData.successMetrics && visionData.successMetrics.length > 1500) {
-    throw new Error('Success metrics must be 1500 characters or less.');
+    throw new Error('成功指標は1500文字以内で入力してください。');
   }
 
   var cleanData = {
@@ -44,7 +44,7 @@ function saveVisionWithValidation(visionData, userEmail) {
 
   return {
     success: true,
-    message: 'Vision saved.'
+    message: 'ビジョンを保存しました。'
   };
 }
 
@@ -183,7 +183,7 @@ function generateVisionPreview(projectId) {
   var vision = getVision(projectId);
 
   if (!project) {
-    throw new Error('Project not found.');
+    throw new Error('プロジェクトが見つかりません。');
   }
 
   return {

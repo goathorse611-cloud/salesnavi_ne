@@ -12,7 +12,7 @@ function doGet(e) {
   var userEmail = getCurrentUserEmail();
   if (!userEmail) {
     return HtmlService.createHtmlOutput(
-      'Authentication required. Please sign in with your Google account.'
+      '認証が必要です。Googleアカウントでログインしてください。'
     );
   }
 
@@ -20,7 +20,7 @@ function doGet(e) {
   template.userEmail = userEmail;
 
   return template.evaluate()
-    .setTitle('Tableau Blueprint Workshop')
+    .setTitle('Tableau Blueprint ワークショップ')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
@@ -81,7 +81,7 @@ function apiUpdateProjectStatus(projectId, status) {
     requireProjectAccess(projectId, userEmail);
 
     updateProjectStatusWithValidation(projectId, status, userEmail);
-    return { success: true, message: 'Project status updated.' };
+    return { success: true, message: 'プロジェクトのステータスを更新しました。' };
   } catch (error) {
     Logger.log('apiUpdateProjectStatus error: ' + error.message);
     return { success: false, error: error.message };
@@ -99,7 +99,7 @@ function apiSaveVision(visionData) {
 
     saveVisionWithValidation(visionData, userEmail);
 
-    return { success: true, message: 'Vision saved.' };
+    return { success: true, message: 'ビジョンを保存しました。' };
   } catch (error) {
     Logger.log('apiSaveVision error: ' + error.message);
     return { success: false, error: error.message };
@@ -155,7 +155,7 @@ function apiSaveNinetyDayPlan(planData) {
     requireProjectAccess(planData.projectId, userEmail);
 
     saveNinetyDayPlanWithValidation(planData, userEmail);
-    return { success: true, message: '90-day plan saved.' };
+    return { success: true, message: '90日計画を保存しました。' };
   } catch (error) {
     Logger.log('apiSaveNinetyDayPlan error: ' + error.message);
     return { success: false, error: error.message };
@@ -185,7 +185,7 @@ function apiSaveRACIEntries(projectId, raciEntries) {
     requireProjectAccess(projectId, userEmail);
 
     saveRACIEntriesWithValidation(projectId, raciEntries, userEmail);
-    return { success: true, message: 'RACI entries saved.' };
+    return { success: true, message: 'RACIを保存しました。' };
   } catch (error) {
     Logger.log('apiSaveRACIEntries error: ' + error.message);
     return { success: false, error: error.message };
@@ -215,7 +215,7 @@ function apiSaveValue(valueData) {
     requireProjectAccess(valueData.projectId, userEmail);
 
     saveValueWithValidation(valueData, userEmail);
-    return { success: true, message: 'Value tracking saved.' };
+    return { success: true, message: '価値トラッキングを保存しました。' };
   } catch (error) {
     Logger.log('apiSaveValue error: ' + error.message);
     return { success: false, error: error.message };
@@ -262,7 +262,7 @@ function apiSaveCoreProcess(processData) {
     requireProjectAccess(processData.projectId, userEmail);
 
     saveCoreProcess(processData, userEmail);
-    return { success: true, message: 'Core process data saved.' };
+    return { success: true, message: 'コアプロセスデータを保存しました。' };
   } catch (error) {
     Logger.log('apiSaveCoreProcess error: ' + error.message);
     return { success: false, error: error.message };
@@ -292,7 +292,7 @@ function apiSaveGovernanceEntries(projectId, governanceEntries) {
     requireProjectAccess(projectId, userEmail);
 
     saveGovernanceEntries(projectId, governanceEntries, userEmail);
-    return { success: true, message: 'Governance entries saved.' };
+    return { success: true, message: 'ガバナンス項目を保存しました。' };
   } catch (error) {
     Logger.log('apiSaveGovernanceEntries error: ' + error.message);
     return { success: false, error: error.message };
@@ -335,7 +335,7 @@ function apiSaveOperationsSupport(supportData) {
     requireProjectAccess(supportData.projectId, userEmail);
 
     saveOperationsSupport(supportData, userEmail);
-    return { success: true, message: 'Operations support data saved.' };
+    return { success: true, message: '運用サポートデータを保存しました。' };
   } catch (error) {
     Logger.log('apiSaveOperationsSupport error: ' + error.message);
     return { success: false, error: error.message };

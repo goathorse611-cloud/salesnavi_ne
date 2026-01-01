@@ -15,7 +15,7 @@ function getSpreadsheetId() {
   var props = PropertiesService.getScriptProperties();
   var id = props.getProperty('SPREADSHEET_ID');
   if (!id) {
-    throw new Error('SPREADSHEET_ID is not set in Script Properties.');
+    throw new Error('スクリプトプロパティにSPREADSHEET_IDが設定されていません。');
   }
   return id;
 }

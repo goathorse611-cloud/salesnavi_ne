@@ -6,7 +6,7 @@
 function generateProposalDocument(projectId, userEmail) {
   var project = getProject(projectId);
   if (!project) {
-    throw new Error('Project not found.');
+    throw new Error('プロジェクトが見つかりません。');
   }
 
   var vision = getVision(projectId);
@@ -14,23 +14,23 @@ function generateProposalDocument(projectId, userEmail) {
   var raciEntries = getRACIEntries(projectId);
   var values = getValues(projectId);
 
-  var docName = '[Proposal Draft] ' + project.customerName + ' - Tableau Blueprint';
+  var docName = '[提案書ドラフト] ' + project.customerName + ' - Tableau Blueprint';
   var doc = DocumentApp.create(docName);
   var body = doc.getBody();
 
   body.appendParagraph(docName).setHeading(DocumentApp.ParagraphHeading.HEADING1);
-  body.appendParagraph('Created: ' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd'));
+  body.appendParagraph('作成日: ' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd'));
   body.appendParagraph('');
 
-  appendSection(body, '1. Background and Objectives', DocumentApp.ParagraphHeading.HEADING2);
+  appendSection(body, '1. 背景と目的', DocumentApp.ParagraphHeading.HEADING2);
   if (vision && vision.visionText) {
     body.appendParagraph(vision.visionText);
   } else {
-    body.appendParagraph('Vision is not set yet.');
+    body.appendParagraph('ビジョンがまだ設定されていません。');
   }
   body.appendParagraph('');
 
-  appendSection(body, '2. Scope (Use Cases)', DocumentApp.ParagraphHeading.HEADING2);
+  appendSection(body, '2. 範囲（ユースケース）', DocumentApp.ParagraphHeading.HEADING2);
   if (usecases && usecases.length > 0) {
     usecases.sort(function(a, b) {
       return (a.priority || 999) - (b.priority || 999);
@@ -38,17 +38,17 @@ function generateProposalDocument(projectId, userEmail) {
 
     usecases.slice(0, 3).forEach(function(uc, index) {
       body.appendParagraph((index + 1) + '. ' + uc.goal).setBold(true);
-      body.appendParagraph('Challenge: ' + uc.challenge);
-      body.appendParagraph('Expected impact: ' + uc.expectedImpact);
-      body.appendParagraph('90-day goal: ' + uc.ninetyDayGoal);
+      body.appendParagraph('課題: ' + uc.challenge);
+      body.appendParagraph('期待効果: ' + uc.expectedImpact);
+      body.appendParagraph('90日目標: ' + uc.ninetyDayGoal);
       body.appendParagraph('');
     });
   } else {
-    body.appendParagraph('No use cases defined yet.');
+    body.appendParagraph('ユースケースがまだありません。');
     body.appendParagraph('');
   }
 
-  appendSection(body, '3. Organization & RACI', DocumentApp.ParagraphHeading.HEADING2);
+  appendSection(body, '3. 組織 & RACI', DocumentApp.ParagraphHeading.HEADING2);
   if (raciEntries && raciEntries.length > 0) {
     var pillars = {};
     raciEntries.forEach(function(entry) {
@@ -68,48 +68,48 @@ function generateProposalDocument(projectId, userEmail) {
       }
     });
   } else {
-    body.appendParagraph('RACI is not set yet.');
+    body.appendParagraph('RACIがまだ設定されていません。');
     body.appendParagraph('');
   }
 
-  appendSection(body, '4. Expected Outcomes', DocumentApp.ParagraphHeading.HEADING2);
+  appendSection(body, '4. 期待成果', DocumentApp.ParagraphHeading.HEADING2);
   if (vision && vision.successMetrics) {
-    body.appendParagraph('Success metrics:');
+    body.appendParagraph('成功指標:');
     body.appendParagraph(vision.successMetrics);
     body.appendParagraph('');
   }
 
   if (values && values.length > 0) {
-    body.appendParagraph('Value evidence:');
+    body.appendParagraph('価値のエビデンス:');
     values.forEach(function(val) {
       if (val.quantitativeImpact || val.qualitativeImpact) {
-        body.appendParagraph('- Quantitative: ' + (val.quantitativeImpact || 'Not set'));
-        body.appendParagraph('  Qualitative: ' + (val.qualitativeImpact || 'Not set'));
+        body.appendParagraph('- 定量: ' + (val.quantitativeImpact || '未設定'));
+        body.appendParagraph('  定性: ' + (val.qualitativeImpact || '未設定'));
         body.appendParagraph('');
       }
     });
   }
 
   if (!vision || (!vision.successMetrics && (!values || values.length === 0))) {
-    body.appendParagraph('Expected outcomes are not set yet.');
+    body.appendParagraph('期待成果がまだ設定されていません。');
     body.appendParagraph('');
   }
 
-  appendSection(body, '5. Risks and Mitigations', DocumentApp.ParagraphHeading.HEADING2);
-  body.appendParagraph('- Data quality risks: address with cleansing and profiling.');
-  body.appendParagraph('- Adoption risks: provide training and enablement.');
-  body.appendParagraph('- Integration risks: validate with early PoC.');
+  appendSection(body, '5. リスクと対策', DocumentApp.ParagraphHeading.HEADING2);
+  body.appendParagraph('- データ品質のリスク: クレンジングやプロファイリングで対応。');
+  body.appendParagraph('- 利用定着のリスク: トレーニングと支援を実施。');
+  body.appendParagraph('- 統合のリスク: 早期PoCで検証。');
   body.appendParagraph('');
 
   if (vision && vision.decisionRules) {
-    body.appendParagraph('Decision rules:');
+    body.appendParagraph('意思決定ルール:');
     body.appendParagraph(vision.decisionRules);
     body.appendParagraph('');
   }
 
-  appendSection(body, '6. Investment Decision', DocumentApp.ParagraphHeading.HEADING2);
-  body.appendParagraph('Initial phase: estimate licenses, enablement, and staffing.');
-  body.appendParagraph('Next phase: decide expansion based on 90-day results.');
+  appendSection(body, '6. 投資判断', DocumentApp.ParagraphHeading.HEADING2);
+  body.appendParagraph('初期フェーズ: ライセンス、イネーブルメント、人員の見積もり。');
+  body.appendParagraph('次フェーズ: 90日成果に基づき拡大可否を判断。');
   body.appendParagraph('');
 
   if (values && values.length > 0) {
@@ -118,27 +118,32 @@ function generateProposalDocument(projectId, userEmail) {
     });
 
     if (hasInvestmentDecision) {
-      body.appendParagraph('Investment decisions:');
+      body.appendParagraph('投資判断:');
+      var investmentLabels = {
+        Continue: '継続',
+        Expand: '拡大',
+        Reduce: '縮小'
+      };
       values.forEach(function(val) {
         if (val.nextInvestment) {
-          body.appendParagraph('- ' + val.nextInvestment);
+          body.appendParagraph('- ' + (investmentLabels[val.nextInvestment] || val.nextInvestment));
         }
       });
       body.appendParagraph('');
     }
   }
 
-  appendSection(body, '7. Schedule', DocumentApp.ParagraphHeading.HEADING2);
-  body.appendParagraph('Week 1-2: Kickoff, vision, data access.');
-  body.appendParagraph('Week 3-4: Initial dashboard.');
-  body.appendParagraph('Week 5-8: Review and adoption.');
-  body.appendParagraph('Week 9-12: Measure value and plan next phase.');
+  appendSection(body, '7. スケジュール', DocumentApp.ParagraphHeading.HEADING2);
+  body.appendParagraph('週1-2: キックオフ、ビジョン、データアクセス。');
+  body.appendParagraph('週3-4: 初期ダッシュボード。');
+  body.appendParagraph('週5-8: レビューと定着。');
+  body.appendParagraph('週9-12: 価値測定と次フェーズ計画。');
   body.appendParagraph('');
 
-  appendSection(body, '8. Approvals', DocumentApp.ParagraphHeading.HEADING2);
-  body.appendParagraph('Initiator: ___________________   Date: ____/____/____');
+  appendSection(body, '8. 承認', DocumentApp.ParagraphHeading.HEADING2);
+  body.appendParagraph('起案者: ___________________   日付: ____/____/____');
   body.appendParagraph('');
-  body.appendParagraph('Approver:  ___________________   Date: ____/____/____');
+  body.appendParagraph('承認者:  ___________________   日付: ____/____/____');
   body.appendParagraph('');
 
   doc.saveAndClose();
@@ -160,31 +165,31 @@ function generateVisionDocument(projectId, userEmail) {
   var vision = getVision(projectId);
 
   if (!vision) {
-    throw new Error('Vision is not set.');
+    throw new Error('ビジョンが設定されていません。');
   }
 
-  var docName = '[Vision Sheet] ' + project.customerName;
+  var docName = '[ビジョンシート] ' + project.customerName;
   var doc = DocumentApp.create(docName);
   var body = doc.getBody();
 
-  body.appendParagraph('Vision').setHeading(DocumentApp.ParagraphHeading.HEADING1);
+  body.appendParagraph('ビジョン').setHeading(DocumentApp.ParagraphHeading.HEADING1);
   body.appendParagraph(project.customerName).setHeading(DocumentApp.ParagraphHeading.HEADING2);
   body.appendParagraph('');
 
-  body.appendParagraph('Vision statement').setBold(true);
+  body.appendParagraph('ビジョンステートメント').setBold(true);
   body.appendParagraph(vision.visionText || '');
   body.appendParagraph('');
 
-  body.appendParagraph('Decision rules').setBold(true);
+  body.appendParagraph('意思決定ルール').setBold(true);
   body.appendParagraph(vision.decisionRules || '');
   body.appendParagraph('');
 
-  body.appendParagraph('Success metrics').setBold(true);
+  body.appendParagraph('成功指標').setBold(true);
   body.appendParagraph(vision.successMetrics || '');
   body.appendParagraph('');
 
   if (vision.notes) {
-    body.appendParagraph('Notes').setBold(true);
+    body.appendParagraph('メモ').setBold(true);
     body.appendParagraph(vision.notes);
   }
 
@@ -205,49 +210,50 @@ function generateNinetyDayPlanDocument(projectId, usecaseId, userEmail) {
   var plan = getNinetyDayPlan(usecaseId);
 
   if (!plan) {
-    throw new Error('90-day plan is not set.');
+    throw new Error('90日計画が設定されていません。');
   }
 
-  var docName = '90-Day Plan - ' + project.customerName + ' - ' + (usecase ? usecase.goal : usecaseId);
+  var docName = '90日計画 - ' + project.customerName + ' - ' + (usecase ? usecase.goal : usecaseId);
   var doc = DocumentApp.create(docName);
   var body = doc.getBody();
 
-  body.appendParagraph('90-Day Plan').setHeading(DocumentApp.ParagraphHeading.HEADING1);
+  body.appendParagraph('90日計画').setHeading(DocumentApp.ParagraphHeading.HEADING1);
   body.appendParagraph(project.customerName).setHeading(DocumentApp.ParagraphHeading.HEADING2);
   body.appendParagraph('');
 
   if (usecase) {
-    body.appendParagraph('Use case').setBold(true);
-    body.appendParagraph('Goal: ' + usecase.goal);
-    body.appendParagraph('Challenge: ' + usecase.challenge);
-    body.appendParagraph('90-day goal: ' + usecase.ninetyDayGoal);
+    body.appendParagraph('ユースケース').setBold(true);
+    body.appendParagraph('目的: ' + usecase.goal);
+    body.appendParagraph('課題: ' + usecase.challenge);
+    body.appendParagraph('90日目標: ' + usecase.ninetyDayGoal);
     body.appendParagraph('');
   }
 
-  body.appendParagraph('Team structure').setBold(true);
+  body.appendParagraph('体制').setBold(true);
   body.appendParagraph(plan.teamStructure || '');
   body.appendParagraph('');
 
-  body.appendParagraph('Required data').setBold(true);
+  body.appendParagraph('必要データ').setBold(true);
   body.appendParagraph(plan.requiredData || '');
   body.appendParagraph('');
 
-  body.appendParagraph('Risks').setBold(true);
+  body.appendParagraph('リスク').setBold(true);
   body.appendParagraph(plan.risks || '');
   body.appendParagraph('');
 
-  body.appendParagraph('Communication plan').setBold(true);
+  body.appendParagraph('コミュニケーション計画').setBold(true);
   body.appendParagraph(plan.communicationPlan || '');
   body.appendParagraph('');
 
-  body.appendParagraph('Weekly milestones').setBold(true);
+  body.appendParagraph('週次マイルストーン').setBold(true);
 
   if (plan.weeklyMilestones && plan.weeklyMilestones.length > 0) {
     plan.weeklyMilestones.forEach(function(milestone, index) {
-      body.appendParagraph('Week ' + (index + 1) + ': ' + milestone);
+      if (!milestone) return;
+      body.appendParagraph('週' + (index + 1) + ': ' + milestone);
     });
   } else {
-    body.appendParagraph('Not set.');
+    body.appendParagraph('未設定');
   }
 
   doc.saveAndClose();

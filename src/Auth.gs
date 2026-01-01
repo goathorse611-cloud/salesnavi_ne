@@ -25,7 +25,7 @@ function requireProjectAccess(projectId, userEmail) {
   userEmail = userEmail || getCurrentUserEmail();
 
   if (!hasProjectAccess(projectId, userEmail)) {
-    throw new Error('Access denied for project: ' + projectId);
+    throw new Error('プロジェクトへのアクセスが拒否されました: ' + projectId);
   }
 }
 
@@ -38,7 +38,7 @@ function addProjectEditor(projectId, newEditorEmail, currentUserEmail) {
 
   var project = getProject(projectId);
   if (!project) {
-    throw new Error('Project not found: ' + projectId);
+    throw new Error('プロジェクトが見つかりません: ' + projectId);
   }
 
   var editors = project.editors || '';
@@ -73,11 +73,11 @@ function removeProjectEditor(projectId, editorEmailToRemove, currentUserEmail) {
 
   var project = getProject(projectId);
   if (!project) {
-    throw new Error('Project not found: ' + projectId);
+    throw new Error('プロジェクトが見つかりません: ' + projectId);
   }
 
   if (project.createdBy === editorEmailToRemove) {
-    throw new Error('Cannot remove the project owner from editors.');
+    throw new Error('プロジェクトオーナーを編集者から削除できません。');
   }
 
   var editors = project.editors || '';

@@ -14,7 +14,9 @@ const App = {
     currentView: 'home',
     projectFilter: 'all',
     risks: [],
-    governanceEntries: []
+    governanceEntries: [],
+    currentPlanUsecaseId: null,
+    weeklyMilestones: []
   },
 
   // ========================================
@@ -62,6 +64,16 @@ const App = {
     const visionMetrics = document.getElementById('vision-metrics');
     if (visionMetrics) {
       visionMetrics.addEventListener('input', () => this.updateVisionPreview());
+    }
+
+    const planUsecase = document.getElementById('plan-usecase');
+    if (planUsecase) {
+      planUsecase.addEventListener('change', (e) => {
+        const usecaseId = e.target.value;
+        if (usecaseId) {
+          this.loadNinetyDayPlanData(usecaseId);
+        }
+      });
     }
   },
 
@@ -144,21 +156,21 @@ const App = {
 
   updateBreadcrumb(viewName) {
     const titles = {
-      'home': 'Home',
-      'projects': 'Projects',
-      'project-detail': this.state.currentProject?.customerName || 'Project',
-      'vision': 'Vision (Module 1)',
-      'usecases': 'Use Case Selection (Module 2)',
-      '90days': '90-Day Plan (Module 2)',
-      'raci': 'Org & RACI (Module 4)',
-      'value': 'Value Tracker (Module 7)',
-      'coreprocess': 'Gap Analysis (Module 3)',
-      'governance': 'Governance (Module 5)',
-      'operations': 'Ops Support (Module 6)'
+      'home': 'ホーム',
+      'projects': 'プロジェクト',
+      'project-detail': this.state.currentProject?.customerName || 'プロジェクト',
+      'vision': 'ビジョン（モジュール1）',
+      'usecases': 'ユースケース選定（モジュール2）',
+      '90days': '90日計画（モジュール2）',
+      'raci': '組織 & RACI（モジュール4）',
+      'value': '価値トラッカー（モジュール7）',
+      'coreprocess': 'ギャップ分析（モジュール3）',
+      'governance': 'ガバナンス（モジュール5）',
+      'operations': '運用サポート（モジュール6）'
     };
     const breadcrumbTitle = document.getElementById('breadcrumb-title');
     if (breadcrumbTitle) {
-      breadcrumbTitle.textContent = titles[viewName] || 'Home';
+      breadcrumbTitle.textContent = titles[viewName] || 'ホーム';
     }
   },
 
@@ -206,7 +218,7 @@ const App = {
       container.innerHTML = `
         <div class="px-6 py-8 text-center text-slate-500">
           <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">folder_open</span>
-          <p>No projects yet. Create your first project to get started.</p>
+          <p>まだプロジェクトがありません。最初のプロジェクトを作成してください。</p>
         </div>
       `;
       return;
@@ -235,7 +247,7 @@ const App = {
       container.innerHTML = `
         <div class="bg-white rounded-lg border border-slate-200 shadow-card p-8 text-center text-slate-500">
           <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">search_off</span>
-          <p>No projects found matching the current filter.</p>
+          <p>現在のフィルターに一致するプロジェクトが見つかりません。</p>
         </div>
       `;
       return;
@@ -246,6 +258,7 @@ const App = {
 
   renderProjectRow(project) {
     const statusClass = this.getStatusClass(project.status);
+    const statusLabel = this.getStatusLabel(project.status);
     return `
       <div onclick="App.selectProject('${project.projectId}')" class="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-slate-50 cursor-pointer transition-colors items-center">
         <div class="col-span-6 md:col-span-5 flex items-center gap-3">
@@ -256,11 +269,11 @@ const App = {
         </div>
         <div class="col-span-3 md:col-span-3 text-sm text-slate-500">${this.formatDate(project.updatedDate || project.createdDate)}</div>
         <div class="col-span-3 md:col-span-2">
-          <span class="${statusClass}">${project.status}</span>
+          <span class="${statusClass}">${statusLabel}</span>
         </div>
         <div class="hidden md:flex md:col-span-2 justify-end">
           <button class="text-primary hover:text-primary-dark text-sm font-medium flex items-center gap-1">
-            Open
+            開く
             <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
           </button>
         </div>
@@ -270,6 +283,7 @@ const App = {
 
   renderProjectCard(project) {
     const statusClass = this.getStatusClass(project.status);
+    const statusLabel = this.getStatusLabel(project.status);
     return `
       <div onclick="App.selectProject('${project.projectId}')" class="bg-white rounded-lg border border-slate-200 shadow-card p-5 hover:shadow-card-hover hover:border-primary/30 transition-all cursor-pointer">
         <div class="flex items-start justify-between mb-4">
@@ -279,15 +293,15 @@ const App = {
             </div>
             <div>
               <h3 class="font-bold text-slate-900">${this.escapeHtml(project.customerName)}</h3>
-              <p class="text-xs text-slate-500">Created ${this.formatDate(project.createdDate)}</p>
+              <p class="text-xs text-slate-500">作成日: ${this.formatDate(project.createdDate)}</p>
             </div>
           </div>
-          <span class="${statusClass}">${project.status}</span>
+          <span class="${statusClass}">${statusLabel}</span>
         </div>
         <div class="flex items-center justify-between text-sm">
-          <span class="text-slate-500">Last updated: ${this.formatDate(project.updatedDate || project.createdDate)}</span>
+          <span class="text-slate-500">最終更新: ${this.formatDate(project.updatedDate || project.createdDate)}</span>
           <button class="text-primary hover:text-primary-dark font-medium flex items-center gap-1">
-            Open
+            開く
             <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
           </button>
         </div>
@@ -302,6 +316,15 @@ const App = {
       'Archived': 'px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200'
     };
     return classes[status] || classes['Draft'];
+  },
+
+  getStatusLabel(status) {
+    const labels = {
+      'Draft': '下書き',
+      'Confirmed': '確定',
+      'Archived': 'アーカイブ'
+    };
+    return labels[status] || status || '';
   },
 
 
@@ -347,7 +370,7 @@ const App = {
       container.innerHTML = `
         <div class="bg-white rounded-lg border border-slate-200 shadow-card p-8 text-center text-slate-500">
           <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">search_off</span>
-          <p>No projects found matching "${this.escapeHtml(query)}"</p>
+          <p>「${this.escapeHtml(query)}」に一致するプロジェクトが見つかりません。</p>
         </div>
       `;
       return;
@@ -380,7 +403,7 @@ const App = {
 
     document.getElementById('project-title').textContent = project.customerName;
     document.getElementById('project-updated').textContent = this.formatDate(project.updatedDate || project.createdDate);
-    document.getElementById('project-owner').textContent = project.createdBy || project.creatorEmail || 'Unknown';
+    document.getElementById('project-owner').textContent = project.createdBy || project.creatorEmail || '不明';
 
     // Render module cards
     this.renderModuleCards();
@@ -391,11 +414,11 @@ const App = {
     if (!container) return;
 
     const modules = [
-      { id: 'vision', num: 1, title: 'Vision', icon: 'flag', desc: 'Define the North Star vision' },
-      { id: 'usecases', num: 2, title: 'Use Cases', icon: 'checklist', desc: 'Select strategic use cases' },
-      { id: '90days', num: 3, title: '90-Day Plan', icon: 'calendar_month', desc: 'Create implementation roadmap' },
-      { id: 'raci', num: 4, title: 'Org & RACI', icon: 'group', desc: 'Define roles and responsibilities' },
-      { id: 'value', num: 7, title: 'Value Tracker', icon: 'trending_up', desc: 'Track and validate results' }
+      { id: 'vision', num: 1, title: 'ビジョン', icon: 'flag', desc: '北極星となるビジョンを定義' },
+      { id: 'usecases', num: 2, title: 'ユースケース', icon: 'checklist', desc: '戦略的ユースケースを選定' },
+      { id: '90days', num: 3, title: '90日計画', icon: 'calendar_month', desc: '実装ロードマップを作成' },
+      { id: 'raci', num: 4, title: '組織 & RACI', icon: 'group', desc: '役割と責任を定義' },
+      { id: 'value', num: 7, title: '価値トラッカー', icon: 'trending_up', desc: '成果を追跡し検証' }
     ];
 
     container.innerHTML = modules.map(m => `
@@ -404,7 +427,7 @@ const App = {
           <div class="size-10 rounded-md bg-primary-light text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
             <span class="material-symbols-outlined">${m.icon}</span>
           </div>
-          <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600">Module ${m.num}</span>
+        <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600">モジュール ${m.num}</span>
         </div>
         <h3 class="font-bold text-slate-900 mb-1">${m.title}</h3>
         <p class="text-sm text-slate-500">${m.desc}</p>
@@ -424,7 +447,7 @@ const App = {
   createProject() {
     const name = document.getElementById('new-project-name').value.trim();
     if (!name) {
-      alert('Please enter a customer name');
+      alert('顧客名を入力してください。');
       return;
     }
 
@@ -437,7 +460,7 @@ const App = {
 
         this.closeModal('modal-new-project');
         document.getElementById('new-project-name').value = '';
-        this.showSuccess('Project created successfully');
+        this.showSuccess('プロジェクトを作成しました');
         this.loadProjects();
       })
       .withFailureHandler((error) => this.showError(error.message))
@@ -447,7 +470,7 @@ const App = {
   confirmProject() {
     if (!this.state.currentProjectId) return;
 
-    if (!confirm('Confirm this project? This action cannot be undone.')) {
+    if (!confirm('このプロジェクトを確定しますか？この操作は取り消せません。')) {
       return;
     }
 
@@ -458,7 +481,7 @@ const App = {
           return;
         }
 
-        this.showSuccess('Project confirmed');
+        this.showSuccess('プロジェクトを確定しました');
         this.selectProject(this.state.currentProjectId);
       })
       .withFailureHandler((error) => this.showError(error.message))
@@ -501,7 +524,7 @@ const App = {
     };
 
     if (!visionData.visionText) {
-      alert('Please enter a vision statement');
+      alert('ビジョンステートメントを入力してください。');
       return;
     }
 
@@ -536,7 +559,7 @@ const App = {
     const previewMetrics = document.getElementById('preview-metrics');
 
     if (previewVision) {
-      previewVision.textContent = vision ? `"${vision}"` : '"Your vision will appear here..."';
+      previewVision.textContent = vision ? `"${vision}"` : '"ビジョンがここに表示されます..."';
     }
 
     if (previewRules) {
@@ -544,7 +567,7 @@ const App = {
         const lines = rules.split('\n').filter(l => l.trim());
         previewRules.innerHTML = lines.map(l => `<p class="flex items-start gap-2"><span class="text-primary">-</span>${this.escapeHtml(l)}</p>`).join('');
       } else {
-        previewRules.innerHTML = '<p class="text-slate-400">No rules defined yet...</p>';
+        previewRules.innerHTML = '<p class="text-slate-400">まだルールが設定されていません...</p>';
       }
     }
 
@@ -553,14 +576,22 @@ const App = {
         const lines = metrics.split('\n').filter(l => l.trim());
         previewMetrics.innerHTML = lines.map(l => `<p class="flex items-start gap-2"><span class="text-primary">-</span>${this.escapeHtml(l)}</p>`).join('');
       } else {
-        previewMetrics.innerHTML = '<p class="text-slate-400">No metrics defined yet...</p>';
+        previewMetrics.innerHTML = '<p class="text-slate-400">まだ指標が設定されていません...</p>';
       }
     }
   },
 
   completeModule(moduleName) {
     this.saveVision();
-    this.showSuccess(`${moduleName.charAt(0).toUpperCase() + moduleName.slice(1)} module completed`);
+    const moduleLabels = {
+      vision: 'ビジョン',
+      usecases: 'ユースケース',
+      '90days': '90日計画',
+      raci: '組織 & RACI',
+      value: '価値トラッカー'
+    };
+    const label = moduleLabels[moduleName] || moduleName;
+    this.showSuccess(`${label}を完了しました`);
     // Navigate to next module
     const nextModule = {
       'vision': 'usecases',
@@ -599,7 +630,7 @@ const App = {
         <tr>
           <td colspan="7" class="px-6 py-8 text-center text-slate-500">
             <span class="material-symbols-outlined text-4xl text-slate-300 mb-2 block">assignment</span>
-            No use cases yet. Click "Add Use Case" to create one.
+            まだユースケースがありません。「ユースケースを追加」から作成してください。
           </td>
         </tr>
       `;
@@ -662,7 +693,7 @@ const App = {
     const idx = this.state.selectedUsecases.indexOf(usecaseId);
     if (idx === -1) {
       if (this.state.selectedUsecases.length >= 2) {
-        alert('You can select up to 2 use cases');
+        alert('選択できるユースケースは最大2件です。');
         this.renderUsecasesTable();
         return;
       }
@@ -699,7 +730,7 @@ const App = {
     };
 
     if (!usecaseData.challenge || !usecaseData.goal) {
-      alert('Please enter both Challenge and Goal');
+      alert('課題と目的の両方を入力してください。');
       return;
     }
 
@@ -730,12 +761,14 @@ const App = {
 
     let html = '';
     for (let i = 1; i <= 12; i++) {
-      const month = Math.ceil(i / 4);
+      const milestone = this.state.weeklyMilestones[i - 1] || '';
+      const label = milestone ? this.escapeHtml(milestone) : '追加';
+      const textClass = milestone ? 'text-slate-700' : 'text-slate-400';
       html += `
         <div class="col-span-1 flex flex-col gap-2">
           <div class="text-center py-2 bg-slate-50 rounded text-xs font-bold text-slate-500">W${i}</div>
-          <div class="min-h-[60px] bg-white border border-dashed border-slate-200 rounded-md p-2 hover:border-primary hover:bg-primary-light/30 transition-colors cursor-pointer flex items-center justify-center">
-            <span class="text-xs text-slate-400">+ Add</span>
+          <div onclick="App.editMilestone(${i - 1})" class="min-h-[60px] bg-white border border-dashed border-slate-200 rounded-md p-2 hover:border-primary hover:bg-primary-light/30 transition-colors cursor-pointer flex items-center justify-center text-center">
+            <span class="text-xs ${textClass}">${label}</span>
           </div>
         </div>
       `;
@@ -743,39 +776,212 @@ const App = {
     container.innerHTML = html;
   },
 
+  editMilestone(index) {
+    const current = this.state.weeklyMilestones[index] || '';
+    const input = prompt(`週${index + 1}のマイルストーンを入力してください:`, current);
+    if (input === null) return;
+    const trimmed = input.trim();
+    if (!trimmed) {
+      this.state.weeklyMilestones[index] = '';
+    } else {
+      this.state.weeklyMilestones[index] = trimmed;
+    }
+    this.render90DayTimeline();
+  },
+
   load90DayPlan() {
-    // Load selected use cases for the plan
+    if (!this.state.currentProjectId) return;
+
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (!response.success) return;
+
+        this.state.usecases = response.data || [];
+        this.renderPlanUsecaseOptions();
+        const usecaseId = this.getDefaultPlanUsecaseId();
+        if (usecaseId) {
+          this.setPlanUsecaseId(usecaseId);
+          this.loadNinetyDayPlanData(usecaseId);
+        } else {
+          this.reset90DayPlanInputs();
+        }
+      })
+      .withFailureHandler((error) => console.error(error))
+      .apiGetUsecases(this.state.currentProjectId);
+  },
+
+  getDefaultPlanUsecaseId() {
+    if (this.state.currentPlanUsecaseId && this.state.usecases.some(uc => uc.usecaseId === this.state.currentPlanUsecaseId)) {
+      return this.state.currentPlanUsecaseId;
+    }
     if (this.state.selectedUsecases.length > 0) {
-      const selected = this.state.usecases.filter(uc => this.state.selectedUsecases.includes(uc.usecaseId));
-      if (selected.length > 0) {
-        document.getElementById('plan-objective').value = selected.map(s => s.ninetyDayGoal || s.goal).join('\n');
-      }
+      const match = this.state.usecases.find(uc => this.state.selectedUsecases.includes(uc.usecaseId));
+      if (match) return match.usecaseId;
+    }
+    return this.state.usecases[0]?.usecaseId || null;
+  },
+
+  renderPlanUsecaseOptions() {
+    const select = document.getElementById('plan-usecase');
+    if (!select) return;
+
+    if (this.state.usecases.length === 0) {
+      select.innerHTML = '<option value="">ユースケースがありません</option>';
+      return;
     }
 
+    select.innerHTML = this.state.usecases.map(uc => `
+      <option value="${uc.usecaseId}">${this.escapeHtml(uc.goal || uc.challenge || 'ユースケース')}</option>
+    `).join('');
+  },
+
+  setPlanUsecaseId(usecaseId) {
+    this.state.currentPlanUsecaseId = usecaseId;
+    const select = document.getElementById('plan-usecase');
+    if (select) {
+      select.value = usecaseId;
+    }
+  },
+
+  reset90DayPlanInputs() {
+    const objective = document.getElementById('plan-objective');
+    const kpi1 = document.getElementById('plan-kpi1');
+    const kpi2 = document.getElementById('plan-kpi2');
+    if (objective) objective.value = '';
+    if (kpi1) kpi1.value = '';
+    if (kpi2) kpi2.value = '';
     this.renderRoles();
+    this.state.risks = [];
+    this.state.weeklyMilestones = [];
     this.renderRisks();
+    this.render90DayTimeline();
+    this.applyRequiredDataSelection([]);
+    this.applyCommunicationPlan({});
+  },
+
+  loadNinetyDayPlanData(usecaseId) {
+    if (!this.state.currentProjectId || !usecaseId) return;
+
+    this.state.currentPlanUsecaseId = usecaseId;
+
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (!response.success) return;
+
+        const plan = response.data;
+        const usecase = this.state.usecases.find(uc => uc.usecaseId === usecaseId);
+        const defaults = {
+          objective: usecase?.ninetyDayGoal || usecase?.goal || ''
+        };
+
+        if (plan) {
+          const parsedTeam = this.parseTeamStructure(plan.teamStructure || '');
+          const parsedComm = this.parseCommunicationPlan(plan.communicationPlan || '');
+          const parsedRequired = this.parseRequiredData(plan.requiredData || '');
+
+          this.state.weeklyMilestones = (plan.weeklyMilestones || []).slice(0, 12);
+          while (this.state.weeklyMilestones.length < 12) {
+            this.state.weeklyMilestones.push('');
+          }
+
+          this.state.risks = this.parseRisks(plan.risks || '');
+          this.renderRoles(parsedTeam.roles);
+          this.applyPlanObjective(parsedTeam.objective || defaults.objective);
+          this.applyPlanKpis(parsedTeam.kpis);
+          this.applyRequiredDataSelection(parsedRequired);
+          this.applyCommunicationPlan(parsedComm);
+        } else {
+          this.renderRoles();
+          this.applyPlanObjective(defaults.objective);
+          this.applyPlanKpis([]);
+          this.state.risks = [];
+          this.state.weeklyMilestones = [];
+          this.applyRequiredDataSelection([]);
+          this.applyCommunicationPlan({});
+        }
+
+        this.renderRisks();
+        this.render90DayTimeline();
+      })
+      .withFailureHandler((error) => this.showError(error.message))
+      .apiGetNinetyDayPlan(usecaseId, this.state.currentProjectId);
+  },
+
+  applyPlanObjective(value) {
+    const objective = document.getElementById('plan-objective');
+    if (objective) {
+      objective.value = value || '';
+    }
+  },
+
+  applyPlanKpis(kpis) {
+    const kpi1 = document.getElementById('plan-kpi1');
+    const kpi2 = document.getElementById('plan-kpi2');
+    if (kpi1) kpi1.value = kpis?.[0] || '';
+    if (kpi2) kpi2.value = kpis?.[1] || '';
   },
 
   save90DayPlan() {
-    this.showSaveStatus();
-    this.showSuccess('90-Day Plan saved');
+    if (!this.state.currentProjectId) return;
+
+    const usecaseId = this.state.currentPlanUsecaseId || document.getElementById('plan-usecase')?.value;
+    if (!usecaseId) {
+      this.showError('対象ユースケースを選択してください。');
+      return;
+    }
+
+    const objective = document.getElementById('plan-objective')?.value.trim() || '';
+    const kpi1 = document.getElementById('plan-kpi1')?.value.trim() || '';
+    const kpi2 = document.getElementById('plan-kpi2')?.value.trim() || '';
+    const teamStructure = this.buildTeamStructure({
+      objective,
+      kpis: [kpi1, kpi2].filter(Boolean),
+      roles: this.collectRoleValues()
+    });
+    const requiredData = this.buildRequiredData();
+    const communicationPlan = this.buildCommunicationPlan();
+    const risks = this.state.risks.join('\n');
+    const weeklyMilestones = this.state.weeklyMilestones.slice(0, 12).map(m => m || '');
+
+    const planData = {
+      projectId: this.state.currentProjectId,
+      usecaseId,
+      teamStructure,
+      requiredData,
+      risks,
+      communicationPlan,
+      weeklyMilestones
+    };
+
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (!response.success) {
+          this.showError(response.error);
+          return;
+        }
+
+        this.showSaveStatus();
+        this.showSuccess('90日計画を保存しました');
+      })
+      .withFailureHandler((error) => this.showError(error.message))
+      .apiSaveNinetyDayPlan(planData);
   },
 
-  renderRoles() {
+  renderRoles(roleValues = {}) {
     const container = document.getElementById('plan-roles');
     if (!container) return;
 
     const roles = [
-      { title: 'Executive Sponsor', name: '' },
-      { title: 'Project Lead', name: '' },
-      { title: 'Technical Lead', name: '' }
+      { title: 'エグゼクティブスポンサー', key: 'executive' },
+      { title: 'プロジェクトリード', key: 'project' },
+      { title: 'テクニカルリード', key: 'technical' }
     ];
 
     container.innerHTML = roles.map(r => `
       <div class="flex items-center justify-between p-3 bg-slate-50 rounded-md">
         <div>
           <p class="text-xs text-slate-500 uppercase tracking-wide">${r.title}</p>
-          <input type="text" class="text-sm font-medium text-slate-800 bg-transparent border-none p-0 focus:ring-0 w-full" placeholder="Enter name..."/>
+          <input type="text" data-role="${r.key}" data-title="${r.title}" class="text-sm font-medium text-slate-800 bg-transparent border-none p-0 focus:ring-0 w-full" placeholder="名前を入力..." value="${this.escapeHtml(roleValues[r.title] || '')}"/>
         </div>
         <div class="size-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400">
           <span class="material-symbols-outlined text-[16px]">person</span>
@@ -789,7 +995,7 @@ const App = {
     if (!container) return;
 
     if (this.state.risks.length === 0) {
-      container.innerHTML = `<p class="text-sm text-slate-400 text-center py-4">No risks identified yet</p>`;
+      container.innerHTML = `<p class="text-sm text-slate-400 text-center py-4">まだリスクが登録されていません</p>`;
       return;
     }
 
@@ -807,7 +1013,7 @@ const App = {
   },
 
   addRisk() {
-    const risk = prompt('Enter risk description:');
+    const risk = prompt('リスク内容を入力してください:');
     if (risk && risk.trim()) {
       this.state.risks.push(risk.trim());
       this.renderRisks();
@@ -817,6 +1023,147 @@ const App = {
   removeRisk(idx) {
     this.state.risks.splice(idx, 1);
     this.renderRisks();
+  },
+
+  collectRoleValues() {
+    const inputs = document.querySelectorAll('#plan-roles input[data-title]');
+    return Array.from(inputs).map(input => ({
+      title: input.dataset.title || '',
+      name: input.value.trim()
+    })).filter(role => role.title && role.name);
+  },
+
+  buildTeamStructure({ objective, kpis, roles }) {
+    const lines = [];
+    if (objective) {
+      lines.push('目標:');
+      lines.push(objective);
+      lines.push('');
+    }
+    if (kpis && kpis.length) {
+      lines.push('KPI:');
+      kpis.forEach(kpi => lines.push(`- ${kpi}`));
+      lines.push('');
+    }
+    if (roles && roles.length) {
+      lines.push('体制:');
+      roles.forEach(role => lines.push(`- ${role.title}: ${role.name}`));
+    }
+    return lines.join('\n').trim();
+  },
+
+  parseTeamStructure(text) {
+    const result = { objective: '', kpis: [], roles: {} };
+    if (!text) return result;
+
+    const lines = text.split('\n');
+    let section = '';
+    lines.forEach(line => {
+      const trimmed = line.trim();
+      if (!trimmed) return;
+
+      if (trimmed.startsWith('目標:')) {
+        section = 'objective';
+        const rest = trimmed.replace('目標:', '').trim();
+        if (rest) {
+          result.objective = rest;
+        }
+        return;
+      }
+      if (trimmed.startsWith('KPI:')) {
+        section = 'kpi';
+        const rest = trimmed.replace('KPI:', '').trim();
+        if (rest) {
+          result.kpis.push(rest);
+        }
+        return;
+      }
+      if (trimmed.startsWith('体制:')) {
+        section = 'roles';
+        return;
+      }
+
+      if (section === 'objective') {
+        result.objective = result.objective ? `${result.objective}\n${trimmed}` : trimmed;
+      } else if (section === 'kpi') {
+        result.kpis.push(trimmed.replace(/^[-・]\s*/, ''));
+      } else if (section === 'roles') {
+        const match = trimmed.match(/^[-・]\s*(.+?):\s*(.+)$/);
+        if (match) {
+          result.roles[match[1]] = match[2];
+        }
+      }
+    });
+
+    return result;
+  },
+
+  buildRequiredData() {
+    const selections = [];
+    document.querySelectorAll('#plan-data label').forEach(label => {
+      const checkbox = label.querySelector('input[type="checkbox"]');
+      const value = label.dataset.value || label.textContent?.trim() || '';
+      if (checkbox?.checked && value) {
+        selections.push(value);
+      }
+    });
+    return selections.join('\n');
+  },
+
+  parseRequiredData(text) {
+    if (!text) return [];
+    return text.split('\n').map(line => line.replace(/^[-・]\s*/, '').trim()).filter(Boolean);
+  },
+
+  applyRequiredDataSelection(values) {
+    const selections = new Set(values);
+    document.querySelectorAll('#plan-data label').forEach(label => {
+      const checkbox = label.querySelector('input[type="checkbox"]');
+      const value = label.dataset.value || label.textContent?.trim() || '';
+      if (checkbox) {
+        checkbox.checked = selections.has(value);
+      }
+    });
+  },
+
+  buildCommunicationPlan() {
+    const meeting = document.getElementById('plan-meeting')?.value || '';
+    const stakeholders = document.getElementById('plan-stakeholders')?.value.trim() || '';
+    const lines = [];
+    if (meeting) lines.push(`会議頻度: ${meeting}`);
+    if (stakeholders) lines.push(`主要ステークホルダー: ${stakeholders}`);
+    return lines.join('\n');
+  },
+
+  parseCommunicationPlan(text) {
+    const result = {};
+    if (!text) return result;
+    text.split('\n').forEach(line => {
+      const trimmed = line.trim();
+      if (!trimmed) return;
+      if (trimmed.startsWith('会議頻度:')) {
+        result.meeting = trimmed.replace('会議頻度:', '').trim();
+      } else if (trimmed.startsWith('主要ステークホルダー:')) {
+        result.stakeholders = trimmed.replace('主要ステークホルダー:', '').trim();
+      }
+    });
+    return result;
+  },
+
+  applyCommunicationPlan(values) {
+    const meeting = document.getElementById('plan-meeting');
+    const stakeholders = document.getElementById('plan-stakeholders');
+    if (meeting && values.meeting) {
+      meeting.value = values.meeting;
+    }
+    if (stakeholders) {
+      stakeholders.value = values.stakeholders || '';
+    }
+  },
+
+  parseRisks(text) {
+    if (!text) return [];
+    return text.split('\n').map(line => line.replace(/^[-・]\s*/, '').trim()).filter(Boolean);
   },
 
   // ========================================
@@ -851,15 +1198,15 @@ const App = {
         <td class="p-4">
           <select data-idx="${idx}" data-field="pillar" onchange="App.updateRACIEntry(this)" class="w-full px-3 py-2 rounded-md border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent">
             <option value="CoE" ${entry.pillar === 'CoE' ? 'selected' : ''}>CoE</option>
-            <option value="Biz Data Network" ${entry.pillar === 'Biz Data Network' ? 'selected' : ''}>Biz Data Network</option>
+            <option value="Biz Data Network" ${entry.pillar === 'Biz Data Network' ? 'selected' : ''}>ビジネス・データネットワーク</option>
             <option value="IT" ${entry.pillar === 'IT' ? 'selected' : ''}>IT</option>
           </select>
         </td>
         <td class="p-4">
-          <input type="text" data-idx="${idx}" data-field="task" onchange="App.updateRACIEntry(this)" value="${this.escapeHtml(entry.task)}" class="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Task name"/>
+          <input type="text" data-idx="${idx}" data-field="task" onchange="App.updateRACIEntry(this)" value="${this.escapeHtml(entry.task)}" class="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="タスク名"/>
         </td>
         <td class="p-4">
-          <input type="text" data-idx="${idx}" data-field="assignee" onchange="App.updateRACIEntry(this)" value="${this.escapeHtml(entry.assignee)}" class="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Assignee"/>
+          <input type="text" data-idx="${idx}" data-field="assignee" onchange="App.updateRACIEntry(this)" value="${this.escapeHtml(entry.assignee)}" class="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="担当者"/>
         </td>
         <td class="p-4 text-center">
           <select data-idx="${idx}" data-field="raci" onchange="App.updateRACIEntry(this)" class="px-3 py-2 rounded-md border border-slate-300 bg-white text-sm font-bold focus:ring-2 focus:ring-primary focus:border-transparent">
@@ -892,7 +1239,7 @@ const App = {
       const entries = this.state.raciEntries.filter(e => e.pillar === pillar && e.task);
 
       if (entries.length === 0) {
-        container.innerHTML = `<p class="text-sm text-slate-400 italic">No tasks assigned</p>`;
+        container.innerHTML = `<p class="text-sm text-slate-400 italic">タスクが割り当てられていません</p>`;
         return;
       }
 
@@ -948,7 +1295,7 @@ const App = {
     const entries = this.state.raciEntries.filter(e => e.task && e.assignee);
 
     if (entries.length === 0) {
-      alert('Please add at least one task with an assignee');
+      alert('担当者付きのタスクを少なくとも1件追加してください。');
       return;
     }
 
@@ -1010,7 +1357,7 @@ const App = {
       container.innerHTML = `
         <div class="col-span-full text-center py-12 bg-white rounded-lg border border-slate-200">
           <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">assignment</span>
-          <p class="text-slate-500">No use cases to track. Create use cases in Module 2 first.</p>
+          <p class="text-slate-500">追跡するユースケースがありません。先にモジュール2で作成してください。</p>
         </div>
       `;
       return;
@@ -1027,35 +1374,35 @@ const App = {
                 <h3 class="font-bold text-slate-800 mb-1">${this.escapeHtml(uc.goal)}</h3>
                 <p class="text-xs text-slate-500">${this.escapeHtml(uc.challenge)}</p>
               </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-primary-light text-primary border border-primary/20">Active</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-primary-light text-primary border border-primary/20">進行中</span>
             </div>
           </div>
           <div class="p-5 space-y-4">
-            <div>
-              <label class="label-base">Quantitative Impact</label>
-              <textarea id="quant-${uc.usecaseId}" class="input-base min-h-[60px]" placeholder="e.g. 30% cost reduction, 2hr/day saved">${this.escapeHtml(value.quantitativeImpact || '')}</textarea>
+              <div>
+              <label class="label-base">定量的インパクト</label>
+              <textarea id="quant-${uc.usecaseId}" class="input-base min-h-[60px]" placeholder="例：コスト30%削減、1日2時間削減">${this.escapeHtml(value.quantitativeImpact || '')}</textarea>
             </div>
             <div>
-              <label class="label-base">Qualitative Impact</label>
-              <textarea id="qual-${uc.usecaseId}" class="input-base min-h-[60px]" placeholder="e.g. Improved team morale, faster decision making">${this.escapeHtml(value.qualitativeImpact || '')}</textarea>
+              <label class="label-base">定性的インパクト</label>
+              <textarea id="qual-${uc.usecaseId}" class="input-base min-h-[60px]" placeholder="例：士気向上、意思決定の迅速化">${this.escapeHtml(value.qualitativeImpact || '')}</textarea>
             </div>
             <div>
-              <label class="label-base">Evidence (Drive Link)</label>
+              <label class="label-base">エビデンス（Driveリンク）</label>
               <input id="evidence-${uc.usecaseId}" type="text" class="input-base" value="${this.escapeHtml(value.evidence || '')}" placeholder="https://drive.google.com/..."/>
             </div>
             <div>
-              <label class="label-base">Investment Decision</label>
+              <label class="label-base">投資判断</label>
               <select id="invest-${uc.usecaseId}" class="input-base">
-                <option value="" ${!value.nextInvestment ? 'selected' : ''}>Select...</option>
-                <option value="Continue" ${value.nextInvestment === 'Continue' ? 'selected' : ''}>Continue</option>
-                <option value="Expand" ${value.nextInvestment === 'Expand' ? 'selected' : ''}>Expand</option>
-                <option value="Reduce" ${value.nextInvestment === 'Reduce' ? 'selected' : ''}>Reduce</option>
+                <option value="" ${!value.nextInvestment ? 'selected' : ''}>選択...</option>
+                <option value="Continue" ${value.nextInvestment === 'Continue' ? 'selected' : ''}>継続</option>
+                <option value="Expand" ${value.nextInvestment === 'Expand' ? 'selected' : ''}>拡大</option>
+                <option value="Reduce" ${value.nextInvestment === 'Reduce' ? 'selected' : ''}>縮小</option>
               </select>
             </div>
           </div>
           <div class="px-5 py-3 bg-slate-50 border-t border-slate-100">
             <button onclick="App.saveValue('${uc.usecaseId}')" class="w-full btn-primary text-sm">
-              Save Changes
+              変更を保存
             </button>
           </div>
         </div>
@@ -1082,7 +1429,7 @@ const App = {
           return;
         }
 
-        this.showSuccess('Value tracking saved');
+        this.showSuccess('価値トラッキングを保存しました');
       })
       .withFailureHandler((error) => this.showError(error.message))
       .apiSaveValue(valueData);
@@ -1160,7 +1507,7 @@ const App = {
           return;
         }
 
-        this.showSuccess('Core process assessment saved');
+        this.showSuccess('コアプロセス評価を保存しました');
         this.generateRoadmap(processData);
       })
       .withFailureHandler((error) => this.showError(error.message))
@@ -1172,12 +1519,12 @@ const App = {
     if (!container) return;
 
     const scores = [
-      { name: 'Agility', score: data.agilityScore || 3, icon: 'bolt', color: 'blue' },
-      { name: 'Skills', score: data.skillsScore || 3, icon: 'school', color: 'green' },
-      { name: 'Data Quality', score: data.dataQualityScore || 3, icon: 'database', color: 'purple' },
-      { name: 'Trust', score: data.trustScore || 3, icon: 'verified_user', color: 'amber' },
-      { name: 'Operational Efficiency', score: data.operationalEfficiencyScore || 3, icon: 'speed', color: 'red' },
-      { name: 'Community', score: data.communityScore || 3, icon: 'groups', color: 'teal' }
+      { name: 'アジリティ', score: data.agilityScore || 3, icon: 'bolt', color: 'blue' },
+      { name: 'スキル', score: data.skillsScore || 3, icon: 'school', color: 'green' },
+      { name: 'データ品質', score: data.dataQualityScore || 3, icon: 'database', color: 'purple' },
+      { name: '信頼性', score: data.trustScore || 3, icon: 'verified_user', color: 'amber' },
+      { name: '運用効率', score: data.operationalEfficiencyScore || 3, icon: 'speed', color: 'red' },
+      { name: 'コミュニティ', score: data.communityScore || 3, icon: 'groups', color: 'teal' }
     ];
 
     const sorted = [...scores].sort((a, b) => a.score - b.score);
@@ -1192,43 +1539,43 @@ const App = {
         <div class="p-4 bg-amber-50 rounded-lg border border-amber-200">
           <div class="flex items-center gap-2 mb-3">
             <span class="material-symbols-outlined text-amber-600 text-[20px]">rocket_launch</span>
-            <h4 class="font-bold text-amber-800">Ignite (Priority)</h4>
+            <h4 class="font-bold text-amber-800">着火（優先）</h4>
           </div>
           <div class="space-y-2">
             ${phases.ignite.length ? phases.ignite.map(s => `
               <div class="flex items-center gap-2 text-sm text-amber-700">
                 <span class="material-symbols-outlined text-[16px]">${s.icon}</span>
-                <span>${s.name} (Score: ${s.score})</span>
+                <span>${s.name}（スコア: ${s.score}）</span>
               </div>
-            `).join('') : '<p class="text-sm text-amber-600 italic">No immediate priorities</p>'}
+            `).join('') : '<p class="text-sm text-amber-600 italic">優先項目はありません</p>'}
           </div>
         </div>
         <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
           <div class="flex items-center gap-2 mb-3">
             <span class="material-symbols-outlined text-blue-600 text-[20px]">trending_up</span>
-            <h4 class="font-bold text-blue-800">Strengthen</h4>
+            <h4 class="font-bold text-blue-800">強化</h4>
           </div>
           <div class="space-y-2">
             ${phases.strengthen.length ? phases.strengthen.map(s => `
               <div class="flex items-center gap-2 text-sm text-blue-700">
                 <span class="material-symbols-outlined text-[16px]">${s.icon}</span>
-                <span>${s.name} (Score: ${s.score})</span>
+                <span>${s.name}（スコア: ${s.score}）</span>
               </div>
-            `).join('') : '<p class="text-sm text-blue-600 italic">No items in this phase</p>'}
+            `).join('') : '<p class="text-sm text-blue-600 italic">このフェーズの項目はありません</p>'}
           </div>
         </div>
         <div class="p-4 bg-green-50 rounded-lg border border-green-200">
           <div class="flex items-center gap-2 mb-3">
             <span class="material-symbols-outlined text-green-600 text-[20px]">stars</span>
-            <h4 class="font-bold text-green-800">Transcend</h4>
+            <h4 class="font-bold text-green-800">飛躍</h4>
           </div>
           <div class="space-y-2">
             ${phases.transcend.length ? phases.transcend.map(s => `
               <div class="flex items-center gap-2 text-sm text-green-700">
                 <span class="material-symbols-outlined text-[16px]">${s.icon}</span>
-                <span>${s.name} (Score: ${s.score})</span>
+                <span>${s.name}（スコア: ${s.score}）</span>
               </div>
-            `).join('') : '<p class="text-sm text-green-600 italic">No items in this phase</p>'}
+            `).join('') : '<p class="text-sm text-green-600 italic">このフェーズの項目はありません</p>'}
           </div>
         </div>
       </div>
@@ -1267,24 +1614,24 @@ const App = {
     tbody.innerHTML = this.state.governanceEntries.map((entry, idx) => `
       <tr class="hover:bg-slate-50 transition-colors">
         <td class="p-4">
-          <input type="text" data-idx="${idx}" data-field="target" onchange="App.updateGovernanceEntry(this)" value="${this.escapeHtml(entry.target)}" class="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="e.g. Sales Data"/>
+          <input type="text" data-idx="${idx}" data-field="target" onchange="App.updateGovernanceEntry(this)" value="${this.escapeHtml(entry.target)}" class="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="例：営業データ"/>
         </td>
         <td class="p-4">
           <select data-idx="${idx}" data-field="model" onchange="App.updateGovernanceEntry(this)" class="w-full px-3 py-2 rounded-md border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-primary focus:border-transparent">
-            <option value="" ${!entry.model ? 'selected' : ''}>Select...</option>
-            <option value="Centralized" ${entry.model === 'Centralized' ? 'selected' : ''}>Centralized</option>
-            <option value="Federated" ${entry.model === 'Federated' ? 'selected' : ''}>Federated</option>
-            <option value="Hybrid" ${entry.model === 'Hybrid' ? 'selected' : ''}>Hybrid</option>
+            <option value="" ${!entry.model ? 'selected' : ''}>選択...</option>
+            <option value="Centralized" ${entry.model === 'Centralized' ? 'selected' : ''}>集中型</option>
+            <option value="Federated" ${entry.model === 'Federated' ? 'selected' : ''}>分散型</option>
+            <option value="Hybrid" ${entry.model === 'Hybrid' ? 'selected' : ''}>ハイブリッド</option>
           </select>
         </td>
         <td class="p-4">
-          <input type="text" data-idx="${idx}" data-field="owner" onchange="App.updateGovernanceEntry(this)" value="${this.escapeHtml(entry.owner)}" class="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Owner name"/>
+          <input type="text" data-idx="${idx}" data-field="owner" onchange="App.updateGovernanceEntry(this)" value="${this.escapeHtml(entry.owner)}" class="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="オーナー名"/>
         </td>
         <td class="p-4">
-          <input type="text" data-idx="${idx}" data-field="rules" onchange="App.updateGovernanceEntry(this)" value="${this.escapeHtml(entry.rules)}" class="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Governance rules"/>
+          <input type="text" data-idx="${idx}" data-field="rules" onchange="App.updateGovernanceEntry(this)" value="${this.escapeHtml(entry.rules)}" class="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="ガバナンスルール"/>
         </td>
         <td class="p-4">
-          <input type="text" data-idx="${idx}" data-field="exceptionProcess" onchange="App.updateGovernanceEntry(this)" value="${this.escapeHtml(entry.exceptionProcess)}" class="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Exception handling"/>
+          <input type="text" data-idx="${idx}" data-field="exceptionProcess" onchange="App.updateGovernanceEntry(this)" value="${this.escapeHtml(entry.exceptionProcess)}" class="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="例外対応"/>
         </td>
         <td class="p-4 text-center">
           <button onclick="App.removeGovernanceRow(${idx})" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors">
@@ -1336,7 +1683,7 @@ const App = {
           return;
         }
 
-        this.showSuccess('Governance entries saved');
+        this.showSuccess('ガバナンス項目を保存しました');
         this.loadGovernance();
       })
       .withFailureHandler((error) => this.showError(error.message))
@@ -1389,7 +1736,7 @@ const App = {
           return;
         }
 
-        this.showSuccess('Operations support saved');
+        this.showSuccess('運用サポートを保存しました');
       })
       .withFailureHandler((error) => this.showError(error.message))
       .apiSaveOperationsSupport(supportData);
@@ -1401,7 +1748,7 @@ const App = {
   generateProposal() {
     if (!this.state.currentProjectId) return;
 
-    if (!confirm('Generate proposal document? This may take a moment.')) {
+    if (!confirm('提案書を生成しますか？完了まで少し時間がかかります。')) {
       return;
     }
 
@@ -1412,7 +1759,7 @@ const App = {
           return;
         }
 
-        this.showSuccess('Proposal generated successfully!');
+        this.showSuccess('提案書を生成しました。');
         if (response.data?.documentUrl) {
           window.open(response.data.documentUrl, '_blank');
         }
@@ -1443,12 +1790,12 @@ const App = {
   },
 
   showError(message) {
-    alert('Error: ' + message);
+    alert('エラー: ' + message);
   },
 
   showSuccess(message) {
     // Simple alert for now, can be enhanced with toast notifications
-    console.log('Success:', message);
+    console.log('成功:', message);
   },
 
   showSaveStatus() {
@@ -1467,9 +1814,3 @@ const App = {
 // Initialize on load
 window.onload = () => App.init();
 </script>
-
-
-
-
-
-

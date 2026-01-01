@@ -53,7 +53,7 @@ function getSheet(sheetName) {
   var ss = getSpreadsheet();
   var sheet = ss.getSheetByName(sheetName);
   if (!sheet) {
-    throw new Error('Sheet not found: ' + sheetName);
+    throw new Error('シートが見つかりません: ' + sheetName);
   }
   return sheet;
 }
@@ -190,7 +190,7 @@ function getUserProjects(userEmail) {
 function updateProjectStatus(projectId, status, userEmail) {
   var project = getProject(projectId);
   if (!project) {
-    throw new Error('Project not found: ' + projectId);
+    throw new Error('プロジェクトが見つかりません: ' + projectId);
   }
 
   var rowData = [];
