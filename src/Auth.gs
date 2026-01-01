@@ -109,6 +109,6 @@ function getCurrentUser() {
   var userEmail = getCurrentUserEmail();
   return {
     email: userEmail,
-    isAuthenticated: userEmail !== ''
+    isAuthenticated: Boolean(userEmail)
   };
 }
