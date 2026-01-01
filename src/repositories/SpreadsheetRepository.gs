@@ -111,6 +111,26 @@ function findFirstRow(sheetName, columnIndex, value) {
   return results.length > 0 ? results[0] : null;
 }
 
+function findFirstRowByColumns(sheetName, criteria) {
+  var rows = getAllRows(sheetName);
+
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    var matches = criteria.every(function(criterion) {
+      return row[criterion.index] === criterion.value;
+    });
+
+    if (matches) {
+      return {
+        rowNumber: i + 2,
+        data: row
+      };
+    }
+  }
+
+  return null;
+}
+
 // ========================================
 // Projects
 // ========================================
@@ -317,10 +337,12 @@ function getUsecases(projectId) {
 // ========================================
 
 function saveNinetyDayPlan(planData) {
-  var existing = findFirstRow(
+  var existing = findFirstRowByColumns(
     SCHEMA_NINETY_DAY_PLAN.sheetName,
-    SCHEMA_NINETY_DAY_PLAN.columns.USECASE_ID,
-    planData.usecaseId
+    [
+      { index: SCHEMA_NINETY_DAY_PLAN.columns.PROJECT_ID, value: planData.projectId },
+      { index: SCHEMA_NINETY_DAY_PLAN.columns.USECASE_ID, value: planData.usecaseId }
+    ]
   );
 
   var rowData = [];
@@ -348,12 +370,20 @@ function saveNinetyDayPlan(planData) {
   }
 }
 
-function getNinetyDayPlan(usecaseId) {
-  var result = findFirstRow(
-    SCHEMA_NINETY_DAY_PLAN.sheetName,
-    SCHEMA_NINETY_DAY_PLAN.columns.USECASE_ID,
-    usecaseId
-  );
+function getNinetyDayPlan(usecaseId, projectId) {
+  var result = projectId
+    ? findFirstRowByColumns(
+        SCHEMA_NINETY_DAY_PLAN.sheetName,
+        [
+          { index: SCHEMA_NINETY_DAY_PLAN.columns.PROJECT_ID, value: projectId },
+          { index: SCHEMA_NINETY_DAY_PLAN.columns.USECASE_ID, value: usecaseId }
+        ]
+      )
+    : findFirstRow(
+        SCHEMA_NINETY_DAY_PLAN.sheetName,
+        SCHEMA_NINETY_DAY_PLAN.columns.USECASE_ID,
+        usecaseId
+      );
 
   if (!result) return null;
 
@@ -427,10 +457,12 @@ function getRACIEntries(projectId) {
 // ========================================
 
 function saveValue(valueData) {
-  var existing = findFirstRow(
+  var existing = findFirstRowByColumns(
     SCHEMA_VALUE.sheetName,
-    SCHEMA_VALUE.columns.USECASE_ID,
-    valueData.usecaseId
+    [
+      { index: SCHEMA_VALUE.columns.PROJECT_ID, value: valueData.projectId },
+      { index: SCHEMA_VALUE.columns.USECASE_ID, value: valueData.usecaseId }
+    ]
   );
 
   var rowData = [];

@@ -167,7 +167,13 @@ function apiGetNinetyDayPlan(usecaseId, projectId) {
     var userEmail = getCurrentUserEmail();
     requireProjectAccess(projectId, userEmail);
 
-    var plan = getNinetyDayPlan(usecaseId);
+    var usecases = getUsecases(projectId);
+    var exists = usecases.some(function(uc) { return uc.usecaseId === usecaseId; });
+    if (!exists) {
+      throw new Error('Use case not found.');
+    }
+
+    var plan = getNinetyDayPlan(usecaseId, projectId);
     return { success: true, data: plan };
   } catch (error) {
     Logger.log('apiGetNinetyDayPlan error: ' + error.message);

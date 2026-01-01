@@ -202,7 +202,7 @@ function generateNinetyDayPlanDocument(projectId, usecaseId, userEmail) {
   var project = getProject(projectId);
   var usecases = getUsecases(projectId);
   var usecase = usecases.find(function(uc) { return uc.usecaseId === usecaseId; });
-  var plan = getNinetyDayPlan(usecaseId);
+  var plan = getNinetyDayPlan(usecaseId, projectId);
 
   if (!plan) {
     throw new Error('90-day plan is not set.');

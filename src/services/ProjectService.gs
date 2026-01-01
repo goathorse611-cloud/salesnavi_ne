@@ -140,7 +140,7 @@ function getProjectCompleteness(projectId) {
     result.usecases = true;
 
     var hasPlans = usecases.some(function(uc) {
-      var plan = getNinetyDayPlan(uc.usecaseId);
+      var plan = getNinetyDayPlan(uc.usecaseId, projectId);
       return plan && plan.teamStructure;
     });
     result.ninetyDayPlan = hasPlans;

@@ -102,7 +102,7 @@ function deleteUsecaseWithValidation(projectId, usecaseId, userEmail) {
     throw new Error('Use case not found.');
   }
 
-  var plan = getNinetyDayPlan(usecaseId);
+  var plan = getNinetyDayPlan(usecaseId, projectId);
   if (plan) {
     var planResult = findFirstRow(
       SCHEMA_NINETY_DAY_PLAN.sheetName,
@@ -267,8 +267,8 @@ function getNinetyDayPlanTemplate() {
   };
 }
 
-function calculatePlanProgress(usecaseId) {
-  var plan = getNinetyDayPlan(usecaseId);
+function calculatePlanProgress(usecaseId, projectId) {
+  var plan = getNinetyDayPlan(usecaseId, projectId);
 
   if (!plan) {
     return {
@@ -325,7 +325,7 @@ function getUsecaseSummary(projectId) {
 
   var plansCreated = 0;
   usecases.forEach(function(uc) {
-    var plan = getNinetyDayPlan(uc.usecaseId);
+    var plan = getNinetyDayPlan(uc.usecaseId, projectId);
     if (plan && plan.teamStructure) {
       plansCreated++;
     }
