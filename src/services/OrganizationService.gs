@@ -8,15 +8,15 @@ function saveRACIEntriesWithValidation(projectId, entries, userEmail) {
 
   var project = getProject(projectId);
   if (project.status === PROJECT_STATUS.ARCHIVED) {
-    throw new Error('Archived projects cannot be edited.');
+    throw new Error('アーカイブ済みのプロジェクトは編集できません。');
   }
 
   if (!entries || !Array.isArray(entries)) {
-    throw new Error('RACI entries must be an array.');
+    throw new Error('RACIエントリーは配列である必要があります。');
   }
 
   if (entries.length > 100) {
-    throw new Error('RACI entries must be 100 or fewer.');
+    throw new Error('RACIエントリーは100件以内にしてください。');
   }
 
   var validPillars = [
@@ -35,19 +35,19 @@ function saveRACIEntriesWithValidation(projectId, entries, userEmail) {
 
   entries.forEach(function(entry, index) {
     if (!entry.pillar || validPillars.indexOf(entry.pillar) === -1) {
-      throw new Error('Entry ' + (index + 1) + ': invalid pillar.');
+      throw new Error('エントリー' + (index + 1) + '：柱が無効です。');
     }
 
     if (!entry.task || entry.task.trim().length === 0) {
-      throw new Error('Entry ' + (index + 1) + ': task is required.');
+      throw new Error('エントリー' + (index + 1) + '：タスクは必須です。');
     }
 
     if (!entry.assignee || entry.assignee.trim().length === 0) {
-      throw new Error('Entry ' + (index + 1) + ': assignee is required.');
+      throw new Error('エントリー' + (index + 1) + '：担当者は必須です。');
     }
 
     if (!entry.raci || validRaciTypes.indexOf(entry.raci) === -1) {
-      throw new Error('Entry ' + (index + 1) + ': invalid RACI type.');
+      throw new Error('エントリー' + (index + 1) + '：RACI種別が無効です。');
     }
 
     cleanedEntries.push({
@@ -81,7 +81,7 @@ function validateRACIMatrix(projectId) {
   };
 
   if (entries.length === 0) {
-    result.warnings.push('No RACI entries configured.');
+    result.warnings.push('RACIがまだ設定されていません。');
     return result;
   }
 
@@ -112,22 +112,22 @@ function validateRACIMatrix(projectId) {
     var accountableCount = taskEntries.filter(function(e) { return e.raci === 'A'; }).length;
 
     if (!hasResponsible) {
-      result.warnings.push('Task "' + taskName + '" has no R (Responsible).');
+      result.warnings.push('タスク「' + taskName + '」にR（実行責任）が設定されていません。');
     }
 
     if (!hasAccountable) {
-      result.warnings.push('Task "' + taskName + '" has no A (Accountable).');
+      result.warnings.push('タスク「' + taskName + '」にA（説明責任）が設定されていません。');
     }
 
     if (accountableCount > 1) {
-      result.errors.push('Task "' + taskName + '" has multiple A (Accountable).');
+      result.errors.push('タスク「' + taskName + '」にA（説明責任）が複数設定されています。');
       result.isValid = false;
     }
   });
 
   var pillars = Object.keys(result.summary.tasksByPillar);
   if (pillars.length < 2) {
-    result.warnings.push('Consider involving multiple pillars (CoE, Biz Data Network, IT).');
+    result.warnings.push('複数の柱（CoE、ビジネス・データネットワーク、IT）の関与を検討してください。');
   }
 
   return result;
@@ -139,59 +139,59 @@ function getThreePillarTemplate() {
       {
         name: THREE_PILLARS.COE,
         nameEn: 'Center of Excellence',
-        description: 'Enablement, standards, and quality.',
+        description: 'イネーブルメント、標準化、品質。',
         recommendedRoles: [
-          { role: 'CoE Lead', raci: 'A', description: 'Overall governance and alignment.' },
-          { role: 'Data Analyst', raci: 'R', description: 'Dashboard development and insights.' }
+          { role: 'CoEリード', raci: 'A', description: '全体ガバナンスとアラインメント。' },
+          { role: 'データアナリスト', raci: 'R', description: 'ダッシュボード開発と洞察提供。' }
         ],
         typicalTasks: [
-          'Dashboard development',
-          'Best practice enablement'
+          'ダッシュボード開発',
+          'ベストプラクティスの展開'
         ]
       },
       {
         name: THREE_PILLARS.BUSINESS_DATA_NETWORK,
         nameEn: 'Business Data Network',
-        description: 'Business ownership and adoption.',
+        description: 'ビジネスオーナーシップと定着。',
         recommendedRoles: [
-          { role: 'Business Owner', raci: 'A', description: 'Final approval and outcomes.' },
-          { role: 'Data Champion', raci: 'R', description: 'Drive adoption within the team.' }
+          { role: 'ビジネスオーナー', raci: 'A', description: '最終承認と成果責任。' },
+          { role: 'データチャンピオン', raci: 'R', description: 'チーム内の定着を推進。' }
         ],
         typicalTasks: [
-          'Requirements definition',
-          'Adoption and change management'
+          '要件定義',
+          '定着・チェンジマネジメント'
         ]
       },
       {
         name: THREE_PILLARS.IT,
         nameEn: 'IT',
-        description: 'Infrastructure, security, and integration.',
+        description: 'インフラ、セキュリティ、連携。',
         recommendedRoles: [
-          { role: 'IT Lead', raci: 'A', description: 'Platform decisions and security.' },
-          { role: 'Data Engineer', raci: 'R', description: 'Data pipelines and access.' }
+          { role: 'ITリード', raci: 'A', description: 'プラットフォーム判断とセキュリティ。' },
+          { role: 'データエンジニア', raci: 'R', description: 'データパイプラインとアクセス。' }
         ],
         typicalTasks: [
-          'Data source integration',
-          'Access control and security'
+          'データソース連携',
+          'アクセス制御とセキュリティ'
         ]
       }
     ],
     raciExplanation: {
       R: {
-        name: 'Responsible',
-        description: 'Executes the task.'
+        name: '実行責任',
+        description: 'タスクを実行する。'
       },
       A: {
-        name: 'Accountable',
-        description: 'Ultimately accountable; one per task.'
+        name: '説明責任',
+        description: '最終責任者（1タスクにつき1名）。'
       },
       C: {
-        name: 'Consulted',
-        description: 'Provides input before work proceeds.'
+        name: '相談先',
+        description: '作業開始前に意見を提供する。'
       },
       I: {
-        name: 'Informed',
-        description: 'Kept informed of progress.'
+        name: '共有先',
+        description: '進捗を共有される。'
       }
     }
   };
@@ -199,12 +199,12 @@ function getThreePillarTemplate() {
 
 function generateDefaultRACIEntries(projectId) {
   return [
-    { pillar: THREE_PILLARS.COE, task: 'Dashboard delivery', assignee: 'TBD', raci: 'R' },
-    { pillar: THREE_PILLARS.COE, task: 'Quality review', assignee: 'TBD', raci: 'A' },
-    { pillar: THREE_PILLARS.BUSINESS_DATA_NETWORK, task: 'Requirements', assignee: 'TBD', raci: 'R' },
-    { pillar: THREE_PILLARS.BUSINESS_DATA_NETWORK, task: 'Business approval', assignee: 'TBD', raci: 'A' },
-    { pillar: THREE_PILLARS.IT, task: 'Data access', assignee: 'TBD', raci: 'R' },
-    { pillar: THREE_PILLARS.IT, task: 'Security review', assignee: 'TBD', raci: 'A' }
+    { pillar: THREE_PILLARS.COE, task: 'ダッシュボード提供', assignee: '未設定', raci: 'R' },
+    { pillar: THREE_PILLARS.COE, task: '品質レビュー', assignee: '未設定', raci: 'A' },
+    { pillar: THREE_PILLARS.BUSINESS_DATA_NETWORK, task: '要件定義', assignee: '未設定', raci: 'R' },
+    { pillar: THREE_PILLARS.BUSINESS_DATA_NETWORK, task: 'ビジネス承認', assignee: '未設定', raci: 'A' },
+    { pillar: THREE_PILLARS.IT, task: 'データアクセス', assignee: '未設定', raci: 'R' },
+    { pillar: THREE_PILLARS.IT, task: 'セキュリティレビュー', assignee: '未設定', raci: 'A' }
   ];
 }
 
@@ -266,7 +266,7 @@ function checkRACICompleteness(projectId) {
   };
 
   if (entries.length === 0) {
-    result.suggestions.push('Add RACI entries to define responsibilities.');
+    result.suggestions.push('責任を定義するためにRACIエントリーを追加してください。');
     return result;
   }
 
@@ -288,19 +288,19 @@ function checkRACICompleteness(projectId) {
   result.completenessPercent = score;
 
   if (!result.hasCoE) {
-    result.suggestions.push('Add tasks for the CoE pillar.');
+    result.suggestions.push('CoEのタスクを追加してください。');
   }
   if (!result.hasBusinessDataNetwork) {
-    result.suggestions.push('Add tasks for Biz Data Network.');
+    result.suggestions.push('ビジネス・データネットワークのタスクを追加してください。');
   }
   if (!result.hasIT) {
-    result.suggestions.push('Add tasks for IT.');
+    result.suggestions.push('ITのタスクを追加してください。');
   }
   if (!result.hasAccountable) {
-    result.suggestions.push('Add at least one Accountable (A) role.');
+    result.suggestions.push('A（説明責任）の役割を少なくとも1つ追加してください。');
   }
   if (!result.hasResponsible) {
-    result.suggestions.push('Add at least one Responsible (R) role.');
+    result.suggestions.push('R（実行責任）の役割を少なくとも1つ追加してください。');
   }
 
   return result;

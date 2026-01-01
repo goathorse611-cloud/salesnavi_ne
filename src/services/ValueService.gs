@@ -8,7 +8,7 @@ function saveValueWithValidation(valueData, userEmail) {
 
   var project = getProject(valueData.projectId);
   if (project.status === PROJECT_STATUS.ARCHIVED) {
-    throw new Error('Archived projects cannot be edited.');
+    throw new Error('アーカイブ済みのプロジェクトは編集できません。');
   }
 
   var usecases = getUsecases(valueData.projectId);
@@ -17,19 +17,19 @@ function saveValueWithValidation(valueData, userEmail) {
   });
 
   if (!exists) {
-    throw new Error('Use case not found.');
+    throw new Error('ユースケースが見つかりません。');
   }
 
   if (valueData.quantitativeImpact && valueData.quantitativeImpact.length > 2000) {
-    throw new Error('Quantitative impact must be 2000 characters or less.');
+    throw new Error('定量的インパクトは2000文字以内で入力してください。');
   }
 
   if (valueData.qualitativeImpact && valueData.qualitativeImpact.length > 2000) {
-    throw new Error('Qualitative impact must be 2000 characters or less.');
+    throw new Error('定性的インパクトは2000文字以内で入力してください。');
   }
 
   if (valueData.evidence && valueData.evidence.length > 500) {
-    throw new Error('Evidence URL must be 500 characters or less.');
+    throw new Error('エビデンスURLは500文字以内で入力してください。');
   }
 
   if (valueData.evidence && valueData.evidence.trim().length > 0) {
@@ -173,7 +173,7 @@ function generateInvestmentRecommendation(projectId, usecaseId) {
   });
 
   if (!usecase) {
-    throw new Error('Use case not found.');
+    throw new Error('ユースケースが見つかりません。');
   }
 
   var values = getValues(projectId);
@@ -191,34 +191,34 @@ function generateInvestmentRecommendation(projectId, usecaseId) {
 
   if (!value || calculateValueCompleteness(value) < 50) {
     result.recommendation = 'needs_tracking';
-    result.reasons.push('Value tracking data is incomplete.');
-    result.nextSteps.push('Record quantitative and qualitative impacts.');
-    result.nextSteps.push('Attach evidence (screenshots or reports).');
+    result.reasons.push('価値トラッキングのデータが不足しています。');
+    result.nextSteps.push('定量・定性的インパクトを記録してください。');
+    result.nextSteps.push('エビデンス（スクリーンショットやレポート）を添付してください。');
     return result;
   }
 
   var quantitative = value.quantitativeImpact || '';
-  var hasPositiveNumbers = /[0-9]+%/.test(quantitative) || /increase|improve|reduce|gain/i.test(quantitative);
+  var hasPositiveNumbers = /[0-9]+%/.test(quantitative) || /increase|improve|reduce|gain|増加|改善|削減|向上/i.test(quantitative);
 
   var hasEvidence = value.evidence && value.evidence.length > 0;
 
   if (hasPositiveNumbers && hasEvidence) {
     result.recommendation = 'expand';
-    result.reasons.push('Quantitative impact is evident.');
-    result.reasons.push('Evidence is recorded.');
-    result.nextSteps.push('Consider scaling to other teams.');
-    result.nextSteps.push('Plan additional investment.');
+    result.reasons.push('定量的インパクトが確認できます。');
+    result.reasons.push('エビデンスが記録されています。');
+    result.nextSteps.push('他チームへの展開を検討してください。');
+    result.nextSteps.push('追加投資の計画を立ててください。');
   } else if (hasPositiveNumbers) {
     result.recommendation = 'continue';
-    result.reasons.push('Quantitative impact is visible.');
-    result.reasons.push('Additional evidence is recommended.');
-    result.nextSteps.push('Capture evidence artifacts.');
-    result.nextSteps.push('Verify sustainability of impact.');
+    result.reasons.push('定量的インパクトが見えています。');
+    result.reasons.push('追加のエビデンスが推奨されます。');
+    result.nextSteps.push('エビデンスを記録してください。');
+    result.nextSteps.push('効果の持続性を確認してください。');
   } else {
     result.recommendation = 'review';
-    result.reasons.push('Quantitative impact is unclear.');
-    result.nextSteps.push('Define KPIs and measure results.');
-    result.nextSteps.push('Re-evaluate after 90 days.');
+    result.reasons.push('定量的インパクトが不明確です。');
+    result.nextSteps.push('KPIを定義し、結果を測定してください。');
+    result.nextSteps.push('90日後に再評価してください。');
   }
 
   return result;
@@ -228,79 +228,79 @@ function getValueTrackingTemplates() {
   return {
     quantitativeTemplates: [
       {
-        category: 'Time savings',
+        category: '時間削減',
         examples: [
-          'Reporting time reduced from XX hrs to XX hrs.',
-          'Data preparation time reduced by XX%.',
-          'Decision cycle reduced by XX%.'
+          'レポート作成時間がXX時間からXX時間に短縮。',
+          'データ準備時間をXX%削減。',
+          '意思決定サイクルをXX%短縮。'
         ]
       },
       {
-        category: 'Cost reduction',
+        category: 'コスト削減',
         examples: [
-          'Annual operating cost reduced by $XX.',
-          'Vendor spend reduced by $XX per month.',
-          'Labor hours reduced by XX person-days.'
+          '年間運用コストをXX円削減。',
+          'ベンダー費用を月額XX円削減。',
+          '工数をXX人日削減。'
         ]
       },
       {
-        category: 'Revenue impact',
+        category: '売上インパクト',
         examples: [
-          'Revenue increased by XX% YoY.',
-          'Lost opportunities reduced by $XX.',
-          'New deals won: XX per quarter.'
+          '売上が前年比XX%増加。',
+          '機会損失をXX円削減。',
+          '新規成約: 四半期あたりXX件。'
         ]
       },
       {
-        category: 'Quality',
+        category: '品質',
         examples: [
-          'Data accuracy improved from XX% to XX%.',
-          'Error rate reduced by XX%.',
-          'Forecast accuracy improved by XX%.'
+          'データ精度がXX%からXX%に改善。',
+          'エラー率をXX%削減。',
+          '予測精度をXX%改善。'
         ]
       }
     ],
     qualitativeTemplates: [
       {
-        category: 'Process improvement',
+        category: 'プロセス改善',
         examples: [
-          'Faster cross-team alignment.',
-          'Clearer decision rationale.',
-          'Real-time operational visibility.'
+          '部門横断の合意形成が迅速化。',
+          '意思決定の根拠が明確化。',
+          'リアルタイムの運用可視化。'
         ]
       },
       {
-        category: 'Culture',
+        category: '文化',
         examples: [
-          'More data-driven culture.',
-          'Higher analytics literacy.',
-          'Stronger executive engagement.'
+          'データドリブン文化の醸成。',
+          '分析リテラシーの向上。',
+          '経営層の関与強化。'
         ]
       },
       {
-        category: 'Customer experience',
+        category: '顧客体験',
         examples: [
-          'Improved response quality.',
-          'More personalized proposals.',
-          'Higher satisfaction scores.'
+          '対応品質の向上。',
+          '提案のパーソナライズ。',
+          '満足度スコアの向上。'
         ]
       }
     ],
     investmentDecisionOptions: [
       {
         value: 'Continue',
-        description: 'Maintain current scope.',
-        nextAction: 'Continue measuring value.'
+        description: '現在のスコープを維持。',
+        nextAction: '価値測定を継続。'
       },
       {
         value: 'Expand',
-        description: 'Scale to more teams or use cases.',
-        nextAction: 'Plan broader rollout.'
+        description: '対象チームやユースケースを拡大。',
+        nextAction: '広範な展開計画を策定。'
       },
       {
         value: 'Reduce',
-        description: 'Reduce scope based on outcomes.',
-        nextAction: 'Refocus on highest impact.'
+        description: '成果に基づきスコープを縮小。',
+        nextAction: '最も効果の高い領域に集中。'
       }
     ]
   };
@@ -319,7 +319,7 @@ function checkValueCompleteness(projectId) {
   };
 
   if (status.length === 0) {
-    result.suggestions.push('Create use cases before tracking value.');
+    result.suggestions.push('価値を追跡する前にユースケースを作成してください。');
     return result;
   }
 
@@ -350,16 +350,16 @@ function checkValueCompleteness(projectId) {
   result.completenessPercent = score;
 
   if (!result.hasAnyValue) {
-    result.suggestions.push('Record value for at least one use case.');
+    result.suggestions.push('少なくとも1件のユースケースで価値を記録してください。');
   }
   if (!result.hasAllUsecasesTracked) {
-    result.suggestions.push('Track value for all use cases for stronger proposals.');
+    result.suggestions.push('提案力を高めるため、すべてのユースケースで価値を追跡してください。');
   }
   if (!result.hasEvidence) {
-    result.suggestions.push('Add evidence links or artifacts.');
+    result.suggestions.push('エビデンスのリンクや資料を追加してください。');
   }
   if (!result.hasInvestmentDecisions) {
-    result.suggestions.push('Record the next investment decision.');
+    result.suggestions.push('次の投資判断を記録してください。');
   }
 
   return result;
