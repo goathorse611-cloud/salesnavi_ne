@@ -8,6 +8,24 @@
 - Google Driveへのアクセス
 - Google Apps Script エディタへのアクセス権限
 
+## claspでデプロイ（推奨）
+
+このリポジトリには、Node.js がPCに入っていなくても `clasp` を実行できるPowerShellスクリプトを同梱しています。
+
+1. 初回のみ: Apps Script API を有効化（Google側のユーザー設定）
+   - `https://script.google.com/home/usersettings` を開き、「Google Apps Script API」を ON
+2. デプロイ（新規GASプロジェクトを作成してpush）
+   - `powershell -ExecutionPolicy Bypass -File tools/deploy-gas.ps1 -Title "salesnavi_ne-2" -DeployDescription "initial deploy"`
+3. （任意）スプレッドシートの紐付け＋シート初期化
+   - 既存シートを使う: `powershell -ExecutionPolicy Bypass -File tools/deploy-gas.ps1 -SpreadsheetId "<SPREADSHEET_ID>"`
+   - 新規に作る: `powershell -ExecutionPolicy Bypass -File tools/deploy-gas.ps1 -CreateNewSpreadsheet -SpreadsheetName "Tableau Blueprint DB"`
+4. 日常運用（ターミナルからURLを固定して更新したい場合）
+   - Apps Script エディタでWebアプリとして1回だけデプロイし、その「デプロイID（AKfy...）」を控える
+   - 以後は `powershell -ExecutionPolicy Bypass -File tools/deploy-gas.ps1 -DeploymentId "<AKfy...>"` を実行（`.gas-deploy.json` に保存され、同じURLのまま更新できます）
+5. コード反映のみ（deploy不要）
+   - `powershell -ExecutionPolicy Bypass -File tools/push-gas.ps1`
+   - 監視して自動反映: `powershell -ExecutionPolicy Bypass -File tools/watch-gas.ps1`
+
 ## デプロイ手順
 
 ### ステップ 1: Google Apps Script プロジェクトの作成
@@ -65,19 +83,15 @@ Apps Script エディタで、以下のファイルを作成します：
 
 エディタ左側の「ファイル」(+) から以下のファイルを追加し、このリポジトリの `src/` 配下のコードをコピー＆ペースト：
 
-1. **Config.gs** - `src/Config.gs` の内容をコピー
-2. **Auth.gs** - `src/Auth.gs` の内容をコピー
-3. **Code.gs** - `src/Code.gs` の内容をコピー
-4. **SpreadsheetRepository.gs** - `src/repositories/SpreadsheetRepository.gs` の内容をコピー
-5. **DocumentService.gs** - `src/services/DocumentService.gs` の内容をコピー
+- `src/` 配下の **すべての `.gs` ファイル**（例: `src/Code.gs`, `src/Config.gs`, `src/Auth.gs`, `src/repositories/SpreadsheetRepository.gs`, `src/services/*.gs`）を同名で作成して貼り付け
 
 #### 3-3. HTMLファイルのアップロード
 
 エディタ左側の「ファイル」(+) から「HTML」を選択し、以下のファイルを追加：
 
-1. **Index** - `src/html/Index.html` の内容をコピー
-2. **Styles** - `src/html/Styles.html` の内容をコピー
-3. **Scripts** - `src/html/Scripts.html` の内容をコピー
+1. **Index** - `src/Index.html` の内容をコピー
+2. **Styles** - `src/Styles.html` の内容をコピー
+3. **Scripts** - `src/Scripts.html` の内容をコピー
 
 ### ステップ 4: スクリプトプロパティの設定
 
@@ -88,6 +102,8 @@ Apps Script エディタで、以下のファイルを作成します：
    - プロパティ: `SPREADSHEET_ID`
    - 値: ステップ2でコピーしたスプレッドシートID
 5. 「スクリプト プロパティを保存」をクリック
+
+補足: Apps Script エディタで `setupSpreadsheet('<SPREADSHEET_ID>')` を実行すると、スクリプトプロパティ設定とシート初期化をまとめて行えます。
 
 ### ステップ 5: Web Appとしてデプロイ
 

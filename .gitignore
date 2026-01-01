@@ -1,8 +1,14 @@
 # clasp
 .clasp.json
+.gas-deploy.json
 
 # Node modules (if using clasp locally)
 node_modules/
+
+# Portable Node/clasp (tools scripts)
+tools/.node/
+tools/.cache/
+tools/.clasp/
 
 # OS files
 .DS_Store

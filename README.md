@@ -100,6 +100,16 @@ Apps Script エディタで:
 
 詳細な設計ドキュメントは [CLAUDE.md](./CLAUDE.md) を参照してください。
 
+### 自動化（ローカル）
+
+- `.clasp.json` 生成: `powershell -ExecutionPolicy Bypass -File tools/init-clasp.ps1 -ScriptId <SCRIPT_ID>`
+- 初回セットアップ（GAS側）: Apps Script エディタで `setupSpreadsheet('<SPREADSHEET_ID>')` を実行
+- ローカルUIプレビュー: `powershell -ExecutionPolicy Bypass -File tools/build-local-preview.ps1` → `powershell -ExecutionPolicy Bypass -File tools/serve-local-preview.ps1` → `http://localhost:4173/`
+- `clasp` デプロイ: 事前に `https://script.google.com/home/usersettings` で「Google Apps Script API」を ON にしてから `powershell -ExecutionPolicy Bypass -File tools/deploy-gas.ps1`
+  - 日常運用: `powershell -ExecutionPolicy Bypass -File tools/deploy-gas.ps1`（`--force push`→`deploy`まで実行し、`.gas-deploy.json`にdeploymentIdを保存してURLを固定化）
+- コード反映のみ: `powershell -ExecutionPolicy Bypass -File tools/push-gas.ps1`
+- 監視して自動反映: `powershell -ExecutionPolicy Bypass -File tools/watch-gas.ps1`
+
 ### ディレクトリ構造
 
 ```
@@ -109,8 +119,12 @@ Apps Script エディタで:
 ├── appsscript.json               # Apps Script マニフェスト
 ├── .clasp.json.template          # clasp 設定テンプレート
 └── src/
+    ├── Auth.gs                   # 認証・権限
     ├── Code.gs                   # エントリーポイント
     ├── Config.gs                 # 設定・定数
+    ├── Index.html                # UI (HTMLテンプレート)
+    ├── Styles.html               # UI (CSS/外部読み込み)
+    ├── Scripts.html              # UI (ブラウザ側JS)
     ├── services/                 # ビジネスロジック層
     │   ├── ProjectService.gs
     │   ├── VisionService.gs
@@ -119,12 +133,7 @@ Apps Script エディタで:
     │   ├── ValueService.gs
     │   └── DocumentService.gs
     ├── repositories/             # データアクセス層
-    │   ├── SpreadsheetRepository.gs
-    │   └── DriveRepository.gs
-    └── html/                     # UI
-        ├── Index.html
-        ├── Styles.html
-        └── Scripts.html
+    │   └── SpreadsheetRepository.gs
 ```
 
 ## 使い方

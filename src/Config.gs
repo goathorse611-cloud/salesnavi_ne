@@ -27,6 +27,64 @@ function getSpreadsheet() {
   return SpreadsheetApp.openById(getSpreadsheetId());
 }
 
+/**
+ * One-time setup helper: set Script Property `SPREADSHEET_ID`.
+ * Run from the Apps Script editor (or call from another setup function).
+ * @param {string} spreadsheetId
+ */
+function setSpreadsheetId(spreadsheetId) {
+  if (!spreadsheetId) {
+    throw new Error('spreadsheetId is required. Set Script Property `SPREADSHEET_ID` or pass an ID.');
+  }
+  PropertiesService.getScriptProperties().setProperty('SPREADSHEET_ID', spreadsheetId);
+}
+
+/**
+ * One-time setup helper: set `SPREADSHEET_ID` and initialize all sheets.
+ * @param {string} spreadsheetId
+ * @return {{success: boolean, message: string}}
+ */
+function setupSpreadsheet(spreadsheetId) {
+  var id = spreadsheetId || PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID');
+  if (!id) {
+    throw new Error('spreadsheetId is required. Pass an ID to setupSpreadsheet(id) or set Script Property `SPREADSHEET_ID`.');
+  }
+  setSpreadsheetId(id);
+  return initializeAllSheets();
+}
+
+/**
+ * One-time setup helper (no-args): prompts for SPREADSHEET_ID then initializes sheets.
+ * Intended to be run from the Apps Script editor.
+ * @return {{success: boolean, message: string}}
+ */
+function setupSpreadsheetInteractive() {
+  var id = Browser.inputBox(
+    'Setup Spreadsheet',
+    'Paste your Spreadsheet ID (URL between /d/ and /edit):',
+    Browser.Buttons.OK_CANCEL
+  );
+  if (!id || id === 'cancel') {
+    throw new Error('Cancelled.');
+  }
+  return setupSpreadsheet(String(id).trim());
+}
+
+/**
+ * One-time setup helper: create a new spreadsheet, bind it, and initialize all sheets.
+ * @param {string} spreadsheetName
+ * @return {{success: boolean, spreadsheetId: string, url: string}}
+ */
+function createNewSpreadsheet(spreadsheetName) {
+  var name = spreadsheetName || 'Tableau Blueprint DB';
+  var ss = SpreadsheetApp.create(name);
+
+  setSpreadsheetId(ss.getId());
+  initializeAllSheets();
+
+  return { success: true, spreadsheetId: ss.getId(), url: ss.getUrl() };
+}
+
 // ========================================
 // Sheet names
 // ========================================
