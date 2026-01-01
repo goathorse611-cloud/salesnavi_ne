@@ -162,12 +162,12 @@ function apiSaveNinetyDayPlan(planData) {
   }
 }
 
-function apiGetNinetyDayPlan(usecaseId, projectId) {
+function apiGetNinetyDayPlan(projectId) {
   try {
     var userEmail = getCurrentUserEmail();
     requireProjectAccess(projectId, userEmail);
 
-    var plan = getNinetyDayPlan(usecaseId);
+    var plan = getNinetyDayPlanByProjectId(projectId);
     return { success: true, data: plan };
   } catch (error) {
     Logger.log('apiGetNinetyDayPlan error: ' + error.message);

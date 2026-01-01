@@ -500,10 +500,114 @@
         <div class="flex flex-col lg:flex-row gap-6">
           <main class="flex-1 flex flex-col gap-5">
             <div class="flex justify-end mb-2">
-                            <button onclick="App.showNewUsecaseModal()" class="btn-primary">
+              <button onclick="App.toggleUsecaseForm()" class="btn-primary" id="btn-toggle-usecase-form">
                 <span class="material-symbols-outlined text-[18px]">add</span>
                 ユースケース追加
               </button>
+            </div>
+
+            <!-- インライン入力フォーム -->
+            <div id="usecase-input-panel" class="hidden bg-white rounded-lg shadow-card border border-slate-200 mb-4">
+              <div class="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50 rounded-t-lg">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-primary">edit_note</span>
+                  <h3 class="font-bold text-slate-800">ユースケース入力</h3>
+                </div>
+                <button onclick="App.toggleUsecaseForm()" class="text-slate-400 hover:text-slate-600">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              </div>
+
+              <div class="p-5 space-y-5">
+                <!-- 基本情報 -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div>
+                    <label class="label-base">課題 <span class="text-red-500">*</span></label>
+                    <textarea id="new-usecase-challenge" class="input-base min-h-[80px]" placeholder="解決したい問題を記述"></textarea>
+                  </div>
+                  <div>
+                    <label class="label-base">狙い <span class="text-red-500">*</span></label>
+                    <textarea id="new-usecase-goal" class="input-base min-h-[80px]" placeholder="達成したいこと"></textarea>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="label-base">90日ゴール</label>
+                  <textarea id="new-usecase-90day" class="input-base" placeholder="最初の90日間の目標"></textarea>
+                </div>
+
+                <!-- 効果試算セクション -->
+                <div class="border-t border-slate-200 pt-5">
+                  <div class="flex items-center gap-2 mb-4">
+                    <span class="material-symbols-outlined text-primary text-lg">calculate</span>
+                    <h4 class="font-bold text-slate-800 text-sm">効果試算</h4>
+                    <span class="text-xs text-slate-500">（数値を入力すると年間効果を自動計算）</span>
+                  </div>
+
+                  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                    <div>
+                      <label class="label-base">対象人数</label>
+                      <div class="flex items-center gap-2">
+                        <input type="number" id="calc-users" class="input-base text-right" value="10" min="1" onchange="App.calculateImpact()">
+                        <span class="text-sm text-slate-500 shrink-0">人</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="label-base">削減時間（1人あたり）</label>
+                      <div class="flex items-center gap-2">
+                        <input type="number" id="calc-minutes" class="input-base text-right" value="30" min="0" onchange="App.calculateImpact()">
+                        <span class="text-sm text-slate-500 shrink-0">分/日</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="label-base">時給換算単価</label>
+                      <div class="flex items-center gap-2">
+                        <input type="number" id="calc-hourly-rate" class="input-base text-right" value="3000" min="0" step="100" onchange="App.calculateImpact()">
+                        <span class="text-sm text-slate-500 shrink-0">円</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="label-base">月間稼働日数</label>
+                      <div class="flex items-center gap-2">
+                        <input type="number" id="calc-workdays" class="input-base text-right" value="20" min="1" max="31" onchange="App.calculateImpact()">
+                        <span class="text-sm text-slate-500 shrink-0">日/月</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 計算結果 -->
+                  <div class="bg-gradient-to-r from-blue-50 to-primary-light/30 rounded-lg p-4 border border-blue-100">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-primary">trending_up</span>
+                        <div>
+                          <div class="text-xs text-slate-500 font-medium">想定効果（年間）</div>
+                          <div class="text-2xl font-bold text-primary" id="calc-annual-impact">¥1,800,000</div>
+                        </div>
+                      </div>
+                      <div class="text-xs text-slate-500 bg-white/60 rounded px-3 py-2">
+                        <div>月間: <span id="calc-monthly-impact" class="font-semibold text-slate-700">¥150,000</span></div>
+                        <div>計算式: 人数 × 時間 × 単価 × 日数 × 12</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 想定効果（テキスト） -->
+                <div>
+                  <label class="label-base">想定効果（補足説明）</label>
+                  <textarea id="new-usecase-impact" class="input-base" placeholder="定性的な効果や補足説明があれば記入"></textarea>
+                </div>
+              </div>
+
+              <!-- フッター -->
+              <div class="flex justify-end gap-3 p-4 border-t border-slate-200 bg-slate-50 rounded-b-lg">
+                <button onclick="App.toggleUsecaseForm()" class="btn-secondary">キャンセル</button>
+                <button onclick="App.addUsecase()" class="btn-primary">
+                  <span class="material-symbols-outlined text-[18px]">check</span>
+                  ユースケースを追加
+                </button>
+              </div>
             </div>
 
             <div class="w-full bg-white rounded-lg shadow-card border border-slate-200 overflow-hidden">
@@ -611,147 +715,218 @@
 
       <!-- ========== 90-DAY PLAN VIEW (Module 2 Part B) ========== -->
       <div id="view-90days" class="view hidden max-w-[1280px] mx-auto pb-12">
+        <!-- Header -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-lg border border-slate-200 shadow-card mb-6">
           <div class="flex items-start gap-4">
             <div class="h-12 w-12 rounded bg-primary flex items-center justify-center shrink-0">
               <span class="material-symbols-outlined text-white text-[28px]">calendar_month</span>
             </div>
             <div>
-                            <h1 class="text-xl font-bold text-slate-900">90日計画 - ブループリント</h1>
-              <p class="text-slate-500 text-sm mt-1">戦略ロードマップの定義とリソース計画</p>
+              <h1 class="text-xl font-bold text-slate-900">90日計画</h1>
+              <p class="text-slate-500 text-sm mt-1">3フェーズで実装ロードマップを定義</p>
             </div>
           </div>
           <div class="flex gap-3">
-                        <button onclick="App.save90DayPlan()" class="btn-secondary">
+            <button onclick="App.save90DayPlan()" class="btn-secondary">
+              <span class="material-symbols-outlined text-[18px]">save</span>
               下書き保存
             </button>
-            <button class="btn-primary">
-              <span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
-              PDF出力
+            <button onclick="App.generateProposal()" class="btn-primary">
+              <span class="material-symbols-outlined text-[18px]">description</span>
+              稟議書出力
             </button>
           </div>
         </div>
 
-        <!-- Timeline -->
-        <div class="card-base flex flex-col overflow-hidden mb-6">
-          <div class="px-5 py-3 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-            <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide flex items-center gap-2">
-              実装タイムライン（12週間）
-            </h3>
-          </div>
-          <div class="overflow-x-auto custom-scrollbar bg-white">
-            <div class="min-w-[1000px] p-5">
-              <div class="grid grid-cols-12 gap-0 mb-4 border-b border-slate-200 pb-2">
-                                <div class="col-span-4 text-xs font-bold uppercase tracking-wider text-slate-500 pl-1">1ヶ月目</div>
-                <div class="col-span-4 text-xs font-bold uppercase tracking-wider text-slate-500 pl-1 border-l border-slate-200">2ヶ月目</div>
-                <div class="col-span-4 text-xs font-bold uppercase tracking-wider text-slate-500 pl-1 border-l border-slate-200">3ヶ月目</div>
+        <!-- 3 Phase Timeline -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <!-- Phase 1: 始動 -->
+          <div class="card-base p-0 flex flex-col overflow-hidden border-t-4 border-amber-500">
+            <div class="px-5 py-4 bg-amber-50 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="p-2 bg-amber-100 rounded-lg">
+                  <span class="material-symbols-outlined text-amber-600">rocket_launch</span>
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-900">始動</h3>
+                  <p class="text-xs text-slate-500">1-4週目</p>
+                </div>
               </div>
-              <div id="timeline-grid" class="grid grid-cols-12 gap-3">
-                <!-- Timeline weeks will be rendered here -->
+              <span id="phase-ignite-progress" class="text-xs font-bold text-amber-600 bg-amber-100 px-2 py-1 rounded">0%</span>
+            </div>
+            <div class="p-5 flex flex-col gap-4 bg-white flex-1">
+              <div>
+                <label class="label-base">フェーズ目標</label>
+                <textarea id="phase-ignite-objective" class="input-base min-h-[80px] resize-y" placeholder="始動フェーズの目標（例：環境構築完了、初期ダッシュボード作成）"></textarea>
+              </div>
+              <div>
+                <label class="label-base flex items-center justify-between">
+                  <span>マイルストーン</span>
+                  <button onclick="App.addMilestone('ignite')" class="text-xs text-primary hover:text-primary-dark flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">add</span>追加
+                  </button>
+                </label>
+                <div id="phase-ignite-milestones" class="flex flex-col gap-2">
+                  <!-- Milestones will be rendered here -->
+                </div>
+              </div>
+              <div>
+                <label class="label-base">成功基準</label>
+                <input id="phase-ignite-criteria" type="text" class="input-base" placeholder="例：初期ダッシュボードの承認"/>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phase 2: 推進 -->
+          <div class="card-base p-0 flex flex-col overflow-hidden border-t-4 border-blue-500">
+            <div class="px-5 py-4 bg-blue-50 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="p-2 bg-blue-100 rounded-lg">
+                  <span class="material-symbols-outlined text-blue-600">trending_up</span>
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-900">推進</h3>
+                  <p class="text-xs text-slate-500">5-8週目</p>
+                </div>
+              </div>
+              <span id="phase-strengthen-progress" class="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded">0%</span>
+            </div>
+            <div class="p-5 flex flex-col gap-4 bg-white flex-1">
+              <div>
+                <label class="label-base">フェーズ目標</label>
+                <textarea id="phase-strengthen-objective" class="input-base min-h-[80px] resize-y" placeholder="推進フェーズの目標（例：ユーザー展開、フィードバック収集）"></textarea>
+              </div>
+              <div>
+                <label class="label-base flex items-center justify-between">
+                  <span>マイルストーン</span>
+                  <button onclick="App.addMilestone('strengthen')" class="text-xs text-primary hover:text-primary-dark flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">add</span>追加
+                  </button>
+                </label>
+                <div id="phase-strengthen-milestones" class="flex flex-col gap-2">
+                  <!-- Milestones will be rendered here -->
+                </div>
+              </div>
+              <div>
+                <label class="label-base">成功基準</label>
+                <input id="phase-strengthen-criteria" type="text" class="input-base" placeholder="例：全ユーザーがログイン完了"/>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phase 3: 定着 -->
+          <div class="card-base p-0 flex flex-col overflow-hidden border-t-4 border-green-500">
+            <div class="px-5 py-4 bg-green-50 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="p-2 bg-green-100 rounded-lg">
+                  <span class="material-symbols-outlined text-green-600">verified</span>
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-900">定着</h3>
+                  <p class="text-xs text-slate-500">9-12週目</p>
+                </div>
+              </div>
+              <span id="phase-establish-progress" class="text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded">0%</span>
+            </div>
+            <div class="p-5 flex flex-col gap-4 bg-white flex-1">
+              <div>
+                <label class="label-base">フェーズ目標</label>
+                <textarea id="phase-establish-objective" class="input-base min-h-[80px] resize-y" placeholder="定着フェーズの目標（例：運用安定、効果測定完了）"></textarea>
+              </div>
+              <div>
+                <label class="label-base flex items-center justify-between">
+                  <span>マイルストーン</span>
+                  <button onclick="App.addMilestone('establish')" class="text-xs text-primary hover:text-primary-dark flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">add</span>追加
+                  </button>
+                </label>
+                <div id="phase-establish-milestones" class="flex flex-col gap-2">
+                  <!-- Milestones will be rendered here -->
+                </div>
+              </div>
+              <div>
+                <label class="label-base">成功基準</label>
+                <input id="phase-establish-criteria" type="text" class="input-base" placeholder="例：KPI達成、次期投資承認"/>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Goal and Details -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div class="lg:col-span-2 card-base p-6 flex flex-col gap-5">
-            <div class="flex items-center gap-3 border-b border-slate-200 pb-4">
-              <div class="p-2 rounded bg-primary-light text-primary">
-                <span class="material-symbols-outlined text-[20px]">flag</span>
-              </div>
-              <div>
-                                <h3 class="font-bold text-slate-900 text-base">90日ゴール</h3>
-                <p class="text-xs text-slate-500">この期間の主要な成功基準を定義します。</p>
-              </div>
-            </div>
-            <div class="space-y-4">
-              <div>
-                                <label class="label-base">コア目標</label>
-                <textarea id="plan-objective" class="input-base min-h-[100px] resize-y" placeholder="90日間の主要目標を入力してください"></textarea>
-              </div>
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                                    <label class="label-base">KPI目標 1</label>
-                  <input id="plan-kpi1" type="text" class="input-base" placeholder="例：手作業を50%削減"/>
-                </div>
-                <div>
-                  <label class="label-base">KPI目標 2</label>
-                  <input id="plan-kpi2" type="text" class="input-base" placeholder="例：ユーザー定着率100%"/>
-                </div>
-              </div>
-            </div>
-          </div>
-
+        <!-- Details Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <!-- 体制・役割 (カスタマイズ可能) -->
           <div class="card-base p-0 flex flex-col">
-            <div class="p-5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+            <div class="px-5 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-[20px] text-red-600">warning</span>
-                                <h3 class="font-bold text-slate-800 text-sm uppercase">リスク・障壁</h3>
+                <span class="material-symbols-outlined text-[20px] text-purple-600">group</span>
+                <h3 class="font-bold text-slate-800">体制・役割</h3>
               </div>
-            </div>
-            <div id="risks-list" class="p-5 flex flex-col gap-3 bg-white flex-1 rounded-b-lg">
-              <!-- Risks will be loaded here -->
-            </div>
-            <div class="px-5 pb-5">
-              <button onclick="App.addRisk()" class="w-full py-2 flex items-center justify-center gap-2 text-xs font-bold text-slate-500 bg-slate-50 rounded border border-dashed border-slate-300 hover:bg-slate-100 transition-colors">
-                                <span class="material-symbols-outlined text-[16px]">add</span>
-                リスク追加
+              <button onclick="App.addRole()" class="text-xs text-primary hover:text-primary-dark flex items-center gap-1 font-medium">
+                <span class="material-symbols-outlined text-[16px]">add</span>追加
               </button>
             </div>
+            <div id="plan-roles" class="p-5 flex flex-col gap-3 bg-white flex-1">
+              <!-- Roles will be rendered here -->
+            </div>
+          </div>
+
+          <!-- 必要データ (カスタマイズ可能) -->
+          <div class="card-base p-0 flex flex-col">
+            <div class="px-5 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[20px] text-blue-600">database</span>
+                <h3 class="font-bold text-slate-800">必要データ</h3>
+              </div>
+              <button onclick="App.addDataItem()" class="text-xs text-primary hover:text-primary-dark flex items-center gap-1 font-medium">
+                <span class="material-symbols-outlined text-[16px]">add</span>追加
+              </button>
+            </div>
+            <div id="plan-data" class="p-5 flex flex-col gap-3 bg-white flex-1">
+              <!-- Data items will be rendered here -->
+            </div>
           </div>
         </div>
 
-        <!-- Additional Details -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-          <div class="card-base p-6 flex flex-col gap-5">
-            <div class="flex items-center gap-2 border-b border-slate-200 pb-2">
-              <span class="material-symbols-outlined text-[20px] text-purple-600">group</span>
-                            <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide">体制・役割</h3>
+        <!-- Risks and Communication -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- リスク・障壁 (インライン入力) -->
+          <div class="card-base p-0 flex flex-col">
+            <div class="px-5 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[20px] text-red-600">warning</span>
+                <h3 class="font-bold text-slate-800">リスク・障壁</h3>
+              </div>
+              <button onclick="App.addRiskInline()" class="text-xs text-primary hover:text-primary-dark flex items-center gap-1 font-medium">
+                <span class="material-symbols-outlined text-[16px]">add</span>追加
+              </button>
             </div>
-            <div id="plan-roles" class="space-y-4">
-              <!-- Roles will be loaded here -->
-            </div>
-          </div>
-
-          <div class="card-base p-6 flex flex-col gap-5">
-            <div class="flex items-center gap-2 border-b border-slate-200 pb-2">
-              <span class="material-symbols-outlined text-[20px] text-blue-600">database</span>
-                            <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide">必要データ</h3>
-            </div>
-            <div id="plan-data" class="flex flex-col gap-1">
-              <label class="flex items-center p-3 rounded hover:bg-slate-50 cursor-pointer border border-transparent hover:border-slate-200 transition-all group">
-                <input type="checkbox" class="w-4 h-4 text-primary rounded border-slate-300 focus:ring-primary"/>
-                                <span class="ml-3 text-sm text-slate-700 font-medium group-hover:text-primary">顧客リスト（CSV）</span>
-              </label>
-              <label class="flex items-center p-3 rounded hover:bg-slate-50 cursor-pointer border border-transparent hover:border-slate-200 transition-all group">
-                <input type="checkbox" class="w-4 h-4 text-primary rounded border-slate-300 focus:ring-primary"/>
-                <span class="ml-3 text-sm text-slate-700 font-medium group-hover:text-primary">製品カタログ</span>
-              </label>
-              <label class="flex items-center p-3 rounded hover:bg-slate-50 cursor-pointer border border-transparent hover:border-slate-200 transition-all group">
-                <input type="checkbox" class="w-4 h-4 text-primary rounded border-slate-300 focus:ring-primary"/>
-                <span class="ml-3 text-sm text-slate-700 font-medium group-hover:text-primary">販売履歴（2年分）</span>
-              </label>
+            <div id="risks-list" class="p-5 flex flex-col gap-3 bg-white flex-1">
+              <!-- Risks will be rendered here -->
             </div>
           </div>
 
-          <div class="card-base p-6 flex flex-col gap-5">
-            <div class="flex items-center gap-2 border-b border-slate-200 pb-2">
+          <!-- コミュニケーション計画 -->
+          <div class="card-base p-0 flex flex-col">
+            <div class="px-5 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
               <span class="material-symbols-outlined text-[20px] text-teal-600">forum</span>
-                            <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wide">コミュニケーション計画</h3>
+              <h3 class="font-bold text-slate-800">コミュニケーション計画</h3>
             </div>
-            <div class="space-y-4">
+            <div class="p-5 flex flex-col gap-4 bg-white flex-1">
               <div>
-                                <label class="label-base">ミーティング頻度</label>
+                <label class="label-base">ミーティング頻度</label>
                 <select id="plan-meeting" class="input-base">
-                  <option>週次同期（毎週月曜）</option>
-                  <option>隔週レビュー</option>
-                  <option>月次ステアリング</option>
+                  <option value="weekly">週次同期（毎週）</option>
+                  <option value="biweekly">隔週レビュー</option>
+                  <option value="monthly">月次ステアリング</option>
                 </select>
               </div>
               <div>
                 <label class="label-base">主要ステークホルダー</label>
-                <input id="plan-stakeholders" type="text" class="input-base" placeholder="例：営業担当、エンジニアリング"/>
+                <input id="plan-stakeholders" type="text" class="input-base" placeholder="例：営業部長、IT責任者"/>
+              </div>
+              <div>
+                <label class="label-base">報告先</label>
+                <input id="plan-reporting" type="text" class="input-base" placeholder="例：経営会議、部門長会議"/>
               </div>
             </div>
           </div>
@@ -1424,40 +1599,6 @@
     <div class="flex justify-end gap-3 p-6 border-t border-slate-200 bg-slate-50 rounded-b-lg">
             <button onclick="App.closeModal('modal-new-project')" class="btn-secondary">キャンセル</button>
       <button onclick="App.createProject()" class="btn-primary">作成</button>
-    </div>
-  </div>
-</div>
-
-<!-- New Use Case Modal -->
-<div id="modal-new-usecase" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
-  <div class="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between p-6 border-b border-slate-200 sticky top-0 bg-white">
-            <h3 class="text-lg font-bold text-slate-900">ユースケース追加</h3>
-      <button onclick="App.closeModal('modal-new-usecase')" class="text-slate-400 hover:text-slate-600">
-        <span class="material-symbols-outlined">close</span>
-      </button>
-    </div>
-    <div class="p-6 space-y-4">
-      <div>
-                <label class="label-base">課題 *</label>
-        <textarea id="new-usecase-challenge" class="input-base min-h-[80px]" placeholder="解決したい問題を記述"></textarea>
-      </div>
-      <div>
-        <label class="label-base">狙い *</label>
-        <textarea id="new-usecase-goal" class="input-base min-h-[80px]" placeholder="達成したいこと"></textarea>
-      </div>
-      <div>
-        <label class="label-base">想定効果</label>
-        <textarea id="new-usecase-impact" class="input-base" placeholder="期待される成果"></textarea>
-      </div>
-      <div>
-        <label class="label-base">90日ゴール</label>
-        <textarea id="new-usecase-90day" class="input-base" placeholder="最初の90日間の目標"></textarea>
-      </div>
-    </div>
-    <div class="flex justify-end gap-3 p-6 border-t border-slate-200 bg-slate-50 rounded-b-lg">
-            <button onclick="App.closeModal('modal-new-usecase')" class="btn-secondary">キャンセル</button>
-      <button onclick="App.addUsecase()" class="btn-primary">追加</button>
     </div>
   </div>
 </div>

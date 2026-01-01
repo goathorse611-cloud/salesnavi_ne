@@ -13,8 +13,19 @@ const App = {
     selectedUsecases: [],
     currentView: 'home',
     projectFilter: 'all',
-    risks: [],
-    governanceEntries: []
+    governanceEntries: [],
+    // 90日計画の状態
+    ninetyDayPlan: {
+      phases: {
+        ignite: { objective: '', milestones: [], successCriteria: '' },
+        strengthen: { objective: '', milestones: [], successCriteria: '' },
+        establish: { objective: '', milestones: [], successCriteria: '' }
+      },
+      roles: [],
+      requiredData: [],
+      risks: [],
+      communication: { meetingFrequency: 'weekly', stakeholders: '', reporting: '' }
+    }
   },
 
   // ========================================
@@ -25,7 +36,6 @@ const App = {
     this.loadProjects();
     this.setupEventListeners();
     this.setupVisionPreview();
-    this.render90DayTimeline();
   },
 
   setupUserAvatar() {
@@ -680,26 +690,56 @@ const App = {
     }
   },
 
-  showNewUsecaseModal() {
-    document.getElementById('modal-new-usecase').classList.remove('hidden');
-    document.getElementById('new-usecase-challenge').focus();
+  toggleUsecaseForm() {
+    const panel = document.getElementById('usecase-input-panel');
+    const btn = document.getElementById('btn-toggle-usecase-form');
+    if (panel.classList.contains('hidden')) {
+      panel.classList.remove('hidden');
+      btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">close</span>閉じる';
+      document.getElementById('new-usecase-challenge').focus();
+      this.calculateImpact();
+    } else {
+      panel.classList.add('hidden');
+      btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">add</span>ユースケース追加';
+    }
+  },
+
+  calculateImpact() {
+    const users = parseInt(document.getElementById('calc-users').value) || 0;
+    const minutes = parseInt(document.getElementById('calc-minutes').value) || 0;
+    const hourlyRate = parseInt(document.getElementById('calc-hourly-rate').value) || 0;
+    const workdays = parseInt(document.getElementById('calc-workdays').value) || 0;
+
+    const monthlyHours = (minutes / 60) * workdays * users;
+    const monthlyImpact = Math.round(monthlyHours * hourlyRate);
+    const annualImpact = monthlyImpact * 12;
+
+    document.getElementById('calc-monthly-impact').textContent = '¥' + monthlyImpact.toLocaleString();
+    document.getElementById('calc-annual-impact').textContent = '¥' + annualImpact.toLocaleString();
+
+    return { users, minutes, hourlyRate, workdays, monthlyImpact, annualImpact };
   },
 
   addUsecase() {
     if (!this.state.currentProjectId) return;
 
+    const impactCalc = this.calculateImpact();
+    const impactText = document.getElementById('new-usecase-impact').value.trim();
+    const calcSummary = `年間効果: ¥${impactCalc.annualImpact.toLocaleString()}（対象${impactCalc.users}人 × ${impactCalc.minutes}分/日削減 × 時給${impactCalc.hourlyRate}円 × ${impactCalc.workdays}日/月）`;
+    const expectedImpact = impactText ? `${calcSummary}\n${impactText}` : calcSummary;
+
     const usecaseData = {
       projectId: this.state.currentProjectId,
       challenge: document.getElementById('new-usecase-challenge').value.trim(),
       goal: document.getElementById('new-usecase-goal').value.trim(),
-      expectedImpact: document.getElementById('new-usecase-impact').value.trim(),
+      expectedImpact: expectedImpact,
       ninetyDayGoal: document.getElementById('new-usecase-90day').value.trim(),
       score: 50,
       priority: this.state.usecases.length + 1
     };
 
     if (!usecaseData.challenge || !usecaseData.goal) {
-            alert('課題と狙いの両方を入力してください');
+      alert('課題と狙いの両方を入力してください');
       return;
     }
 
@@ -710,11 +750,15 @@ const App = {
           return;
         }
 
-        this.closeModal('modal-new-usecase');
+        this.toggleUsecaseForm();
         document.getElementById('new-usecase-challenge').value = '';
         document.getElementById('new-usecase-goal').value = '';
         document.getElementById('new-usecase-impact').value = '';
         document.getElementById('new-usecase-90day').value = '';
+        document.getElementById('calc-users').value = '10';
+        document.getElementById('calc-minutes').value = '30';
+        document.getElementById('calc-hourly-rate').value = '3000';
+        document.getElementById('calc-workdays').value = '20';
         this.loadUsecases();
       })
       .withFailureHandler((error) => this.showError(error.message))
@@ -724,99 +768,486 @@ const App = {
   // ========================================
   // 90-Day Plan (Module 2 Part B)
   // ========================================
-  render90DayTimeline() {
-    const container = document.getElementById('timeline-grid');
-    if (!container) return;
 
-    let html = '';
-    for (let i = 1; i <= 12; i++) {
-      const month = Math.ceil(i / 4);
-      html += `
-        <div class="col-span-1 flex flex-col gap-2">
-          <div class="text-center py-2 bg-slate-50 rounded text-xs font-bold text-slate-500">W${i}</div>
-          <div class="min-h-[60px] bg-white border border-dashed border-slate-200 rounded-md p-2 hover:border-primary hover:bg-primary-light/30 transition-colors cursor-pointer flex items-center justify-center">
-                        <span class="text-xs text-slate-400">+ 追加</span>
-          </div>
-        </div>
-      `;
-    }
-    container.innerHTML = html;
+  // 90日計画の初期化
+  init90DayPlan() {
+    this.state.ninetyDayPlan = {
+      phases: {
+        ignite: { objective: '', milestones: [], successCriteria: '' },
+        strengthen: { objective: '', milestones: [], successCriteria: '' },
+        establish: { objective: '', milestones: [], successCriteria: '' }
+      },
+      roles: [],
+      requiredData: [],
+      risks: [],
+      communication: { meetingFrequency: 'weekly', stakeholders: '', reporting: '' }
+    };
   },
 
+  // 90日計画のロード
   load90DayPlan() {
-    // Load selected use cases for the plan
+    if (!this.state.currentProjectId) return;
+
+    // 選択されたユースケースから目標を取得
     if (this.state.selectedUsecases.length > 0) {
       const selected = this.state.usecases.filter(uc => this.state.selectedUsecases.includes(uc.usecaseId));
-      if (selected.length > 0) {
-        document.getElementById('plan-objective').value = selected.map(s => s.ninetyDayGoal || s.goal).join('\n');
+      if (selected.length > 0 && !this.state.ninetyDayPlan.phases.ignite.objective) {
+        this.state.ninetyDayPlan.phases.ignite.objective = selected.map(s => s.ninetyDayGoal || s.goal).join('\n');
       }
     }
 
+    // サーバーから既存データを取得
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (response.success && response.data) {
+          this.loadNinetyDayPlanData(response.data);
+        }
+        this.render90DayPlanUI();
+      })
+      .withFailureHandler((error) => {
+        console.error('Failed to load 90-day plan:', error);
+        this.render90DayPlanUI();
+      })
+      .apiGetNinetyDayPlan(this.state.currentProjectId);
+  },
+
+  // サーバーデータを状態に反映
+  loadNinetyDayPlanData(data) {
+    if (!data) return;
+
+    // フェーズデータのパース
+    if (data.weeklyMilestones) {
+      try {
+        const parsed = typeof data.weeklyMilestones === 'string'
+          ? JSON.parse(data.weeklyMilestones)
+          : data.weeklyMilestones;
+        if (parsed.phases) {
+          this.state.ninetyDayPlan.phases = parsed.phases;
+        }
+      } catch (e) {
+        console.warn('Failed to parse phases:', e);
+      }
+    }
+
+    // 体制データのパース
+    if (data.teamStructure) {
+      try {
+        const parsed = typeof data.teamStructure === 'string'
+          ? JSON.parse(data.teamStructure)
+          : data.teamStructure;
+        if (parsed.roles) {
+          this.state.ninetyDayPlan.roles = parsed.roles;
+        }
+      } catch (e) {
+        console.warn('Failed to parse team structure:', e);
+      }
+    }
+
+    // 必要データのパース
+    if (data.requiredData) {
+      try {
+        const parsed = typeof data.requiredData === 'string'
+          ? JSON.parse(data.requiredData)
+          : data.requiredData;
+        if (parsed.items) {
+          this.state.ninetyDayPlan.requiredData = parsed.items;
+        }
+      } catch (e) {
+        console.warn('Failed to parse required data:', e);
+      }
+    }
+
+    // リスクデータのパース
+    if (data.risks) {
+      try {
+        const parsed = typeof data.risks === 'string'
+          ? JSON.parse(data.risks)
+          : data.risks;
+        if (parsed.items) {
+          this.state.ninetyDayPlan.risks = parsed.items;
+        }
+      } catch (e) {
+        console.warn('Failed to parse risks:', e);
+      }
+    }
+
+    // コミュニケーション計画のパース
+    if (data.communicationPlan) {
+      try {
+        const parsed = typeof data.communicationPlan === 'string'
+          ? JSON.parse(data.communicationPlan)
+          : data.communicationPlan;
+        this.state.ninetyDayPlan.communication = parsed;
+      } catch (e) {
+        console.warn('Failed to parse communication plan:', e);
+      }
+    }
+  },
+
+  // 90日計画のUI描画
+  render90DayPlanUI() {
+    this.renderPhases();
     this.renderRoles();
+    this.renderDataRequirements();
     this.renderRisks();
+    this.renderCommunication();
   },
 
-  save90DayPlan() {
-    this.showSaveStatus();
-        this.showSuccess('90日計画を保存しました');
+  // フェーズの描画
+  renderPhases() {
+    const phases = ['ignite', 'strengthen', 'establish'];
+    phases.forEach(phaseId => {
+      const phase = this.state.ninetyDayPlan.phases[phaseId];
+
+      // 目標
+      const objectiveEl = document.getElementById(`phase-${phaseId}-objective`);
+      if (objectiveEl) objectiveEl.value = phase.objective || '';
+
+      // 成功基準
+      const criteriaEl = document.getElementById(`phase-${phaseId}-criteria`);
+      if (criteriaEl) criteriaEl.value = phase.successCriteria || '';
+
+      // マイルストーン
+      this.renderPhaseMilestones(phaseId);
+
+      // 進捗率
+      this.updatePhaseProgress(phaseId);
+    });
   },
 
-  renderRoles() {
-    const container = document.getElementById('plan-roles');
+  // フェーズのマイルストーン描画
+  renderPhaseMilestones(phaseId) {
+    const container = document.getElementById(`phase-${phaseId}-milestones`);
     if (!container) return;
 
-        const roles = [
-      { title: 'エグゼクティブスポンサー', name: '' },
-      { title: 'プロジェクトリード', name: '' },
-      { title: 'テクニカルリード', name: '' }
-    ];
+    const milestones = this.state.ninetyDayPlan.phases[phaseId].milestones || [];
 
-    container.innerHTML = roles.map(r => `
-      <div class="flex items-center justify-between p-3 bg-slate-50 rounded-md">
-        <div>
-          <p class="text-xs text-slate-500 uppercase tracking-wide">${r.title}</p>
-          <input type="text" class="text-sm font-medium text-slate-800 bg-transparent border-none p-0 focus:ring-0 w-full" placeholder="名前を入力..."/>
-        </div>
-        <div class="size-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400">
-          <span class="material-symbols-outlined text-[16px]">person</span>
-        </div>
-      </div>
-    `).join('');
-  },
-
-  renderRisks() {
-    const container = document.getElementById('risks-list');
-    if (!container) return;
-
-    if (this.state.risks.length === 0) {
-      container.innerHTML = `<p class="text-sm text-slate-400 text-center py-4">リスクが特定されていません</p>`;
+    if (milestones.length === 0) {
+      container.innerHTML = `<p class="text-xs text-slate-400 italic py-2">マイルストーンを追加してください</p>`;
       return;
     }
 
-    container.innerHTML = this.state.risks.map((risk, idx) => `
-      <div class="flex items-start gap-3 p-3 bg-red-50 rounded-md border border-red-100">
-        <span class="material-symbols-outlined text-red-500 text-[18px] mt-0.5">error</span>
-        <div class="flex-1">
-          <p class="text-sm text-slate-700">${this.escapeHtml(risk)}</p>
-        </div>
-        <button onclick="App.removeRisk(${idx})" class="text-slate-400 hover:text-red-500">
+    container.innerHTML = milestones.map((ms, idx) => `
+      <div class="flex items-center gap-2">
+        <input type="text" value="${this.escapeHtml(ms)}"
+          onchange="App.updateMilestone('${phaseId}', ${idx}, this.value)"
+          class="flex-1 px-3 py-2 text-sm rounded-md border border-slate-200 focus:ring-2 focus:ring-primary focus:border-transparent"
+          placeholder="マイルストーン内容"/>
+        <button onclick="App.removeMilestone('${phaseId}', ${idx})" class="p-1 text-slate-400 hover:text-red-500">
           <span class="material-symbols-outlined text-[16px]">close</span>
         </button>
       </div>
     `).join('');
   },
 
-  addRisk() {
-        const risk = prompt('リスクの説明を入力:');
-    if (risk && risk.trim()) {
-      this.state.risks.push(risk.trim());
-      this.renderRisks();
+  // マイルストーン追加
+  addMilestone(phaseId) {
+    if (!this.state.ninetyDayPlan.phases[phaseId]) return;
+    this.state.ninetyDayPlan.phases[phaseId].milestones.push('');
+    this.renderPhaseMilestones(phaseId);
+    this.updatePhaseProgress(phaseId);
+  },
+
+  // マイルストーン更新
+  updateMilestone(phaseId, index, value) {
+    if (!this.state.ninetyDayPlan.phases[phaseId]) return;
+    this.state.ninetyDayPlan.phases[phaseId].milestones[index] = value;
+    this.updatePhaseProgress(phaseId);
+  },
+
+  // マイルストーン削除
+  removeMilestone(phaseId, index) {
+    if (!this.state.ninetyDayPlan.phases[phaseId]) return;
+    this.state.ninetyDayPlan.phases[phaseId].milestones.splice(index, 1);
+    this.renderPhaseMilestones(phaseId);
+    this.updatePhaseProgress(phaseId);
+  },
+
+  // フェーズ進捗率の更新
+  updatePhaseProgress(phaseId) {
+    const phase = this.state.ninetyDayPlan.phases[phaseId];
+    let total = 3; // 目標、成功基準、マイルストーン
+    let filled = 0;
+
+    if (phase.objective) filled++;
+    if (phase.successCriteria) filled++;
+    if (phase.milestones.filter(m => m).length > 0) filled++;
+
+    const progress = Math.round((filled / total) * 100);
+    const progressEl = document.getElementById(`phase-${phaseId}-progress`);
+    if (progressEl) {
+      progressEl.textContent = `${progress}%`;
     }
   },
 
-  removeRisk(idx) {
-    this.state.risks.splice(idx, 1);
+  // 体制・役割の描画
+  renderRoles() {
+    const container = document.getElementById('plan-roles');
+    if (!container) return;
+
+    const roles = this.state.ninetyDayPlan.roles;
+
+    if (roles.length === 0) {
+      container.innerHTML = `<p class="text-sm text-slate-400 text-center py-4">「追加」ボタンで役割を追加してください</p>`;
+      return;
+    }
+
+    container.innerHTML = roles.map((role, idx) => `
+      <div class="p-3 bg-slate-50 rounded-md border border-slate-100">
+        <div class="flex items-start justify-between mb-2">
+          <select onchange="App.updateRole(${idx}, 'pillar', this.value)" class="text-xs font-bold px-2 py-1 rounded bg-white border border-slate-200">
+            <option value="CoE" ${role.pillar === 'CoE' ? 'selected' : ''}>CoE</option>
+            <option value="Biz" ${role.pillar === 'Biz' ? 'selected' : ''}>Biz</option>
+            <option value="IT" ${role.pillar === 'IT' ? 'selected' : ''}>IT</option>
+          </select>
+          <button onclick="App.removeRole(${idx})" class="p-1 text-slate-400 hover:text-red-500">
+            <span class="material-symbols-outlined text-[14px]">close</span>
+          </button>
+        </div>
+        <input type="text" value="${this.escapeHtml(role.title || '')}"
+          onchange="App.updateRole(${idx}, 'title', this.value)"
+          class="w-full px-2 py-1 text-sm font-medium rounded border border-slate-200 mb-2"
+          placeholder="役職名"/>
+        <input type="text" value="${this.escapeHtml(role.name || '')}"
+          onchange="App.updateRole(${idx}, 'name', this.value)"
+          class="w-full px-2 py-1 text-sm rounded border border-slate-200"
+          placeholder="担当者名"/>
+      </div>
+    `).join('');
+  },
+
+  // 役割追加
+  addRole() {
+    this.state.ninetyDayPlan.roles.push({
+      pillar: 'CoE',
+      title: '',
+      name: ''
+    });
+    this.renderRoles();
+  },
+
+  // 役割更新
+  updateRole(index, field, value) {
+    if (this.state.ninetyDayPlan.roles[index]) {
+      this.state.ninetyDayPlan.roles[index][field] = value;
+    }
+  },
+
+  // 役割削除
+  removeRole(index) {
+    this.state.ninetyDayPlan.roles.splice(index, 1);
+    this.renderRoles();
+  },
+
+  // 必要データの描画
+  renderDataRequirements() {
+    const container = document.getElementById('plan-data');
+    if (!container) return;
+
+    const items = this.state.ninetyDayPlan.requiredData;
+
+    if (items.length === 0) {
+      container.innerHTML = `<p class="text-sm text-slate-400 text-center py-4">「追加」ボタンでデータ項目を追加してください</p>`;
+      return;
+    }
+
+    container.innerHTML = items.map((item, idx) => `
+      <div class="p-3 bg-slate-50 rounded-md border border-slate-100">
+        <div class="flex items-start justify-between mb-2">
+          <select onchange="App.updateDataItem(${idx}, 'status', this.value)"
+            class="text-xs font-bold px-2 py-1 rounded ${this.getDataStatusClass(item.status)}">
+            <option value="not_ready" ${item.status === 'not_ready' ? 'selected' : ''}>未準備</option>
+            <option value="partial" ${item.status === 'partial' ? 'selected' : ''}>一部</option>
+            <option value="ready" ${item.status === 'ready' ? 'selected' : ''}>準備完了</option>
+          </select>
+          <button onclick="App.removeDataItem(${idx})" class="p-1 text-slate-400 hover:text-red-500">
+            <span class="material-symbols-outlined text-[14px]">close</span>
+          </button>
+        </div>
+        <input type="text" value="${this.escapeHtml(item.name || '')}"
+          onchange="App.updateDataItem(${idx}, 'name', this.value)"
+          class="w-full px-2 py-1 text-sm font-medium rounded border border-slate-200 mb-2"
+          placeholder="データ名"/>
+        <input type="text" value="${this.escapeHtml(item.source || '')}"
+          onchange="App.updateDataItem(${idx}, 'source', this.value)"
+          class="w-full px-2 py-1 text-sm rounded border border-slate-200"
+          placeholder="データソース（例：CRM、ERP）"/>
+      </div>
+    `).join('');
+  },
+
+  // データ状況のスタイルクラス
+  getDataStatusClass(status) {
+    const classes = {
+      'ready': 'bg-green-100 text-green-700 border-green-200',
+      'partial': 'bg-amber-100 text-amber-700 border-amber-200',
+      'not_ready': 'bg-red-100 text-red-700 border-red-200'
+    };
+    return classes[status] || classes['not_ready'];
+  },
+
+  // データ項目追加
+  addDataItem() {
+    this.state.ninetyDayPlan.requiredData.push({
+      name: '',
+      source: '',
+      status: 'not_ready'
+    });
+    this.renderDataRequirements();
+  },
+
+  // データ項目更新
+  updateDataItem(index, field, value) {
+    if (this.state.ninetyDayPlan.requiredData[index]) {
+      this.state.ninetyDayPlan.requiredData[index][field] = value;
+      if (field === 'status') {
+        this.renderDataRequirements();
+      }
+    }
+  },
+
+  // データ項目削除
+  removeDataItem(index) {
+    this.state.ninetyDayPlan.requiredData.splice(index, 1);
+    this.renderDataRequirements();
+  },
+
+  // リスクの描画
+  renderRisks() {
+    const container = document.getElementById('risks-list');
+    if (!container) return;
+
+    const risks = this.state.ninetyDayPlan.risks;
+
+    if (risks.length === 0) {
+      container.innerHTML = `<p class="text-sm text-slate-400 text-center py-4">「追加」ボタンでリスクを追加してください</p>`;
+      return;
+    }
+
+    container.innerHTML = risks.map((risk, idx) => `
+      <div class="p-3 bg-red-50 rounded-md border border-red-100">
+        <div class="flex items-start justify-between mb-2">
+          <select onchange="App.updateRisk(${idx}, 'impact', this.value)"
+            class="text-xs font-bold px-2 py-1 rounded ${this.getRiskImpactClass(risk.impact)}">
+            <option value="low" ${risk.impact === 'low' ? 'selected' : ''}>低</option>
+            <option value="medium" ${risk.impact === 'medium' ? 'selected' : ''}>中</option>
+            <option value="high" ${risk.impact === 'high' ? 'selected' : ''}>高</option>
+          </select>
+          <button onclick="App.removeRisk(${idx})" class="p-1 text-slate-400 hover:text-red-500">
+            <span class="material-symbols-outlined text-[14px]">close</span>
+          </button>
+        </div>
+        <textarea onchange="App.updateRisk(${idx}, 'description', this.value)"
+          class="w-full px-2 py-1 text-sm rounded border border-red-200 mb-2 min-h-[60px] resize-y"
+          placeholder="リスクの内容">${this.escapeHtml(risk.description || '')}</textarea>
+        <input type="text" value="${this.escapeHtml(risk.mitigation || '')}"
+          onchange="App.updateRisk(${idx}, 'mitigation', this.value)"
+          class="w-full px-2 py-1 text-sm rounded border border-red-200"
+          placeholder="対策"/>
+      </div>
+    `).join('');
+  },
+
+  // リスク影響度のスタイルクラス
+  getRiskImpactClass(impact) {
+    const classes = {
+      'high': 'bg-red-200 text-red-800 border-red-300',
+      'medium': 'bg-amber-100 text-amber-700 border-amber-200',
+      'low': 'bg-green-100 text-green-700 border-green-200'
+    };
+    return classes[impact] || classes['medium'];
+  },
+
+  // リスク追加（インライン）
+  addRiskInline() {
+    this.state.ninetyDayPlan.risks.push({
+      description: '',
+      impact: 'medium',
+      mitigation: ''
+    });
     this.renderRisks();
+  },
+
+  // リスク更新
+  updateRisk(index, field, value) {
+    if (this.state.ninetyDayPlan.risks[index]) {
+      this.state.ninetyDayPlan.risks[index][field] = value;
+      if (field === 'impact') {
+        this.renderRisks();
+      }
+    }
+  },
+
+  // リスク削除
+  removeRisk(index) {
+    this.state.ninetyDayPlan.risks.splice(index, 1);
+    this.renderRisks();
+  },
+
+  // コミュニケーション計画の描画
+  renderCommunication() {
+    const comm = this.state.ninetyDayPlan.communication;
+
+    const meetingEl = document.getElementById('plan-meeting');
+    if (meetingEl) meetingEl.value = comm.meetingFrequency || 'weekly';
+
+    const stakeholdersEl = document.getElementById('plan-stakeholders');
+    if (stakeholdersEl) stakeholdersEl.value = comm.stakeholders || '';
+
+    const reportingEl = document.getElementById('plan-reporting');
+    if (reportingEl) reportingEl.value = comm.reporting || '';
+  },
+
+  // 90日計画データの収集
+  collect90DayPlanData() {
+    // フェーズデータを収集
+    const phases = {};
+    ['ignite', 'strengthen', 'establish'].forEach(phaseId => {
+      phases[phaseId] = {
+        objective: document.getElementById(`phase-${phaseId}-objective`)?.value || '',
+        milestones: this.state.ninetyDayPlan.phases[phaseId].milestones.filter(m => m),
+        successCriteria: document.getElementById(`phase-${phaseId}-criteria`)?.value || ''
+      };
+    });
+
+    // コミュニケーション計画を収集
+    const communication = {
+      meetingFrequency: document.getElementById('plan-meeting')?.value || 'weekly',
+      stakeholders: document.getElementById('plan-stakeholders')?.value || '',
+      reporting: document.getElementById('plan-reporting')?.value || ''
+    };
+
+    return {
+      projectId: this.state.currentProjectId,
+      usecaseId: this.state.selectedUsecases[0] || null,
+      teamStructure: JSON.stringify({ roles: this.state.ninetyDayPlan.roles }),
+      requiredData: JSON.stringify({ items: this.state.ninetyDayPlan.requiredData }),
+      risks: JSON.stringify({ items: this.state.ninetyDayPlan.risks }),
+      communicationPlan: JSON.stringify(communication),
+      weeklyMilestones: JSON.stringify({ phases: phases })
+    };
+  },
+
+  // 90日計画の保存
+  save90DayPlan() {
+    if (!this.state.currentProjectId) {
+      this.showError('プロジェクトが選択されていません');
+      return;
+    }
+
+    const planData = this.collect90DayPlanData();
+
+    google.script.run
+      .withSuccessHandler((response) => {
+        if (!response.success) {
+          this.showError(response.error);
+          return;
+        }
+        this.showSaveStatus();
+        this.showSuccess('90日計画を保存しました');
+      })
+      .withFailureHandler((error) => this.showError(error.message))
+      .apiSaveNinetyDayPlan(planData);
   },
 
   // ========================================

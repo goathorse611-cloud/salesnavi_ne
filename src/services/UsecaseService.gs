@@ -222,28 +222,18 @@ function getScoringCriteria() {
 function saveNinetyDayPlanWithValidation(planData, userEmail) {
   requireProjectAccess(planData.projectId, userEmail);
 
-  var usecases = getUsecases(planData.projectId);
-  var exists = usecases.some(function(uc) {
-    return uc.usecaseId === planData.usecaseId;
-  });
-
-  if (!exists) {
-    throw new Error('ユースケースが見つかりません。');
-  }
-
-  var milestones = planData.weeklyMilestones || [];
-  if (milestones.length > 12) {
-    throw new Error('週次マイルストーンは12週以内で入力してください。');
-  }
+  // 新しい3フェーズ構造ではJSON文字列として渡される
+  // teamStructure, requiredData, risks, communicationPlan, weeklyMilestonesは
+  // すべてJSON文字列として保存
 
   var cleanData = {
     projectId: planData.projectId,
-    usecaseId: planData.usecaseId,
-    teamStructure: (planData.teamStructure || '').trim(),
-    requiredData: (planData.requiredData || '').trim(),
-    risks: (planData.risks || '').trim(),
-    communicationPlan: (planData.communicationPlan || '').trim(),
-    weeklyMilestones: milestones.map(function(m) { return m.trim(); }),
+    usecaseId: planData.usecaseId || null,
+    teamStructure: planData.teamStructure || '',
+    requiredData: planData.requiredData || '',
+    risks: planData.risks || '',
+    communicationPlan: planData.communicationPlan || '',
+    weeklyMilestones: planData.weeklyMilestones || '',
     userEmail: userEmail
   };
 

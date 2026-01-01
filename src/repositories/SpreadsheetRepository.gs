@@ -317,33 +317,35 @@ function getUsecases(projectId) {
 // ========================================
 
 function saveNinetyDayPlan(planData) {
+  // プロジェクト単位で既存レコードを検索
   var existing = findFirstRow(
     SCHEMA_NINETY_DAY_PLAN.sheetName,
-    SCHEMA_NINETY_DAY_PLAN.columns.USECASE_ID,
-    planData.usecaseId
+    SCHEMA_NINETY_DAY_PLAN.columns.PROJECT_ID,
+    planData.projectId
   );
 
   var rowData = [];
   rowData[SCHEMA_NINETY_DAY_PLAN.columns.PROJECT_ID] = planData.projectId;
-  rowData[SCHEMA_NINETY_DAY_PLAN.columns.USECASE_ID] = planData.usecaseId;
+  rowData[SCHEMA_NINETY_DAY_PLAN.columns.USECASE_ID] = planData.usecaseId || '';
   rowData[SCHEMA_NINETY_DAY_PLAN.columns.TEAM_STRUCTURE] = planData.teamStructure || '';
   rowData[SCHEMA_NINETY_DAY_PLAN.columns.REQUIRED_DATA] = planData.requiredData || '';
   rowData[SCHEMA_NINETY_DAY_PLAN.columns.RISKS] = planData.risks || '';
   rowData[SCHEMA_NINETY_DAY_PLAN.columns.COMMUNICATION_PLAN] = planData.communicationPlan || '';
-  rowData[SCHEMA_NINETY_DAY_PLAN.columns.WEEKLY_MILESTONES] = safeJsonStringify(planData.weeklyMilestones || []);
+  // weeklyMilestonesは既にJSON文字列として渡される想定
+  rowData[SCHEMA_NINETY_DAY_PLAN.columns.WEEKLY_MILESTONES] = typeof planData.weeklyMilestones === 'string'
+    ? planData.weeklyMilestones
+    : safeJsonStringify(planData.weeklyMilestones || {});
   rowData[SCHEMA_NINETY_DAY_PLAN.columns.UPDATED_DATE] = getCurrentTimestamp();
 
   if (existing) {
     updateRow(SCHEMA_NINETY_DAY_PLAN.sheetName, existing.rowNumber, rowData);
     logAudit(planData.userEmail, OPERATION_TYPES.UPDATE, planData.projectId, {
-      module: '90day-plan',
-      usecaseId: planData.usecaseId
+      module: '90day-plan'
     });
   } else {
     appendRow(SCHEMA_NINETY_DAY_PLAN.sheetName, rowData);
     logAudit(planData.userEmail, OPERATION_TYPES.CREATE, planData.projectId, {
-      module: '90day-plan',
-      usecaseId: planData.usecaseId
+      module: '90day-plan'
     });
   }
 }
@@ -366,6 +368,28 @@ function getNinetyDayPlan(usecaseId) {
     risks: data[SCHEMA_NINETY_DAY_PLAN.columns.RISKS],
     communicationPlan: data[SCHEMA_NINETY_DAY_PLAN.columns.COMMUNICATION_PLAN],
     weeklyMilestones: safeJsonParse(data[SCHEMA_NINETY_DAY_PLAN.columns.WEEKLY_MILESTONES], []),
+    updatedDate: data[SCHEMA_NINETY_DAY_PLAN.columns.UPDATED_DATE]
+  };
+}
+
+function getNinetyDayPlanByProjectId(projectId) {
+  var result = findFirstRow(
+    SCHEMA_NINETY_DAY_PLAN.sheetName,
+    SCHEMA_NINETY_DAY_PLAN.columns.PROJECT_ID,
+    projectId
+  );
+
+  if (!result) return null;
+
+  var data = result.data;
+  return {
+    projectId: data[SCHEMA_NINETY_DAY_PLAN.columns.PROJECT_ID],
+    usecaseId: data[SCHEMA_NINETY_DAY_PLAN.columns.USECASE_ID],
+    teamStructure: data[SCHEMA_NINETY_DAY_PLAN.columns.TEAM_STRUCTURE],
+    requiredData: data[SCHEMA_NINETY_DAY_PLAN.columns.REQUIRED_DATA],
+    risks: data[SCHEMA_NINETY_DAY_PLAN.columns.RISKS],
+    communicationPlan: data[SCHEMA_NINETY_DAY_PLAN.columns.COMMUNICATION_PLAN],
+    weeklyMilestones: data[SCHEMA_NINETY_DAY_PLAN.columns.WEEKLY_MILESTONES],
     updatedDate: data[SCHEMA_NINETY_DAY_PLAN.columns.UPDATED_DATE]
   };
 }
