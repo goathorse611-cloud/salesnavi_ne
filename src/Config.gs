@@ -330,8 +330,8 @@ function generateProjectId() {
 function generateUsecaseId() {
   var now = new Date();
   var dateStr = Utilities.formatDate(now, Session.getScriptTimeZone(), 'yyyyMMdd');
-  var randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-  return 'UC-' + dateStr + '-' + randomNum;
+  var uuid = Utilities.getUuid();
+  return 'UC-' + dateStr + '-' + uuid;
 }
 
 // ========================================

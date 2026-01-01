@@ -5,6 +5,9 @@
 
 function hasProjectAccess(projectId, userEmail) {
   userEmail = userEmail || getCurrentUserEmail();
+  if (!userEmail) {
+    return false;
+  }
   var project = getProject(projectId);
 
   if (!project) {
@@ -16,7 +19,9 @@ function hasProjectAccess(projectId, userEmail) {
   }
 
   var editors = project.editors || '';
-  var editorList = editors.split(',').map(function(e) { return e.trim(); });
+  var editorList = editors
+    ? editors.split(',').map(function(e) { return e.trim(); }).filter(function(e) { return e; })
+    : [];
 
   return editorList.indexOf(userEmail) !== -1;
 }
