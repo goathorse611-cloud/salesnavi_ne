@@ -236,6 +236,75 @@
           </div>
         </div>
 
+        <!-- Extended Modules Section -->
+        <div class="mb-10">
+          <div class="mb-6">
+            <h2 class="text-xl font-bold text-slate-900">拡張モジュール</h2>
+            <p class="text-sm text-slate-500 mt-1">より詳細な分析と設計を行います</p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <!-- Module 3 Card: Core Process Gap Analysis -->
+            <div onclick="App.navigate('coreprocess')" class="group bg-white rounded-lg border border-slate-200 p-5 shadow-card hover:shadow-card-hover hover:border-primary/50 transition-all duration-200 flex flex-col h-full relative overflow-hidden cursor-pointer">
+              <div class="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity pointer-events-none">
+                <span class="text-8xl font-black text-primary">3</span>
+              </div>
+              <div class="flex items-center justify-between mb-4 relative z-10">
+                <div class="flex items-center justify-center size-10 rounded-md bg-purple-50 text-purple-600 border border-purple-100">
+                  <span class="material-symbols-outlined fill">analytics</span>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-purple-100 text-purple-700 border border-purple-200 uppercase tracking-wide">拡張</span>
+              </div>
+              <h3 class="text-base font-bold text-slate-900 mb-2 relative z-10">6コアプロセス ギャップ診断</h3>
+              <p class="text-sm text-slate-500 mb-6 leading-relaxed flex-1 relative z-10">
+                現状のプロセス成熟度を評価し、改善のロードマップを策定します。
+              </p>
+              <button class="w-full h-9 flex items-center justify-center rounded-md bg-white border border-slate-300 hover:border-purple-500 hover:text-purple-600 text-slate-700 text-sm font-semibold shadow-sm transition-colors relative z-10">
+                診断開始
+              </button>
+            </div>
+
+            <!-- Module 5 Card: Governance -->
+            <div onclick="App.navigate('governance')" class="group bg-white rounded-lg border border-slate-200 p-5 shadow-card hover:shadow-card-hover hover:border-primary/50 transition-all duration-200 flex flex-col h-full relative overflow-hidden cursor-pointer">
+              <div class="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity pointer-events-none">
+                <span class="text-8xl font-black text-primary">5</span>
+              </div>
+              <div class="flex items-center justify-between mb-4 relative z-10">
+                <div class="flex items-center justify-center size-10 rounded-md bg-purple-50 text-purple-600 border border-purple-100">
+                  <span class="material-symbols-outlined fill">security</span>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-purple-100 text-purple-700 border border-purple-200 uppercase tracking-wide">拡張</span>
+              </div>
+              <h3 class="text-base font-bold text-slate-900 mb-2 relative z-10">最小限の統制設計</h3>
+              <p class="text-sm text-slate-500 mb-6 leading-relaxed flex-1 relative z-10">
+                データ統制の骨格を定義し、品質とコンプライアンスを確保します。
+              </p>
+              <button class="w-full h-9 flex items-center justify-center rounded-md bg-white border border-slate-300 hover:border-purple-500 hover:text-purple-600 text-slate-700 text-sm font-semibold shadow-sm transition-colors relative z-10">
+                統制設計
+              </button>
+            </div>
+
+            <!-- Module 6 Card: Operations Support -->
+            <div onclick="App.navigate('operations')" class="group bg-white rounded-lg border border-slate-200 p-5 shadow-card hover:shadow-card-hover hover:border-primary/50 transition-all duration-200 flex flex-col h-full relative overflow-hidden cursor-pointer">
+              <div class="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity pointer-events-none">
+                <span class="text-8xl font-black text-primary">6</span>
+              </div>
+              <div class="flex items-center justify-between mb-4 relative z-10">
+                <div class="flex items-center justify-center size-10 rounded-md bg-purple-50 text-purple-600 border border-purple-100">
+                  <span class="material-symbols-outlined fill">support_agent</span>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-purple-100 text-purple-700 border border-purple-200 uppercase tracking-wide">拡張</span>
+              </div>
+              <h3 class="text-base font-bold text-slate-900 mb-2 relative z-10">運営支援設計</h3>
+              <p class="text-sm text-slate-500 mb-6 leading-relaxed flex-1 relative z-10">
+                階層サポート体制（L1～L4）とコミュニティ運用を計画します。
+              </p>
+              <button class="w-full h-9 flex items-center justify-center rounded-md bg-white border border-slate-300 hover:border-purple-500 hover:text-purple-600 text-slate-700 text-sm font-semibold shadow-sm transition-colors relative z-10">
+                運営設計
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- Recent Projects -->
         <div class="flex flex-col gap-4">
           <div class="flex items-center justify-between px-1">
