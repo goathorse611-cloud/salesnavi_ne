@@ -868,6 +868,68 @@
           </div>
         </div>
 
+        <!-- Maturity-Based Template Selection -->
+        <div id="maturity-template-section" class="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-lg border border-indigo-200 shadow-card mb-6">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div class="flex items-start gap-4">
+              <div class="h-12 w-12 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-indigo-600 text-[28px]">analytics</span>
+              </div>
+              <div>
+                <div class="flex items-center gap-2 mb-1">
+                  <h2 class="text-lg font-bold text-slate-900">データカルチャー成熟度に基づく計画</h2>
+                  <span id="maturity-badge" class="hidden px-2 py-0.5 text-xs font-bold rounded-full">--</span>
+                </div>
+                <p id="maturity-description" class="text-slate-600 text-sm">
+                  ギャップ診断の結果に基づき、最適な90日計画テンプレートを提案します。
+                </p>
+                <p id="maturity-score" class="text-xs text-slate-500 mt-1 hidden">
+                  平均スコア: <span class="font-bold">--</span> / 5.0
+                </p>
+              </div>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-2">
+              <select id="maturity-template-select" class="input-base min-w-[160px]" onchange="App.onMaturityTemplateChange()">
+                <option value="">テンプレートを選択</option>
+                <option value="ignite">始動段階向け</option>
+                <option value="strengthen">強化段階向け</option>
+                <option value="master">凌駕段階向け</option>
+              </select>
+              <button onclick="App.applyMaturityTemplate()" class="btn-secondary whitespace-nowrap">
+                <span class="material-symbols-outlined text-[18px]">auto_fix_high</span>
+                テンプレート適用
+              </button>
+            </div>
+          </div>
+          <!-- Template Preview -->
+          <div id="template-preview" class="mt-4 hidden">
+            <div class="text-xs font-bold text-indigo-700 uppercase tracking-wide mb-2">選択中のテンプレート概要</div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div class="bg-white/70 rounded-lg p-3 border border-indigo-100">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="material-symbols-outlined text-amber-500 text-[16px]">rocket_launch</span>
+                  <span class="text-xs font-bold text-slate-700">始動フェーズ</span>
+                </div>
+                <p id="preview-ignite" class="text-xs text-slate-600 line-clamp-2">--</p>
+              </div>
+              <div class="bg-white/70 rounded-lg p-3 border border-indigo-100">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="material-symbols-outlined text-blue-500 text-[16px]">trending_up</span>
+                  <span class="text-xs font-bold text-slate-700">推進フェーズ</span>
+                </div>
+                <p id="preview-strengthen" class="text-xs text-slate-600 line-clamp-2">--</p>
+              </div>
+              <div class="bg-white/70 rounded-lg p-3 border border-indigo-100">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="material-symbols-outlined text-green-500 text-[16px]">verified</span>
+                  <span class="text-xs font-bold text-slate-700">定着フェーズ</span>
+                </div>
+                <p id="preview-establish" class="text-xs text-slate-600 line-clamp-2">--</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- 3 Phase Timeline -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <!-- Phase 1: 始動 -->

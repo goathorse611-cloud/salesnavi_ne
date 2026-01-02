@@ -572,7 +572,7 @@ function generateDemoDataForProject(projectId, userEmail) {
  * Clear all data for a project.
  */
 function clearAllProjectData(projectId, userEmail) {
-  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  var ss = getSpreadsheet();
 
   // Clear Vision
   clearSheetRowsByProjectId(ss, SHEET_NAMES.VISION, 0, projectId);
@@ -593,7 +593,10 @@ function clearAllProjectData(projectId, userEmail) {
   clearSheetRowsByProjectId(ss, SHEET_NAMES.OPERATIONS_SUPPORT, 0, projectId);
 
   // Clear Value Tracking
-  clearSheetRowsByProjectId(ss, SHEET_NAMES.VALUE_TRACKING, 0, projectId);
+  clearSheetRowsByProjectId(ss, SHEET_NAMES.VALUE, 0, projectId);
+
+  // Clear Core Process
+  clearSheetRowsByProjectId(ss, SHEET_NAMES.CORE_PROCESS, 0, projectId);
 
   logAudit(userEmail, OPERATION_TYPES.DELETE, projectId, {
     action: 'clear_all_project_data'
@@ -620,5 +623,83 @@ function clearSheetRowsByProjectId(ss, sheetName, projectIdColumn, projectId) {
   // Delete from bottom to top to avoid index shifting
   for (var j = rowsToDelete.length - 1; j >= 0; j--) {
     sheet.deleteRow(rowsToDelete[j]);
+  }
+}
+
+// ========================================
+// API: Maturity Level
+// ========================================
+
+/**
+ * Get maturity level for a project based on core process assessment.
+ */
+function apiGetMaturityLevel(projectId) {
+  try {
+    var userEmail = getCurrentUserEmail();
+    requireProjectAccess(projectId, userEmail);
+
+    var coreProcess = getCoreProcess(projectId);
+    var maturity = calculateMaturityLevel(coreProcess);
+    var templates = get90DayPlanTemplates(maturity.level);
+
+    return {
+      success: true,
+      data: {
+        maturity: maturity,
+        templates: templates
+      }
+    };
+  } catch (error) {
+    Logger.log('apiGetMaturityLevel error: ' + error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Get 90-day plan templates for a specific maturity level.
+ */
+function apiGet90DayPlanTemplates(maturityLevel) {
+  try {
+    var templates = get90DayPlanTemplates(maturityLevel || 'ignite');
+    return { success: true, data: templates };
+  } catch (error) {
+    Logger.log('apiGet90DayPlanTemplates error: ' + error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Apply maturity-based template to 90-day plan.
+ */
+function apiApplyMaturityTemplate(projectId, maturityLevel) {
+  try {
+    var userEmail = getCurrentUserEmail();
+    requireProjectAccess(projectId, userEmail);
+
+    var templates = get90DayPlanTemplates(maturityLevel || 'ignite');
+
+    // Get existing plan or create new one
+    var existingPlan = getNinetyDayPlanByProjectId(projectId);
+
+    var planData = {
+      projectId: projectId,
+      usecaseId: existingPlan ? existingPlan.usecaseId : null,
+      teamStructure: existingPlan ? existingPlan.teamStructure : '{}',
+      requiredData: existingPlan ? existingPlan.requiredData : '{}',
+      risks: existingPlan ? existingPlan.risks : '{}',
+      communicationPlan: existingPlan ? existingPlan.communicationPlan : '{}',
+      weeklyMilestones: JSON.stringify(templates)
+    };
+
+    saveNinetyDayPlanWithValidation(planData, userEmail);
+
+    return {
+      success: true,
+      message: MATURITY_LABELS[maturityLevel] + 'のテンプレートを適用しました。',
+      data: templates
+    };
+  } catch (error) {
+    Logger.log('apiApplyMaturityTemplate error: ' + error.message);
+    return { success: false, error: error.message };
   }
 }

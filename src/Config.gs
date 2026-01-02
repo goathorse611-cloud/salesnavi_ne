@@ -375,6 +375,186 @@ var OPERATION_TYPES = {
 };
 
 // ========================================
+// Maturity Levels (based on Tableau Blueprint)
+// ========================================
+
+var MATURITY_LEVELS = {
+  IGNITE: 'ignite',      // 始動段階: 平均スコア 1-2
+  STRENGTHEN: 'strengthen', // 強化段階: 平均スコア 2-3.5
+  MASTER: 'master'       // 凌駕段階: 平均スコア 3.5-5
+};
+
+var MATURITY_LABELS = {
+  ignite: '始動段階',
+  strengthen: '強化段階',
+  master: '凌駕段階'
+};
+
+var MATURITY_DESCRIPTIONS = {
+  ignite: 'データ活用を始めたばかりの段階。基盤構築と小規模な成功体験が重要です。',
+  strengthen: 'データ活用が定着しつつある段階。標準化とスケールアップが課題です。',
+  master: 'データドリブンな文化が確立している段階。高度な分析と自律運用が目標です。'
+};
+
+/**
+ * Calculate maturity level from core process scores.
+ * @param {Object} coreProcess - Core process data with scores
+ * @return {Object} { level: string, averageScore: number, label: string, description: string }
+ */
+function calculateMaturityLevel(coreProcess) {
+  if (!coreProcess) {
+    return {
+      level: MATURITY_LEVELS.IGNITE,
+      averageScore: 1,
+      label: MATURITY_LABELS.ignite,
+      description: MATURITY_DESCRIPTIONS.ignite
+    };
+  }
+
+  var scores = [
+    parseInt(coreProcess.agilityScore) || 1,
+    parseInt(coreProcess.skillsScore) || 1,
+    parseInt(coreProcess.dataQualityScore) || 1,
+    parseInt(coreProcess.trustScore) || 1,
+    parseInt(coreProcess.operationalEfficiencyScore) || 1,
+    parseInt(coreProcess.communityScore) || 1
+  ];
+
+  var sum = scores.reduce(function(a, b) { return a + b; }, 0);
+  var avg = sum / scores.length;
+
+  var level;
+  if (avg >= 3.5) {
+    level = MATURITY_LEVELS.MASTER;
+  } else if (avg >= 2) {
+    level = MATURITY_LEVELS.STRENGTHEN;
+  } else {
+    level = MATURITY_LEVELS.IGNITE;
+  }
+
+  return {
+    level: level,
+    averageScore: Math.round(avg * 10) / 10,
+    label: MATURITY_LABELS[level],
+    description: MATURITY_DESCRIPTIONS[level]
+  };
+}
+
+/**
+ * Get 90-day plan templates based on maturity level.
+ * @param {string} maturityLevel - ignite, strengthen, or master
+ * @return {Object} Phase templates with objectives, milestones, and success criteria
+ */
+function get90DayPlanTemplates(maturityLevel) {
+  var templates = {
+    ignite: {
+      phases: {
+        ignite: {
+          objective: '基盤構築と初期ダッシュボード作成。パイロットユーザーでの検証開始。',
+          milestones: [
+            'Week1: キックオフ、要件ヒアリング完了',
+            'Week2: データ接続、品質検証',
+            'Week3: ダッシュボード v0.5 レビュー',
+            'Week4: パイロット開始、フィードバック収集'
+          ],
+          successCriteria: 'パイロットユーザー全員がダッシュボードにアクセスし、1回以上業務で活用'
+        },
+        strengthen: {
+          objective: 'フィードバック反映と利用者拡大',
+          milestones: [
+            'Week5: v1.0 リリース、機能改善',
+            'Week6: 追加ユーザー向けトレーニング',
+            'Week7: 利用状況モニタリング開始',
+            'Week8: 中間レビュー、効果測定'
+          ],
+          successCriteria: '拡大ユーザーが週3回以上アクセス、初期効果を確認'
+        },
+        establish: {
+          objective: '展開拡大と運用体制の確立',
+          milestones: [
+            'Week9: 全社展開計画策定',
+            'Week10: 残りユーザーへの展開',
+            'Week11: 運用マニュアル・FAQ整備',
+            'Week12: 効果測定、次期計画策定'
+          ],
+          successCriteria: '対象ユーザー全員が利用開始、目標効果の50%を達成'
+        }
+      }
+    },
+    strengthen: {
+      phases: {
+        ignite: {
+          objective: 'ガバナンス基盤の整備とデータ品質向上',
+          milestones: [
+            'Week1: 既存ダッシュボード/データソース棚卸し',
+            'Week2: データカタログ設計、品質ルール策定',
+            'Week3: 認定データソースの定義',
+            'Week4: ガバナンスポリシー初版リリース'
+          ],
+          successCriteria: 'データカタログに主要データソースが登録され、品質基準が明文化'
+        },
+        strengthen: {
+          objective: '標準化とベストプラクティスの横展開',
+          milestones: [
+            'Week5: ダッシュボードテンプレート作成',
+            'Week6: 部門横断KPIの統一定義',
+            'Week7: パワーユーザー育成プログラム開始',
+            'Week8: コミュニティ活動の活性化'
+          ],
+          successCriteria: 'テンプレート利用率50%以上、パワーユーザー10名以上認定'
+        },
+        establish: {
+          objective: 'セルフサービス化と自律運用体制',
+          milestones: [
+            'Week9: セルフサービス分析ガイドライン整備',
+            'Week10: CoEサポートモデル確立',
+            'Week11: 効果測定フレームワーク導入',
+            'Week12: 次期ロードマップ策定'
+          ],
+          successCriteria: 'セルフサービス分析件数が月10件以上、CoE負荷が削減'
+        }
+      }
+    },
+    master: {
+      phases: {
+        ignite: {
+          objective: '高度分析/AI活用の企画と基盤整備',
+          milestones: [
+            'Week1: 高度分析ユースケースの特定',
+            'Week2: AI/MLプラットフォーム評価',
+            'Week3: データサイエンスチーム体制設計',
+            'Week4: PoC計画策定、データ準備'
+          ],
+          successCriteria: '高度分析ユースケースが3件以上特定され、PoC計画が承認'
+        },
+        strengthen: {
+          objective: '予測分析/機械学習モデルのPoC実施',
+          milestones: [
+            'Week5: 予測モデル開発開始',
+            'Week6: モデル検証、精度チューニング',
+            'Week7: ビジネスユーザーへのデモ',
+            'Week8: モデル運用計画策定'
+          ],
+          successCriteria: '予測モデルの精度が目標値を達成、ビジネス価値が確認'
+        },
+        establish: {
+          objective: 'AIインサイトの業務組み込みと拡大',
+          milestones: [
+            'Week9: 本番環境へのモデルデプロイ',
+            'Week10: 業務プロセスへの組み込み',
+            'Week11: 効果測定、モニタリング体制確立',
+            'Week12: 横展開計画、次期AI施策策定'
+          ],
+          successCriteria: 'AIモデルが業務で活用され、定量効果が確認'
+        }
+      }
+    }
+  };
+
+  return templates[maturityLevel] || templates.ignite;
+}
+
+// ========================================
 // ID helpers
 // ========================================
 
